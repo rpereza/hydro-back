@@ -3,6 +3,7 @@ package com.univercloud.hydro.controller;
 import com.univercloud.hydro.dto.JwtResponse;
 import com.univercloud.hydro.dto.LoginRequest;
 import com.univercloud.hydro.dto.SignupRequest;
+import com.univercloud.hydro.dto.SignUpResponse;
 import com.univercloud.hydro.entity.Role;
 import com.univercloud.hydro.entity.User;
 import com.univercloud.hydro.repository.RoleRepository;
@@ -67,13 +68,13 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
+    public ResponseEntity<SignUpResponse> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
         if (userService.existsByUsername(signupRequest.getUsername())) {
-            return ResponseEntity.badRequest().body("Error: Username is already taken!");
+            return ResponseEntity.badRequest().body(new SignUpResponse("Error: Username is already taken!", false));
         }
 
         if (userService.existsByEmail(signupRequest.getEmail())) {
-            return ResponseEntity.badRequest().body("Error: Email is already in use!");
+            return ResponseEntity.badRequest().body(new SignUpResponse("Error: Email is already in use!", false));
         }
 
         // Create new user's account
@@ -93,7 +94,7 @@ public class AuthController {
         user.setRoles(roles);
         userService.createUser(user);
 
-        return ResponseEntity.ok("User registered successfully!");
+        return ResponseEntity.ok(new SignUpResponse("User registered successfully!", true));
     }
 
     @GetMapping("/me")
