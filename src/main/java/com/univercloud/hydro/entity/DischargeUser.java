@@ -12,7 +12,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "discharge_users")
-public class DischargeUser {
+public class DischargeUser implements Auditable {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -98,6 +98,20 @@ public class DischargeUser {
     
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
+    
+    @NotNull(message = "Corporation is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "corporation_id", nullable = false)
+    private Corporation corporation;
+    
+    @NotNull(message = "Created by is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_user_id", nullable = false)
+    private User createdBy;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by_user_id")
+    private User updatedBy;
     
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -318,6 +332,37 @@ public class DischargeUser {
     
     public void setProjectProgresses(List<ProjectProgress> projectProgresses) {
         this.projectProgresses = projectProgresses;
+    }
+    
+    // Auditable interface implementation
+    @Override
+    public Corporation getCorporation() {
+        return corporation;
+    }
+    
+    @Override
+    public void setCorporation(Corporation corporation) {
+        this.corporation = corporation;
+    }
+    
+    @Override
+    public User getCreatedBy() {
+        return createdBy;
+    }
+    
+    @Override
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+    
+    @Override
+    public User getUpdatedBy() {
+        return updatedBy;
+    }
+    
+    @Override
+    public void setUpdatedBy(User updatedBy) {
+        this.updatedBy = updatedBy;
     }
     
     @PreUpdate

@@ -39,6 +39,9 @@ public class Municipality {
     @Column(name = "nbi", precision = 6, scale = 2)
     private BigDecimal nbi;
     
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+    
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
     
@@ -47,6 +50,15 @@ public class Municipality {
     
     @OneToMany(mappedBy = "municipality", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<DischargeUser> users = new ArrayList<>();
+    
+    @NotNull(message = "Created by is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_user_id", nullable = false)
+    private User createdBy;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by_user_id")
+    private User updatedBy;
     
     // Constructors
     public Municipality() {
@@ -110,6 +122,14 @@ public class Municipality {
         this.nbi = nbi;
     }
     
+    public boolean isActive() {
+        return isActive;
+    }
+    
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+    
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -134,6 +154,22 @@ public class Municipality {
         this.users = users;
     }
     
+    public User getCreatedBy() {
+        return createdBy;
+    }
+    
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+    
+    public User getUpdatedBy() {
+        return updatedBy;
+    }
+    
+    public void setUpdatedBy(User updatedBy) {
+        this.updatedBy = updatedBy;
+    }
+    
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
@@ -148,6 +184,7 @@ public class Municipality {
                 ", department=" + (department != null ? department.getName() : null) +
                 ", category=" + (category != null ? category.getName() : null) +
                 ", nbi=" + nbi +
+                ", isActive=" + isActive +
                 ", createdAt=" + createdAt +
                 '}';
     }

@@ -1,0 +1,303 @@
+package com.univercloud.hydro.controller;
+
+import com.univercloud.hydro.entity.Municipality;
+import com.univercloud.hydro.service.MunicipalityService;
+import com.univercloud.hydro.service.MunicipalityService.MunicipalityStats;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Controlador REST para la gestión de Municipios.
+ * Proporciona endpoints para operaciones CRUD y consultas de municipios.
+ */
+@RestController
+@RequestMapping("/api/municipalities")
+@CrossOrigin(origins = "*")
+public class MunicipalityController {
+    
+    @Autowired
+    private MunicipalityService municipalityService;
+    
+    /**
+     * Crea un nuevo municipio.
+     * 
+     * @param municipality el municipio a crear
+     * @return el municipio creado
+     */
+    @PostMapping
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Municipality> createMunicipality(@Valid @RequestBody Municipality municipality) {
+        try {
+            Municipality createdMunicipality = municipalityService.createMunicipality(municipality);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdMunicipality);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+    
+    /**
+     * Actualiza un municipio existente.
+     * 
+     * @param id el ID del municipio
+     * @param municipality el municipio actualizado
+     * @return el municipio actualizado
+     */
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Municipality> updateMunicipality(@PathVariable Long id, @Valid @RequestBody Municipality municipality) {
+        try {
+            municipality.setId(id);
+            Municipality updatedMunicipality = municipalityService.updateMunicipality(municipality);
+            return ResponseEntity.ok(updatedMunicipality);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+    
+    /**
+     * Obtiene un municipio por su ID.
+     * 
+     * @param id el ID del municipio
+     * @return el municipio si existe
+     */
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Municipality> getMunicipalityById(@PathVariable Long id) {
+        Optional<Municipality> municipality = municipalityService.getMunicipalityById(id);
+        return municipality.map(ResponseEntity::ok)
+                         .orElse(ResponseEntity.notFound().build());
+    }
+    
+    /**
+     * Obtiene todos los municipios de la corporación del usuario autenticado con paginación.
+     * 
+     * @param pageable parámetros de paginación
+     * @return página de municipios
+     */
+    @GetMapping
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Page<Municipality>> getAllMunicipalities(Pageable pageable) {
+        try {
+            Page<Municipality> municipalities = municipalityService.getAllMunicipalities(pageable);
+            return ResponseEntity.ok(municipalities);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+    
+    /**
+     * Obtiene todos los municipios de la corporación del usuario autenticado.
+     * 
+     * @return lista de municipios
+     */
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<List<Municipality>> getAllMunicipalities() {
+        try {
+            List<Municipality> municipalities = municipalityService.getAllMunicipalities();
+            return ResponseEntity.ok(municipalities);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+    
+    /**
+     * Obtiene todos los municipios activos.
+     * 
+     * @return lista de municipios activos
+     */
+    @GetMapping("/all-active")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<List<Municipality>> getAllActiveMunicipalities() {
+        List<Municipality> municipalities = municipalityService.getAllActiveMunicipalities();
+        return ResponseEntity.ok(municipalities);
+    }
+    
+    /**
+     * Obtiene todos los municipios inactivos.
+     * 
+     * @return lista de municipios inactivos
+     */
+    @GetMapping("/inactive")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<List<Municipality>> getAllInactiveMunicipalities() {
+        List<Municipality> municipalities = municipalityService.getAllInactiveMunicipalities();
+        return ResponseEntity.ok(municipalities);
+    }
+    
+    /**
+     * Busca un municipio por nombre.
+     * 
+     * @param name el nombre del municipio
+     * @return el municipio si existe
+     */
+    @GetMapping("/by-name")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Municipality> getMunicipalityByName(@RequestParam String name) {
+        Optional<Municipality> municipality = municipalityService.getMunicipalityByName(name);
+        return municipality.map(ResponseEntity::ok)
+                         .orElse(ResponseEntity.notFound().build());
+    }
+    
+    /**
+     * Busca municipios por nombre (búsqueda parcial).
+     * 
+     * @param name el nombre o parte del nombre a buscar
+     * @return lista de municipios que coinciden
+     */
+    @GetMapping("/search")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<List<Municipality>> searchMunicipalitiesByName(@RequestParam String name) {
+        try {
+            List<Municipality> municipalities = municipalityService.searchMunicipalitiesByName(name);
+            return ResponseEntity.ok(municipalities);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+    
+    /**
+     * Busca municipios activos por nombre (búsqueda parcial).
+     * 
+     * @param name el nombre o parte del nombre a buscar
+     * @return lista de municipios activos que coinciden
+     */
+    @GetMapping("/search-active")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<List<Municipality>> searchActiveMunicipalitiesByName(@RequestParam String name) {
+        try {
+            List<Municipality> municipalities = municipalityService.searchActiveMunicipalitiesByName(name);
+            return ResponseEntity.ok(municipalities);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+    
+    /**
+     * Obtiene municipios creados en un rango de fechas.
+     * 
+     * @param startDate fecha de inicio
+     * @param endDate fecha de fin
+     * @return lista de municipios creados en el rango
+     */
+    @GetMapping("/by-date-range")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<List<Municipality>> getMunicipalitiesByDateRange(
+            @RequestParam LocalDateTime startDate, 
+            @RequestParam LocalDateTime endDate) {
+        try {
+            List<Municipality> municipalities = municipalityService.getMunicipalitiesByDateRange(startDate, endDate);
+            return ResponseEntity.ok(municipalities);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+        
+    /**
+     * Activa un municipio.
+     * 
+     * @param id el ID del municipio a activar
+     * @return true si se activó correctamente
+     */
+    @PutMapping("/{id}/activate")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Boolean> activateMunicipality(@PathVariable Long id) {
+        try {
+            boolean activated = municipalityService.activateMunicipality(id);
+            return ResponseEntity.ok(activated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+    
+    /**
+     * Desactiva un municipio.
+     * 
+     * @param id el ID del municipio a desactivar
+     * @return true si se desactivó correctamente
+     */
+    @PutMapping("/{id}/deactivate")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Boolean> deactivateMunicipality(@PathVariable Long id) {
+        try {
+            boolean deactivated = municipalityService.deactivateMunicipality(id);
+            return ResponseEntity.ok(deactivated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+    
+    /**
+     * Elimina un municipio.
+     * 
+     * @param id el ID del municipio a eliminar
+     * @return true si se eliminó correctamente
+     */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Boolean> deleteMunicipality(@PathVariable Long id) {
+        try {
+            boolean deleted = municipalityService.deleteMunicipality(id);
+            return ResponseEntity.ok(deleted);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+    
+    /**
+     * Verifica si existe un municipio con el nombre especificado.
+     * 
+     * @param name el nombre del municipio
+     * @return true si existe, false en caso contrario
+     */
+    @GetMapping("/exists")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Boolean> existsByName(@RequestParam String name) {
+        boolean exists = municipalityService.existsByName(name);
+        return ResponseEntity.ok(exists);
+    }
+    
+    /**
+     * Obtiene municipios ordenados por fecha de creación (más recientes primero).
+     * 
+     * @return lista de municipios ordenados por fecha de creación descendente
+     */
+    @GetMapping("/recent")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<List<Municipality>> getMunicipalitiesOrderByCreatedAtDesc() {
+        List<Municipality> municipalities = municipalityService.getMunicipalitiesOrderByCreatedAtDesc();
+        return ResponseEntity.ok(municipalities);
+    }
+    
+    /**
+     * Obtiene municipios activos ordenados por nombre.
+     * 
+     * @return lista de municipios activos ordenados por nombre
+     */
+    @GetMapping("/active-ordered")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<List<Municipality>> getActiveMunicipalitiesOrderByName() {
+        List<Municipality> municipalities = municipalityService.getActiveMunicipalitiesOrderByName();
+        return ResponseEntity.ok(municipalities);
+    }
+}

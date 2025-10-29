@@ -10,7 +10,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "basin_sections")
-public class BasinSection {
+public class BasinSection implements Auditable {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,6 +29,9 @@ public class BasinSection {
     @Size(max = 1000, message = "Description cannot exceed 1000 characters")
     private String description;
     
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+    
     @Column(name = "start_point")
     private String startPoint;
     
@@ -46,6 +49,20 @@ public class BasinSection {
     
     @OneToMany(mappedBy = "basinSection", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Discharge> discharges = new ArrayList<>();
+    
+    @NotNull(message = "Corporation is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "corporation_id", nullable = false)
+    private Corporation corporation;
+    
+    @NotNull(message = "Created by is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_user_id", nullable = false)
+    private User createdBy;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by_user_id")
+    private User updatedBy;
     
     // Constructors
     public BasinSection() {
@@ -90,6 +107,14 @@ public class BasinSection {
     
     public void setDescription(String description) {
         this.description = description;
+    }
+    
+    public boolean isActive() {
+        return isActive;
+    }
+    
+    public void setActive(boolean active) {
+        isActive = active;
     }
     
     public String getStartPoint() {
@@ -138,6 +163,36 @@ public class BasinSection {
     
     public void setDischarges(List<Discharge> discharges) {
         this.discharges = discharges;
+    }
+    
+    @Override
+    public Corporation getCorporation() {
+        return corporation;
+    }
+    
+    @Override
+    public void setCorporation(Corporation corporation) {
+        this.corporation = corporation;
+    }
+    
+    @Override
+    public User getCreatedBy() {
+        return createdBy;
+    }
+    
+    @Override
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+    
+    @Override
+    public User getUpdatedBy() {
+        return updatedBy;
+    }
+    
+    @Override
+    public void setUpdatedBy(User updatedBy) {
+        this.updatedBy = updatedBy;
     }
     
     @PreUpdate

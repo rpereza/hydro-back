@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.FetchType;
@@ -73,6 +74,13 @@ public class User implements UserDetails {
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "corporation_id")
+    private Corporation corporation;
+    
+    @Column(name = "has_created_corporation", nullable = false)
+    private boolean hasCreatedCorporation = false;
     
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
@@ -211,6 +219,22 @@ public class User implements UserDetails {
     
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+    
+    public Corporation getCorporation() {
+        return corporation;
+    }
+    
+    public void setCorporation(Corporation corporation) {
+        this.corporation = corporation;
+    }
+    
+    public boolean isHasCreatedCorporation() {
+        return hasCreatedCorporation;
+    }
+    
+    public void setHasCreatedCorporation(boolean hasCreatedCorporation) {
+        this.hasCreatedCorporation = hasCreatedCorporation;
     }
     
     // Helper methods
