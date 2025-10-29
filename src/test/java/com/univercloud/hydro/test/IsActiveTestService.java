@@ -2,15 +2,10 @@ package com.univercloud.hydro.test;
 
 import com.univercloud.hydro.entity.BasinSection;
 import com.univercloud.hydro.entity.Municipality;
-import com.univercloud.hydro.entity.WaterBasin;
-import com.univercloud.hydro.entity.Department;
-import com.univercloud.hydro.entity.Category;
 import com.univercloud.hydro.service.BasinSectionService;
 import com.univercloud.hydro.service.MunicipalityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
 
 /**
  * Clase de prueba para verificar la funcionalidad de activar/desactivar

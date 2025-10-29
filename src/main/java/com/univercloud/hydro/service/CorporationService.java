@@ -1,8 +1,6 @@
 package com.univercloud.hydro.service;
 
 import com.univercloud.hydro.dto.*;
-import com.univercloud.hydro.entity.Corporation;
-import com.univercloud.hydro.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
