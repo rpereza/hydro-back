@@ -120,8 +120,20 @@ public class EconomicActivityServiceImpl implements EconomicActivityService {
     
     @Override
     @Transactional(readOnly = true)
+    public Page<EconomicActivity> searchEconomicActivitiesByName(String name, Pageable pageable) {
+        return economicActivityRepository.findByNameContainingIgnoreCase(name, pageable);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
     public List<EconomicActivity> searchEconomicActivitiesByCode(String code) {
         return economicActivityRepository.findByCodeContainingIgnoreCase(code);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Page<EconomicActivity> searchEconomicActivitiesByCode(String code, Pageable pageable) {
+        return economicActivityRepository.findByCodeStartingWithIgnoreCase(code, pageable);
     }
     
     @Override
@@ -140,6 +152,12 @@ public class EconomicActivityServiceImpl implements EconomicActivityService {
     @Transactional(readOnly = true)
     public List<EconomicActivity> getEconomicActivitiesByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
         return economicActivityRepository.findByCreatedAtBetween(startDate, endDate);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Page<EconomicActivity> getEconomicActivitiesByDateRange(LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+        return economicActivityRepository.findByCreatedAtBetween(startDate, endDate, pageable);
     }
     
     @Override
@@ -203,6 +221,12 @@ public class EconomicActivityServiceImpl implements EconomicActivityService {
     @Transactional(readOnly = true)
     public List<EconomicActivity> getEconomicActivitiesOrderByCreatedAtDesc() {
         return economicActivityRepository.findAllOrderByCreatedAtDesc();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Page<EconomicActivity> getEconomicActivitiesOrderByCreatedAtDesc(Pageable pageable) {
+        return economicActivityRepository.findAllOrderByCreatedAtDesc(pageable);
     }
     
     @Override

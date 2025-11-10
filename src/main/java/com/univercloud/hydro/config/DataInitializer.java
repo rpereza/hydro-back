@@ -26,6 +26,7 @@ public class DataInitializer implements CommandLineRunner {
         createRoleIfNotExists("USER", "Default user role");
         createRoleIfNotExists("MODERATOR", "Moderator role with elevated privileges");
         createRoleIfNotExists("ADMIN", "Administrator role with full access");
+        createRoleIfNotExists("SUPER_ADMIN", "Super Administrator role with full access");
         
         logger.info("Default roles initialized successfully");
     }

@@ -84,11 +84,27 @@ public interface EconomicActivityService {
     List<EconomicActivity> searchEconomicActivitiesByName(String name);
     
     /**
+     * Busca actividades económicas por nombre (búsqueda parcial) con paginación.
+     * @param name el nombre o parte del nombre a buscar
+     * @param pageable parámetros de paginación
+     * @return página de actividades económicas que coinciden
+     */
+    Page<EconomicActivity> searchEconomicActivitiesByName(String name, Pageable pageable);
+    
+    /**
      * Busca actividades económicas por código (búsqueda parcial).
      * @param code el código o parte del código a buscar
      * @return lista de actividades económicas que coinciden
      */
     List<EconomicActivity> searchEconomicActivitiesByCode(String code);
+    
+    /**
+     * Busca actividades económicas cuyo código comience con el código dado.
+     * @param code el código o parte inicial del código a buscar
+     * @param pageable parámetros de paginación
+     * @return página de actividades económicas cuyo código comienza con el código dado
+     */
+    Page<EconomicActivity> searchEconomicActivitiesByCode(String code, Pageable pageable);
     
     /**
      * Busca actividades económicas activas por nombre (búsqueda parcial).
@@ -111,6 +127,15 @@ public interface EconomicActivityService {
      * @return lista de actividades económicas creadas en el rango
      */
     List<EconomicActivity> getEconomicActivitiesByDateRange(LocalDateTime startDate, LocalDateTime endDate);
+    
+    /**
+     * Obtiene actividades económicas creadas en un rango de fechas con paginación.
+     * @param startDate fecha de inicio
+     * @param endDate fecha de fin
+     * @param pageable parámetros de paginación
+     * @return página de actividades económicas creadas en el rango
+     */
+    Page<EconomicActivity> getEconomicActivitiesByDateRange(LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
     
     /**
      * Cuenta el número total de actividades económicas.
@@ -167,6 +192,13 @@ public interface EconomicActivityService {
      * @return lista de actividades económicas ordenadas por fecha de creación descendente
      */
     List<EconomicActivity> getEconomicActivitiesOrderByCreatedAtDesc();
+    
+    /**
+     * Obtiene actividades económicas ordenadas por fecha de creación (más recientes primero) con paginación.
+     * @param pageable parámetros de paginación
+     * @return página de actividades económicas ordenadas por fecha de creación descendente
+     */
+    Page<EconomicActivity> getEconomicActivitiesOrderByCreatedAtDesc(Pageable pageable);
     
     /**
      * Obtiene actividades económicas activas ordenadas por nombre.

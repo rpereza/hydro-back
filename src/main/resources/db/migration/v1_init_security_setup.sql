@@ -77,7 +77,8 @@ CREATE INDEX idx_user_roles_role_id ON user_roles(role_id);
 INSERT IGNORE INTO roles (name, description) VALUES 
 ('USER', 'Default user role with basic access'),
 ('MODERATOR', 'Moderator role with elevated privileges'),
-('ADMIN', 'Administrator role with full system access');
+('ADMIN', 'Administrator role with full system access'),
+('SUPER_ADMIN', 'Super Administrator role with full system access');
 
 -- =====================================================
 -- Verification
