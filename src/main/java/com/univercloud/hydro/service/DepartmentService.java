@@ -4,7 +4,6 @@ import com.univercloud.hydro.entity.Department;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,40 +64,12 @@ public interface DepartmentService {
     List<Department> searchDepartmentsByName(String name);
     
     /**
-     * Obtiene departamentos creados en un rango de fechas.
-     * @param startDate fecha de inicio
-     * @param endDate fecha de fin
-     * @return lista de departamentos creados en el rango
-     */
-    List<Department> getDepartmentsByDateRange(LocalDateTime startDate, LocalDateTime endDate);
-    
-    /**
-     * Elimina un departamento.
-     * @param id el ID del departamento a eliminar
-     * @return true si se eliminó correctamente
-     * @throws IllegalArgumentException si el departamento no existe
-     */
-    boolean deleteDepartment(Long id);
-    
-    /**
      * Verifica si existe un departamento con el nombre especificado.
      * @param name el nombre del departamento
      * @return true si existe, false en caso contrario
      */
     boolean existsByName(String name);
-    
-    /**
-     * Obtiene departamentos ordenados por nombre.
-     * @return lista de departamentos ordenados por nombre
-     */
-    List<Department> getDepartmentsOrderByName();
-    
-    /**
-     * Obtiene departamentos ordenados por fecha de creación (más recientes primero).
-     * @return lista de departamentos ordenados por fecha de creación descendente
-     */
-    List<Department> getDepartmentsOrderByCreatedAtDesc();
-    
+        
     /**
      * Obtiene estadísticas de departamentos.
      * @return estadísticas de departamentos

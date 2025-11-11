@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,25 +38,4 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     @Query("SELECT d FROM Department d WHERE LOWER(d.name) LIKE LOWER(CONCAT('%', :name, '%'))")
     List<Department> findByNameContainingIgnoreCase(@Param("name") String name);
     
-    /**
-     * Busca departamentos creados en un rango de fechas.
-     * @param startDate fecha de inicio
-     * @param endDate fecha de fin
-     * @return lista de departamentos creados en el rango
-     */
-    List<Department> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
-    
-    /**
-     * Busca departamentos ordenados por nombre.
-     * @return lista de departamentos ordenados por nombre
-     */
-    @Query("SELECT d FROM Department d ORDER BY d.name ASC")
-    List<Department> findAllOrderByName();
-    
-    /**
-     * Busca departamentos ordenados por fecha de creación (más recientes primero).
-     * @return lista de departamentos ordenados por fecha de creación descendente
-     */
-    @Query("SELECT d FROM Department d ORDER BY d.createdAt DESC")
-    List<Department> findAllOrderByCreatedAtDesc();
 }

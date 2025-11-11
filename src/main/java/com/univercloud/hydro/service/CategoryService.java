@@ -45,34 +45,6 @@ public interface CategoryService {
     Page<Category> getAllCategories(Pageable pageable);
     
     /**
-     * Obtiene todas las categorías.
-     * @return lista de categorías
-     */
-    List<Category> getAllCategories();
-    
-    /**
-     * Busca una categoría por nombre.
-     * @param name el nombre de la categoría
-     * @return la categoría si existe
-     */
-    Optional<Category> getCategoryByName(String name);
-    
-    /**
-     * Busca categorías por nombre (búsqueda parcial).
-     * @param name el nombre o parte del nombre a buscar
-     * @return lista de categorías que coinciden
-     */
-    List<Category> searchCategoriesByName(String name);
-    
-    /**
-     * Obtiene categorías creadas en un rango de fechas.
-     * @param startDate fecha de inicio
-     * @param endDate fecha de fin
-     * @return lista de categorías creadas en el rango
-     */
-    List<Category> getCategoriesByDateRange(LocalDateTime startDate, LocalDateTime endDate);
-    
-    /**
      * Elimina una categoría.
      * @param id el ID de la categoría a eliminar
      * @return true si se eliminó correctamente
@@ -86,18 +58,6 @@ public interface CategoryService {
      * @return true si existe, false en caso contrario
      */
     boolean existsByName(String name);
-    
-    /**
-     * Obtiene categorías ordenadas por nombre.
-     * @return lista de categorías ordenadas por nombre
-     */
-    List<Category> getCategoriesOrderByName();
-    
-    /**
-     * Obtiene categorías ordenadas por fecha de creación (más recientes primero).
-     * @return lista de categorías ordenadas por fecha de creación descendente
-     */
-    List<Category> getCategoriesOrderByCreatedAtDesc();
     
     /**
      * Obtiene estadísticas de categorías.

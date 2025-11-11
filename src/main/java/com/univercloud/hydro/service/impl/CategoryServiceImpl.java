@@ -1,12 +1,9 @@
 package com.univercloud.hydro.service.impl;
 
 import com.univercloud.hydro.entity.Category;
-import com.univercloud.hydro.entity.Corporation;
-import com.univercloud.hydro.entity.User;
 import com.univercloud.hydro.repository.CategoryRepository;
 import com.univercloud.hydro.repository.MunicipalityRepository;
 import com.univercloud.hydro.service.CategoryService;
-import com.univercloud.hydro.util.AuthorizationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,20 +28,10 @@ public class CategoryServiceImpl implements CategoryService {
     @Autowired
     private MunicipalityRepository municipalityRepository;
     
-    @Autowired
-    private AuthorizationUtils authorizationUtils;
-    
     @Override
     @Transactional
     public Category createCategory(Category category) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        Corporation corporation = currentUser.getCorporation();
-        
-        if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
-        }
-        
-        // Verificar que el nombre no exista
+        // Verify that the name does not exist
         if (existsByName(category.getName())) {
             throw new IllegalArgumentException("Ya existe una categoría con el nombre: " + category.getName());
         }
@@ -58,13 +45,6 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public Category updateCategory(Category category) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        Corporation corporation = currentUser.getCorporation();
-        
-        if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
-        }
-        
         Optional<Category> existingOpt = categoryRepository.findById(category.getId());
         if (existingOpt.isEmpty()) {
             throw new IllegalArgumentException("No se encontró la categoría con ID: " + category.getId());
@@ -78,6 +58,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
         
         existing.setName(category.getName());
+        existing.setValue(category.getValue());
         existing.setUpdatedAt(LocalDateTime.now());
         
         return categoryRepository.save(existing);
@@ -86,13 +67,6 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional(readOnly = true)
     public Optional<Category> getCategoryById(Long id) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        Corporation corporation = currentUser.getCorporation();
-        
-        if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
-        }
-        
         Optional<Category> categoryOpt = categoryRepository.findById(id);
         if (categoryOpt.isPresent()) {
             return categoryOpt;
@@ -103,57 +77,12 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional(readOnly = true)
     public Page<Category> getAllCategories(Pageable pageable) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        Corporation corporation = currentUser.getCorporation();
-        
-        if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
-        }
-        
         return categoryRepository.findAll(pageable);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Category> getAllCategories() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        Corporation corporation = currentUser.getCorporation();
-        
-        if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
-        }
-        
-        return categoryRepository.findAll();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<Category> getCategoryByName(String name) {
-        return categoryRepository.findByName(name);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Category> searchCategoriesByName(String name) {
-        return categoryRepository.findByNameContainingIgnoreCase(name);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Category> getCategoriesByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-        return categoryRepository.findByCreatedAtBetween(startDate, endDate);
     }
     
     @Override
     @Transactional
     public boolean deleteCategory(Long id) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        Corporation corporation = currentUser.getCorporation();
-        
-        if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
-        }
-        
         Optional<Category> categoryOpt = categoryRepository.findById(id);
         if (categoryOpt.isEmpty()) {
             throw new IllegalArgumentException("No se encontró la categoría con ID: " + id);
@@ -179,26 +108,7 @@ public class CategoryServiceImpl implements CategoryService {
     
     @Override
     @Transactional(readOnly = true)
-    public List<Category> getCategoriesOrderByName() {
-        return categoryRepository.findAllOrderByName();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Category> getCategoriesOrderByCreatedAtDesc() {
-        return categoryRepository.findAllOrderByCreatedAtDesc();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
     public CategoryStats getCategoryStats() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        Corporation corporation = currentUser.getCorporation();
-        
-        if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
-        }
-        
         CategoryStats stats = new CategoryStats();
         
         // Estadísticas básicas

@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,26 +37,4 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
      */
     @Query("SELECT c FROM Category c WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%'))")
     List<Category> findByNameContainingIgnoreCase(@Param("name") String name);
-    
-    /**
-     * Busca categorías creadas en un rango de fechas.
-     * @param startDate fecha de inicio
-     * @param endDate fecha de fin
-     * @return lista de categorías creadas en el rango
-     */
-    List<Category> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
-    
-    /**
-     * Busca categorías ordenadas por nombre.
-     * @return lista de categorías ordenadas por nombre
-     */
-    @Query("SELECT c FROM Category c ORDER BY c.name ASC")
-    List<Category> findAllOrderByName();
-    
-    /**
-     * Busca categorías ordenadas por fecha de creación (más recientes primero).
-     * @return lista de categorías ordenadas por fecha de creación descendente
-     */
-    @Query("SELECT c FROM Category c ORDER BY c.createdAt DESC")
-    List<Category> findAllOrderByCreatedAtDesc();
 }

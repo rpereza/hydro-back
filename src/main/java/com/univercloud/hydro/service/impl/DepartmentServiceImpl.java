@@ -64,6 +64,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
         
         existing.setName(department.getName());
+        existing.setCode(department.getCode());
         existing.setUpdatedAt(LocalDateTime.now());
         
         return departmentRepository.save(existing);
@@ -102,49 +103,11 @@ public class DepartmentServiceImpl implements DepartmentService {
     public List<Department> searchDepartmentsByName(String name) {
         return departmentRepository.findByNameContainingIgnoreCase(name);
     }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Department> getDepartmentsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-        return departmentRepository.findByCreatedAtBetween(startDate, endDate);
-    }
-    
-    @Override
-    @Transactional
-    public boolean deleteDepartment(Long id) {
-        Optional<Department> departmentOpt = departmentRepository.findById(id);
-        if (departmentOpt.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró el departamento con ID: " + id);
-        }
         
-        Department department = departmentOpt.get();
-        
-        // Verificar si hay municipios asociados
-        long municipalityCount = municipalityRepository.countByDepartmentId(id);
-        if (municipalityCount > 0) {
-            throw new IllegalArgumentException("No se puede eliminar el departamento porque tiene " + municipalityCount + " municipios asociados");
-        }
-        
-        departmentRepository.delete(department);
-        return true;
-    }
-    
     @Override
     @Transactional(readOnly = true)
     public boolean existsByName(String name) {
         return departmentRepository.existsByName(name);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Department> getDepartmentsOrderByName() {
-        return departmentRepository.findAllOrderByName();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Department> getDepartmentsOrderByCreatedAtDesc() {
-        return departmentRepository.findAllOrderByCreatedAtDesc();
     }
     
     @Override

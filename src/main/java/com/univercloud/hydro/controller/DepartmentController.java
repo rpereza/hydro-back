@@ -11,7 +11,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,7 +33,7 @@ public class DepartmentController {
      * @return el departamento creado
      */
     @PostMapping
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Department> createDepartment(@Valid @RequestBody Department department) {
         try {
             Department createdDepartment = departmentService.createDepartment(department);
@@ -54,7 +53,7 @@ public class DepartmentController {
      * @return el departamento actualizado
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Department> updateDepartment(@PathVariable Long id, @Valid @RequestBody Department department) {
         try {
             department.setId(id);
@@ -74,7 +73,7 @@ public class DepartmentController {
      * @return el departamento si existe
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Department> getDepartmentById(@PathVariable Long id) {
         Optional<Department> department = departmentService.getDepartmentById(id);
         return department.map(ResponseEntity::ok)
@@ -88,7 +87,7 @@ public class DepartmentController {
      * @return página de departamentos
      */
     @GetMapping
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Page<Department>> getAllDepartments(Pageable pageable) {
         try {
             Page<Department> departments = departmentService.getAllDepartments(pageable);
@@ -104,7 +103,7 @@ public class DepartmentController {
      * @return lista de departamentos
      */
     @GetMapping("/all")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<List<Department>> getAllDepartments() {
         try {
             List<Department> departments = departmentService.getAllDepartments();
@@ -121,7 +120,7 @@ public class DepartmentController {
      * @return el departamento si existe
      */
     @GetMapping("/by-name")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Department> getDepartmentByName(@RequestParam String name) {
         Optional<Department> department = departmentService.getDepartmentByName(name);
         return department.map(ResponseEntity::ok)
@@ -135,7 +134,7 @@ public class DepartmentController {
      * @return lista de departamentos que coinciden
      */
     @GetMapping("/search")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<List<Department>> searchDepartmentsByName(@RequestParam String name) {
         try {
             List<Department> departments = departmentService.searchDepartmentsByName(name);
@@ -144,93 +143,5 @@ public class DepartmentController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
-    
-    /**
-     * Obtiene departamentos creados en un rango de fechas.
-     * 
-     * @param startDate fecha de inicio
-     * @param endDate fecha de fin
-     * @return lista de departamentos creados en el rango
-     */
-    @GetMapping("/by-date-range")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<List<Department>> getDepartmentsByDateRange(
-            @RequestParam LocalDateTime startDate, 
-            @RequestParam LocalDateTime endDate) {
-        try {
-            List<Department> departments = departmentService.getDepartmentsByDateRange(startDate, endDate);
-            return ResponseEntity.ok(departments);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-    }
-    
-    /**
-     * Elimina un departamento.
-     * 
-     * @param id el ID del departamento a eliminar
-     * @return true si se eliminó correctamente
-     */
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<Boolean> deleteDepartment(@PathVariable Long id) {
-        try {
-            boolean deleted = departmentService.deleteDepartment(id);
-            return ResponseEntity.ok(deleted);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-    }
-    
-    /**
-     * Verifica si existe un departamento con el nombre especificado.
-     * 
-     * @param name el nombre del departamento
-     * @return true si existe, false en caso contrario
-     */
-    @GetMapping("/exists")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<Boolean> existsByName(@RequestParam String name) {
-        try {
-            boolean exists = departmentService.existsByName(name);
-            return ResponseEntity.ok(exists);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-    }
-    
-    /**
-     * Obtiene departamentos ordenados por fecha de creación (más recientes primero).
-     * 
-     * @return lista de departamentos ordenados por fecha de creación descendente
-     */
-    @GetMapping("/recent")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<List<Department>> getDepartmentsOrderByCreatedAtDesc() {
-        try {
-            List<Department> departments = departmentService.getDepartmentsOrderByCreatedAtDesc();
-            return ResponseEntity.ok(departments);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-    }
-    
-    /**
-     * Obtiene departamentos ordenados por nombre.
-     * 
-     * @return lista de departamentos ordenados por nombre
-     */
-    @GetMapping("/ordered-by-name")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<List<Department>> getDepartmentsOrderByName() {
-        try {
-            List<Department> departments = departmentService.getDepartmentsOrderByName();
-            return ResponseEntity.ok(departments);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-    }
-    
+        
 }
