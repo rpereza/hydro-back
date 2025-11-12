@@ -7,8 +7,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "departments")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Department {
     
     @Id
@@ -85,6 +89,7 @@ public class Department {
         this.updatedAt = updatedAt;
     }
     
+    @JsonIgnore
     public List<Municipality> getMunicipalities() {
         return municipalities;
     }

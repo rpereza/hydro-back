@@ -87,8 +87,7 @@ CREATE TABLE municipalities (
     FOREIGN KEY (department_id) REFERENCES departments(id),
     FOREIGN KEY (category_id) REFERENCES categories(id),
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (updated_by_user_id) REFERENCES users(id),
-    UNIQUE KEY uk_municipality_code (code)
+    FOREIGN KEY (updated_by_user_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =====================================================

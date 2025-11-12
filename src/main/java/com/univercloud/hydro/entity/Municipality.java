@@ -1,5 +1,7 @@
 package com.univercloud.hydro.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,6 +13,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "municipalities")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Municipality {
     
     @Id
@@ -48,14 +51,17 @@ public class Municipality {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
+    @JsonIgnore
     @OneToMany(mappedBy = "municipality", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<DischargeUser> users = new ArrayList<>();
     
+    @JsonIgnore
     @NotNull(message = "Created by is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;
     
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by_user_id")
     private User updatedBy;

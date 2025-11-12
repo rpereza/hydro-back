@@ -1,5 +1,7 @@
 package com.univercloud.hydro.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -10,6 +12,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "categories")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Category {
     
     @Id
@@ -85,6 +88,7 @@ public class Category {
         this.updatedAt = updatedAt;
     }
     
+    @JsonIgnore
     public List<Municipality> getMunicipalities() {
         return municipalities;
     }
