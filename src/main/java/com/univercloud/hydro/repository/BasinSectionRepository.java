@@ -177,4 +177,13 @@ public interface BasinSectionRepository extends JpaRepository<BasinSection, Long
      * @return lista de secciones activos de la corporación
      */
     List<BasinSection> findByCorporationAndIsActiveTrue(Corporation corporation);
+    
+    /**
+     * Busca una sección por ID y corporación.
+     * @param id el ID de la sección
+     * @param corporationId el ID de la corporación
+     * @return la sección si existe y pertenece a la corporación
+     */
+    @Query("SELECT bs FROM BasinSection bs WHERE bs.id = :id AND bs.corporation.id = :corporationId")
+    Optional<BasinSection> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
 }

@@ -50,7 +50,6 @@ public class AuthorizationTypeServiceImpl implements AuthorizationTypeService {
         authorizationType.setCorporation(corporation);
         authorizationType.setCreatedBy(currentUser);
         authorizationType.setCreatedAt(LocalDateTime.now());
-        authorizationType.setActive(true);
         
         return authorizationTypeRepository.save(authorizationType);
     }
@@ -62,13 +61,15 @@ public class AuthorizationTypeServiceImpl implements AuthorizationTypeService {
             throw new IllegalStateException("User not authenticated");
         }
         
-        AuthorizationType existingAuthorizationType = authorizationTypeRepository.findById(authorizationType.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Authorization type not found"));
-        
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(existingAuthorizationType.getCorporation())) {
-            throw new IllegalStateException("Access denied: Authorization type does not belong to your corporation");
+        if (corporation == null) {
+            throw new IllegalStateException("User does not belong to a corporation");
         }
+        
+        // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
+        AuthorizationType existingAuthorizationType = authorizationTypeRepository.findByIdAndCorporationId(
+                authorizationType.getId(), corporation.getId())
+                .orElseThrow(() -> new IllegalStateException("Access denied: Authorization type not found or does not belong to your corporation"));
         
         // Verificar cambios en el nombre
         if (authorizationType.getName() != null && !authorizationType.getName().equals(existingAuthorizationType.getName())) {
@@ -99,12 +100,8 @@ public class AuthorizationTypeServiceImpl implements AuthorizationTypeService {
             throw new IllegalStateException("User does not belong to a corporation");
         }
         
-        Optional<AuthorizationType> authorizationType = authorizationTypeRepository.findById(id);
-        if (authorizationType.isPresent() && !corporation.equals(authorizationType.get().getCorporation())) {
-            throw new IllegalStateException("Access denied: Authorization type does not belong to your corporation");
-        }
-        
-        return authorizationType;
+        // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
+        return authorizationTypeRepository.findByIdAndCorporationId(id, corporation.getId());
     }
     
     @Override
@@ -140,149 +137,20 @@ public class AuthorizationTypeServiceImpl implements AuthorizationTypeService {
     }
     
     @Override
-    @Transactional(readOnly = true)
-    public List<AuthorizationType> getActiveMyCorporationAuthorizationTypes() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return authorizationTypeRepository.findByCorporationAndIsActiveTrue(corporation);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<AuthorizationType> getAllActiveAuthorizationTypes() {
-        return authorizationTypeRepository.findByIsActiveTrue();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<AuthorizationType> getAllInactiveAuthorizationTypes() {
-        return authorizationTypeRepository.findByIsActiveFalse();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<AuthorizationType> getAuthorizationTypeByName(String name) {
-        return authorizationTypeRepository.findByName(name);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<AuthorizationType> searchAuthorizationTypesByName(String name) {
-        return authorizationTypeRepository.findByNameContainingIgnoreCase(name);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<AuthorizationType> searchActiveAuthorizationTypesByName(String name) {
-        return authorizationTypeRepository.findByIsActiveTrueAndNameContainingIgnoreCase(name);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<AuthorizationType> getAuthorizationTypesByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-        return authorizationTypeRepository.findByCreatedAtBetween(startDate, endDate);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public long countMyCorporationAuthorizationTypes() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return authorizationTypeRepository.countByCorporation(corporation);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public long countActiveMyCorporationAuthorizationTypes() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return authorizationTypeRepository.countByCorporationAndIsActiveTrue(corporation);
-    }
-    
-    @Override
-    public boolean activateAuthorizationType(Long id) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        AuthorizationType authorizationType = authorizationTypeRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Authorization type not found"));
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(authorizationType.getCorporation())) {
-            throw new IllegalStateException("Access denied: Authorization type does not belong to your corporation");
-        }
-        
-        authorizationType.setActive(true);
-        authorizationType.setUpdatedBy(currentUser);
-        authorizationType.setUpdatedAt(LocalDateTime.now());
-        
-        authorizationTypeRepository.save(authorizationType);
-        return true;
-    }
-    
-    @Override
-    public boolean deactivateAuthorizationType(Long id) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        AuthorizationType authorizationType = authorizationTypeRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Authorization type not found"));
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(authorizationType.getCorporation())) {
-            throw new IllegalStateException("Access denied: Authorization type does not belong to your corporation");
-        }
-        
-        authorizationType.setActive(false);
-        authorizationType.setUpdatedBy(currentUser);
-        authorizationType.setUpdatedAt(LocalDateTime.now());
-        
-        authorizationTypeRepository.save(authorizationType);
-        return true;
-    }
-    
-    @Override
     public boolean deleteAuthorizationType(Long id) {
         User currentUser = authorizationUtils.getCurrentUser();
         if (currentUser == null) {
             throw new IllegalStateException("User not authenticated");
         }
         
-        AuthorizationType authorizationType = authorizationTypeRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Authorization type not found"));
-        
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(authorizationType.getCorporation())) {
-            throw new IllegalStateException("Access denied: Authorization type does not belong to your corporation");
+        if (corporation == null) {
+            throw new IllegalStateException("User does not belong to a corporation");
         }
+        
+        // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
+        AuthorizationType authorizationType = authorizationTypeRepository.findByIdAndCorporationId(id, corporation.getId())
+                .orElseThrow(() -> new IllegalStateException("Access denied: Authorization type not found or does not belong to your corporation"));
         
         authorizationTypeRepository.delete(authorizationType);
         return true;
@@ -292,77 +160,5 @@ public class AuthorizationTypeServiceImpl implements AuthorizationTypeService {
     @Transactional(readOnly = true)
     public boolean existsByName(String name) {
         return authorizationTypeRepository.existsByName(name);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<AuthorizationType> getAuthorizationTypesOrderByCreatedAtDesc() {
-        return authorizationTypeRepository.findAllOrderByCreatedAtDesc();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<AuthorizationType> getActiveAuthorizationTypesOrderByName() {
-        return authorizationTypeRepository.findByIsActiveTrueOrderByName();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<AuthorizationType> getMyCorporationAuthorizationTypesOrderByName() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return authorizationTypeRepository.findByCorporationOrderByName(corporation);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<AuthorizationType> getActiveMyCorporationAuthorizationTypesOrderByName() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return authorizationTypeRepository.findByCorporationAndIsActiveTrueOrderByName(corporation);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public AuthorizationTypeStats getMyCorporationAuthorizationTypeStats() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        AuthorizationTypeStats stats = new AuthorizationTypeStats();
-        stats.setTotalAuthorizationTypes(authorizationTypeRepository.countByCorporation(corporation));
-        stats.setActiveAuthorizationTypes(authorizationTypeRepository.countByCorporationAndIsActiveTrue(corporation));
-        stats.setInactiveAuthorizationTypes(stats.getTotalAuthorizationTypes() - stats.getActiveAuthorizationTypes());
-        
-        // Contar usuarios asociados a tipos de autorización de la corporación
-        long totalUsers = authorizationTypeRepository.findByCorporation(corporation)
-                .stream()
-                .mapToLong(authType -> authType.getUsers().size())
-                .sum();
-        stats.setTotalUsers(totalUsers);
-        
-        return stats;
     }
 }

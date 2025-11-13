@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository para la entidad ProjectProgress.
@@ -176,4 +177,13 @@ public interface ProjectProgressRepository extends JpaRepository<ProjectProgress
      */
     @Query("SELECT pp FROM ProjectProgress pp WHERE pp.corporation = :corporation ORDER BY pp.year DESC")
     List<ProjectProgress> findByCorporationOrderByYearDesc(@Param("corporation") Corporation corporation);
+    
+    /**
+     * Busca un progreso por ID y corporación.
+     * @param id el ID del progreso
+     * @param corporationId el ID de la corporación
+     * @return el progreso si existe y pertenece a la corporación
+     */
+    @Query("SELECT pp FROM ProjectProgress pp WHERE pp.id = :id AND pp.corporation.id = :corporationId")
+    Optional<ProjectProgress> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
 }

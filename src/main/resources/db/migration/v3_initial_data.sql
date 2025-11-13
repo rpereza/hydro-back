@@ -1654,3 +1654,4 @@ INSERT INTO municipalities (name,code,department_id,category_id,nbi,created_by_u
 INSERT INTO municipalities (name,code,department_id,category_id,nbi,created_by_user_id) VALUES ('LA PRIMAVERA','524',(select id from departments where name = 'VICHADA'),(select id from categories where name = 'Sexta'),46.58,1);
 INSERT INTO municipalities (name,code,department_id,category_id,nbi,created_by_user_id) VALUES ('SANTA ROSALÍA','624',(select id from departments where name = 'VICHADA'),(select id from categories where name = 'Sexta'),36.96,1);
 INSERT INTO municipalities (name,code,department_id,category_id,nbi,created_by_user_id) VALUES ('CUMARIBO','773',(select id from departments where name = 'VICHADA'),(select id from categories where name = 'Cuarta'),87.49,1);
+

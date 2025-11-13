@@ -11,7 +11,6 @@ public class CorporationResponse {
     private String name;
     private String code;
     private String description;
-    private boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private UserCorporationResponse owner;
@@ -21,12 +20,11 @@ public class CorporationResponse {
     public CorporationResponse() {}
     
     public CorporationResponse(Long id, String name, String code, String description, 
-                              boolean isActive, LocalDateTime createdAt, LocalDateTime updatedAt) {
+                              LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.name = name;
         this.code = code;
         this.description = description;
-        this.isActive = isActive;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -62,14 +60,6 @@ public class CorporationResponse {
     
     public void setDescription(String description) {
         this.description = description;
-    }
-    
-    public boolean isActive() {
-        return isActive;
-    }
-    
-    public void setActive(boolean active) {
-        isActive = active;
     }
     
     public LocalDateTime getCreatedAt() {
@@ -111,7 +101,6 @@ public class CorporationResponse {
                 ", name='" + name + '\'' +
                 ", code='" + code + '\'' +
                 ", description='" + description + '\'' +
-                ", isActive=" + isActive +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", owner=" + owner +

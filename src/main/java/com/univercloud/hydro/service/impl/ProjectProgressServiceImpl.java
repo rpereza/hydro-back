@@ -107,12 +107,8 @@ public class ProjectProgressServiceImpl implements ProjectProgressService {
             throw new IllegalStateException("User does not belong to a corporation");
         }
         
-        Optional<ProjectProgress> projectProgress = projectProgressRepository.findById(id);
-        if (projectProgress.isPresent() && !corporation.equals(projectProgress.get().getCorporation())) {
-            throw new IllegalStateException("Access denied: Project progress does not belong to your corporation");
-        }
-        
-        return projectProgress;
+        // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
+        return projectProgressRepository.findByIdAndCorporationId(id, corporation.getId());
     }
     
     @Override

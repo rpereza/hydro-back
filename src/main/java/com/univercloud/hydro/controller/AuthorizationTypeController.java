@@ -11,7 +11,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -70,7 +69,7 @@ public class AuthorizationTypeController {
      * @return el tipo de autorización si existe
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AuthorizationType> getAuthorizationTypeById(@PathVariable Long id) {
         Optional<AuthorizationType> authorizationType = authorizationTypeService.getAuthorizationTypeById(id);
         return authorizationType.map(ResponseEntity::ok)
@@ -84,7 +83,7 @@ public class AuthorizationTypeController {
      * @return página de tipos de autorización
      */
     @GetMapping
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<AuthorizationType>> getMyCorporationAuthorizationTypes(Pageable pageable) {
         try {
             Page<AuthorizationType> authorizationTypes = authorizationTypeService.getMyCorporationAuthorizationTypes(pageable);
@@ -100,7 +99,7 @@ public class AuthorizationTypeController {
      * @return lista de tipos de autorización
      */
     @GetMapping("/all")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<AuthorizationType>> getAllMyCorporationAuthorizationTypes() {
         try {
             List<AuthorizationType> authorizationTypes = authorizationTypeService.getAllMyCorporationAuthorizationTypes();
@@ -108,49 +107,6 @@ public class AuthorizationTypeController {
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-    }
-    
-    /**
-     * Busca un tipo de autorización por nombre.
-     * 
-     * @param name el nombre del tipo de autorización
-     * @return el tipo de autorización si existe
-     */
-    @GetMapping("/by-name")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<AuthorizationType> getAuthorizationTypeByName(@RequestParam String name) {
-        Optional<AuthorizationType> authorizationType = authorizationTypeService.getAuthorizationTypeByName(name);
-        return authorizationType.map(ResponseEntity::ok)
-                              .orElse(ResponseEntity.notFound().build());
-    }
-    
-    /**
-     * Busca tipos de autorización por nombre (búsqueda parcial).
-     * 
-     * @param name el nombre o parte del nombre a buscar
-     * @return lista de tipos de autorización que coinciden
-     */
-    @GetMapping("/search")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<List<AuthorizationType>> searchAuthorizationTypesByName(@RequestParam String name) {
-        List<AuthorizationType> authorizationTypes = authorizationTypeService.searchAuthorizationTypesByName(name);
-        return ResponseEntity.ok(authorizationTypes);
-    }
-    
-    /**
-     * Obtiene tipos de autorización creados en un rango de fechas.
-     * 
-     * @param startDate fecha de inicio
-     * @param endDate fecha de fin
-     * @return lista de tipos de autorización creados en el rango
-     */
-    @GetMapping("/by-date-range")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<List<AuthorizationType>> getAuthorizationTypesByDateRange(
-            @RequestParam LocalDateTime startDate, 
-            @RequestParam LocalDateTime endDate) {
-        List<AuthorizationType> authorizationTypes = authorizationTypeService.getAuthorizationTypesByDateRange(startDate, endDate);
-        return ResponseEntity.ok(authorizationTypes);
     }
     
     /**
@@ -167,47 +123,6 @@ public class AuthorizationTypeController {
             return ResponseEntity.ok(deleted);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
-        }
-    }
-    
-    /**
-     * Verifica si existe un tipo de autorización con el nombre especificado.
-     * 
-     * @param name el nombre del tipo de autorización
-     * @return true si existe, false en caso contrario
-     */
-    @GetMapping("/exists")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<Boolean> existsByName(@RequestParam String name) {
-        boolean exists = authorizationTypeService.existsByName(name);
-        return ResponseEntity.ok(exists);
-    }
-    
-    /**
-     * Obtiene tipos de autorización ordenados por fecha de creación (más recientes primero).
-     * 
-     * @return lista de tipos de autorización ordenados por fecha de creación descendente
-     */
-    @GetMapping("/recent")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<List<AuthorizationType>> getAuthorizationTypesOrderByCreatedAtDesc() {
-        List<AuthorizationType> authorizationTypes = authorizationTypeService.getAuthorizationTypesOrderByCreatedAtDesc();
-        return ResponseEntity.ok(authorizationTypes);
-    }
-    
-    /**
-     * Obtiene tipos de autorización de la corporación ordenados por nombre.
-     * 
-     * @return lista de tipos de autorización ordenados por nombre
-     */
-    @GetMapping("/ordered-by-name")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<List<AuthorizationType>> getMyCorporationAuthorizationTypesOrderByName() {
-        try {
-            List<AuthorizationType> authorizationTypes = authorizationTypeService.getMyCorporationAuthorizationTypesOrderByName();
-            return ResponseEntity.ok(authorizationTypes);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 }

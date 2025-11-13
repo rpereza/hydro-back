@@ -137,4 +137,13 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
      */
     @Query("SELECT i FROM Invoice i WHERE i.discharge = :discharge AND YEAR(i.createdAt) = :year")
     List<Invoice> findByDischargeAndYear(@Param("discharge") Discharge discharge, @Param("year") int year);
+    
+    /**
+     * Busca una factura por ID y corporación.
+     * @param id el ID de la factura
+     * @param corporationId el ID de la corporación
+     * @return la factura si existe y pertenece a la corporación
+     */
+    @Query("SELECT i FROM Invoice i WHERE i.id = :id AND i.corporation.id = :corporationId")
+    Optional<Invoice> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
 }

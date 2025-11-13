@@ -103,7 +103,7 @@ public class DepartmentController {
      * @return lista de departamentos
      */
     @GetMapping("/all")
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('USER')")
     public ResponseEntity<List<Department>> getAllDepartments() {
         try {
             List<Department> departments = departmentService.getAllDepartments();

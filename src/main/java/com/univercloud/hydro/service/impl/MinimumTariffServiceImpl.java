@@ -103,12 +103,8 @@ public class MinimumTariffServiceImpl implements MinimumTariffService {
             throw new IllegalStateException("User does not belong to a corporation");
         }
         
-        Optional<MinimumTariff> minimumTariff = minimumTariffRepository.findById(id);
-        if (minimumTariff.isPresent() && !corporation.equals(minimumTariff.get().getCorporation())) {
-            throw new IllegalStateException("Access denied: Minimum tariff does not belong to your corporation");
-        }
-        
-        return minimumTariff;
+        // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
+        return minimumTariffRepository.findByIdAndCorporationId(id, corporation.getId());
     }
     
     @Override

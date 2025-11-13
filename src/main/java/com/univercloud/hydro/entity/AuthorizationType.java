@@ -6,7 +6,9 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import jakarta.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "authorization_types")
@@ -25,12 +27,10 @@ public class AuthorizationType implements Auditable {
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
-    @NotNull(message = "Corporation is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "corporation_id", nullable = false)
     private Corporation corporation;
     
-    @NotNull(message = "Created by is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;
@@ -76,10 +76,12 @@ public class AuthorizationType implements Auditable {
     }
     
     
+    @JsonProperty("isActive")
     public boolean isActive() {
         return isActive;
     }
     
+    @JsonProperty("isActive")
     public void setActive(boolean active) {
         isActive = active;
     }
@@ -109,6 +111,7 @@ public class AuthorizationType implements Auditable {
     }
      // Auditable interface implementation
      @Override
+     @JsonIgnore
      public Corporation getCorporation() {
          return corporation;
      }
@@ -119,6 +122,7 @@ public class AuthorizationType implements Auditable {
      }
      
      @Override
+     @JsonIgnore
      public User getCreatedBy() {
          return createdBy;
      }
@@ -129,6 +133,7 @@ public class AuthorizationType implements Auditable {
      }
      
      @Override
+     @JsonIgnore
      public User getUpdatedBy() {
          return updatedBy;
      }

@@ -1,5 +1,8 @@
 package com.univercloud.hydro.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -25,11 +28,11 @@ public class DischargeUser implements Auditable {
     
     @NotBlank(message = "Code is required")
     @Size(max = 8, message = "Code cannot exceed 8 characters")
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String code;
     
     @Size(max = 50, message = "Document number cannot exceed 50 characters")
-    @Column(name = "document_number", unique = true)
+    @Column(name = "document_number")
     private String documentNumber;
     
     @NotNull(message = "Document type is required")
@@ -99,12 +102,10 @@ public class DischargeUser implements Auditable {
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
     
-    @NotNull(message = "Corporation is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "corporation_id", nullable = false)
     private Corporation corporation;
     
-    @NotNull(message = "Created by is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;
@@ -294,10 +295,12 @@ public class DischargeUser implements Auditable {
         isPublicServiceCompany = publicServiceCompany;
     }
     
+    @JsonProperty("isActive")
     public boolean isActive() {
         return isActive;
     }
     
+    @JsonProperty("isActive")
     public void setActive(boolean active) {
         isActive = active;
     }
@@ -318,6 +321,7 @@ public class DischargeUser implements Auditable {
         this.updatedAt = updatedAt;
     }
     
+    @JsonIgnore
     public List<Discharge> getDischarges() {
         return discharges;
     }
@@ -326,6 +330,7 @@ public class DischargeUser implements Auditable {
         this.discharges = discharges;
     }
     
+    @JsonIgnore
     public List<ProjectProgress> getProjectProgresses() {
         return projectProgresses;
     }
@@ -336,6 +341,7 @@ public class DischargeUser implements Auditable {
     
     // Auditable interface implementation
     @Override
+    @JsonIgnore
     public Corporation getCorporation() {
         return corporation;
     }
@@ -346,6 +352,7 @@ public class DischargeUser implements Auditable {
     }
     
     @Override
+    @JsonIgnore
     public User getCreatedBy() {
         return createdBy;
     }
@@ -356,6 +363,7 @@ public class DischargeUser implements Auditable {
     }
     
     @Override
+    @JsonIgnore
     public User getUpdatedBy() {
         return updatedBy;
     }

@@ -1,5 +1,7 @@
 package com.univercloud.hydro.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -78,10 +80,12 @@ public class WaterBasin implements Auditable {
         this.name = name;
     }
     
+    @JsonProperty("isActive")
     public boolean isActive() {
         return isActive;
     }
     
+    @JsonProperty("isActive")
     public void setActive(boolean active) {
         isActive = active;
     }

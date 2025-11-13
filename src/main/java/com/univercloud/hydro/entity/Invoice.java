@@ -1,5 +1,7 @@
 package com.univercloud.hydro.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -294,10 +296,12 @@ public class Invoice implements Auditable {
         this.bCoefficient = bCoefficient;
     }
     
+    @JsonProperty("isActive")
     public boolean isActive() {
         return isActive;
     }
     
+    @JsonProperty("isActive")
     public void setActive(boolean active) {
         isActive = active;
     }

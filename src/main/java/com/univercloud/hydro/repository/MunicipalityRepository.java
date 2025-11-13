@@ -53,4 +53,11 @@ public interface MunicipalityRepository extends JpaRepository<Municipality, Long
      * @return el municipio si existe
      */
     Optional<Municipality> findByName(String name);
+    
+    /**
+     * Busca municipios activos por ID de departamento.
+     * @param departmentId el ID del departamento
+     * @return lista de municipios activos del departamento
+     */
+    List<Municipality> findByDepartmentIdAndIsActiveTrue(Long departmentId);
 }

@@ -63,7 +63,6 @@ public class CorporationServiceImpl implements CorporationService {
         corporation.setCode(request.getCode());
         corporation.setDescription(request.getDescription());
         corporation.setOwner(currentUser);
-        corporation.setActive(true);
         
         Corporation savedCorporation = corporationRepository.save(corporation);
         
@@ -83,7 +82,15 @@ public class CorporationServiceImpl implements CorporationService {
             return Optional.empty();
         }
         
-        Corporation corporation = currentUser.getCorporation();
+        // Cargar la corporación con todas sus relaciones desde el repositorio
+        Long corporationId = currentUser.getCorporation().getId();
+        Corporation corporation = corporationRepository.findByIdWithRelations(corporationId)
+                .orElse(null);
+        
+        if (corporation == null) {
+            return Optional.empty();
+        }
+        
         CorporationResponse response = mapToCorporationResponse(corporation);
         response.setUserCount(corporation.getUsers().size());
         
@@ -97,14 +104,7 @@ public class CorporationServiceImpl implements CorporationService {
             throw new IllegalStateException("Access denied: Admin privileges required");
         }
         
-        return corporationRepository.findById(id)
-                .map(this::mapToCorporationResponse);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<CorporationResponse> getCorporationByCode(String code) {
-        return corporationRepository.findByCode(code)
+        return corporationRepository.findByIdWithRelations(id)
                 .map(this::mapToCorporationResponse);
     }
     
@@ -120,22 +120,16 @@ public class CorporationServiceImpl implements CorporationService {
     }
     
     @Override
-    @Transactional(readOnly = true)
-    public List<CorporationResponse> getActiveCorporations() {
-        return corporationRepository.findActiveCorporationsOrderByName()
-                .stream()
-                .map(this::mapToCorporationResponse)
-                .collect(Collectors.toList());
-    }
-    
-    @Override
     public CorporationResponse updateMyCorporation(CreateCorporationRequest request) {
         User currentUser = authorizationUtils.getCurrentUser();
         if (currentUser == null || currentUser.getCorporation() == null) {
             throw new IllegalStateException("User does not have a corporation");
         }
         
-        Corporation corporation = currentUser.getCorporation();
+        // Cargar la corporación con todas sus relaciones desde el repositorio
+        Long corporationId = currentUser.getCorporation().getId();
+        Corporation corporation = corporationRepository.findByIdWithRelations(corporationId)
+                .orElseThrow(() -> new IllegalStateException("Corporation not found"));
         
         // Verificar que el código no esté en uso por otra corporación
         if (!corporation.getCode().equals(request.getCode()) && 
@@ -148,35 +142,10 @@ public class CorporationServiceImpl implements CorporationService {
         corporation.setDescription(request.getDescription());
         
         Corporation savedCorporation = corporationRepository.save(corporation);
+        // Recargar con relaciones para el mapeo
+        savedCorporation = corporationRepository.findByIdWithRelations(savedCorporation.getId())
+                .orElse(savedCorporation);
         return mapToCorporationResponse(savedCorporation);
-    }
-    
-    @Override
-    public boolean deactivateMyCorporation() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null || currentUser.getCorporation() == null) {
-            throw new IllegalStateException("User does not have a corporation");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        corporation.setActive(false);
-        corporationRepository.save(corporation);
-        
-        return true;
-    }
-    
-    @Override
-    public boolean activateMyCorporation() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null || currentUser.getCorporation() == null) {
-            throw new IllegalStateException("User does not have a corporation");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        corporation.setActive(true);
-        corporationRepository.save(corporation);
-        
-        return true;
     }
     
     @Override
@@ -225,7 +194,11 @@ public class CorporationServiceImpl implements CorporationService {
             throw new IllegalStateException("User does not have a corporation");
         }
         
-        Corporation corporation = currentUser.getCorporation();
+        // Cargar la corporación con todas sus relaciones desde el repositorio
+        Long corporationId = currentUser.getCorporation().getId();
+        Corporation corporation = corporationRepository.findByIdWithRelations(corporationId)
+                .orElseThrow(() -> new IllegalStateException("Corporation not found"));
+        
         return corporation.getUsers().stream()
                 .map(user -> mapToUserCorporationResponse(user, corporation.isOwner(user)))
                 .collect(Collectors.toList());
@@ -238,7 +211,7 @@ public class CorporationServiceImpl implements CorporationService {
             throw new IllegalStateException("Access denied: Admin privileges required");
         }
         
-        Corporation corporation = corporationRepository.findById(corporationId)
+        Corporation corporation = corporationRepository.findByIdWithRelations(corporationId)
                 .orElseThrow(() -> new IllegalArgumentException("Corporation not found"));
         
         return corporation.getUsers().stream()
@@ -253,7 +226,14 @@ public class CorporationServiceImpl implements CorporationService {
         }
         
         User currentUser = authorizationUtils.getCurrentUser();
-        Corporation corporation = currentUser.getCorporation();
+        if (currentUser == null || currentUser.getCorporation() == null) {
+            throw new IllegalStateException("User does not have a corporation");
+        }
+        
+        // Cargar la corporación con todas sus relaciones desde el repositorio
+        Long corporationId = currentUser.getCorporation().getId();
+        Corporation corporation = corporationRepository.findByIdWithRelations(corporationId)
+                .orElseThrow(() -> new IllegalStateException("Corporation not found"));
         
         User userToRemove = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -278,7 +258,7 @@ public class CorporationServiceImpl implements CorporationService {
             throw new IllegalStateException("Access denied: Admin privileges required");
         }
         
-        Corporation corporation = corporationRepository.findById(corporationId)
+        Corporation corporation = corporationRepository.findByIdWithRelations(corporationId)
                 .orElseThrow(() -> new IllegalArgumentException("Corporation not found"));
         
         User userToRemove = userRepository.findById(userId)
@@ -314,7 +294,11 @@ public class CorporationServiceImpl implements CorporationService {
             throw new IllegalStateException("User does not have a corporation");
         }
         
-        Corporation corporation = currentUser.getCorporation();
+        // Cargar la corporación con todas sus relaciones desde el repositorio
+        Long corporationId = currentUser.getCorporation().getId();
+        Corporation corporation = corporationRepository.findByIdWithRelations(corporationId)
+                .orElseThrow(() -> new IllegalStateException("Corporation not found"));
+        
         CorporationStatsResponse stats = new CorporationStatsResponse();
         stats.setCorporationId(corporation.getId());
         stats.setCorporationName(corporation.getName());
@@ -343,12 +327,6 @@ public class CorporationServiceImpl implements CorporationService {
     
     @Override
     @Transactional(readOnly = true)
-    public boolean existsByCode(String code) {
-        return corporationRepository.existsByCode(code);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
     public boolean isOwnerOfMyCorporation() {
         return authorizationUtils.isCorporationOwner();
     }
@@ -360,7 +338,6 @@ public class CorporationServiceImpl implements CorporationService {
         response.setName(corporation.getName());
         response.setCode(corporation.getCode());
         response.setDescription(corporation.getDescription());
-        response.setActive(corporation.isActive());
         response.setCreatedAt(corporation.getCreatedAt());
         response.setUpdatedAt(corporation.getUpdatedAt());
         

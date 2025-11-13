@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository para la entidad MinimumTariff.
@@ -202,4 +203,13 @@ public interface MinimumTariffRepository extends JpaRepository<MinimumTariff, Lo
      */
     @Query("SELECT mt FROM MinimumTariff mt WHERE mt.corporation = :corporation AND mt.isActive = true ORDER BY mt.year DESC")
     List<MinimumTariff> findByCorporationAndIsActiveTrueOrderByYearDesc(@Param("corporation") Corporation corporation);
+    
+    /**
+     * Busca una tarifa por ID y corporación.
+     * @param id el ID de la tarifa
+     * @param corporationId el ID de la corporación
+     * @return la tarifa si existe y pertenece a la corporación
+     */
+    @Query("SELECT mt FROM MinimumTariff mt WHERE mt.id = :id AND mt.corporation.id = :corporationId")
+    Optional<MinimumTariff> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
 }

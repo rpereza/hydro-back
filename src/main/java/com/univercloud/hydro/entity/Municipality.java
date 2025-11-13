@@ -2,6 +2,8 @@ package com.univercloud.hydro.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -128,10 +130,12 @@ public class Municipality {
         this.nbi = nbi;
     }
     
+    @JsonProperty("isActive")
     public boolean isActive() {
         return isActive;
     }
     
+    @JsonProperty("isActive")
     public void setActive(boolean active) {
         isActive = active;
     }

@@ -132,4 +132,26 @@ public class EconomicActivityController {
         }
     }
     
+    /**
+     * Búsqueda unificada de actividades económicas por código o nombre con paginación.
+     * Busca en ambos campos simultáneamente.
+     * 
+     * @param query el término de búsqueda (código o nombre)
+     * @param pageable parámetros de paginación
+     * @return página de actividades económicas que coinciden con el código o nombre
+     */
+    @GetMapping("/search-unified")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Page<EconomicActivity>> searchEconomicActivities(
+            @RequestParam String query, 
+            Pageable pageable) {
+        try {
+            Page<EconomicActivity> economicActivities = economicActivityService
+                    .searchEconomicActivitiesByCodeOrName(query, pageable);
+            return ResponseEntity.ok(economicActivities);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+
 }

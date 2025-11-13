@@ -165,8 +165,8 @@ public class DischargeServiceImpl implements DischargeService {
             throw new IllegalStateException("User does not belong to a corporation");
         }
         
-        return dischargeRepository.findById(id)
-                .filter(discharge -> corporation.equals(discharge.getCorporation()));
+        // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
+        return dischargeRepository.findByIdAndCorporationId(id, corporation.getId());
     }
     
     @Override

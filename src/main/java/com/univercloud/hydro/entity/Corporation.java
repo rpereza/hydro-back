@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "corporations")
 public class Corporation {
@@ -33,9 +35,6 @@ public class Corporation {
     
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     private String description;
-    
-    @Column(name = "is_active", nullable = false)
-    private boolean isActive = true;
     
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -104,14 +103,6 @@ public class Corporation {
         this.description = description;
     }
     
-    public boolean isActive() {
-        return isActive;
-    }
-    
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-    
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -128,6 +119,7 @@ public class Corporation {
         this.updatedAt = updatedAt;
     }
     
+    @JsonIgnore
     public List<User> getUsers() {
         return users;
     }
@@ -164,7 +156,6 @@ public class Corporation {
                 ", code='" + code + '\'' +
                 ", owner=" + (owner != null ? owner.getUsername() : null) +
                 ", description='" + description + '\'' +
-                ", isActive=" + isActive +
                 ", createdAt=" + createdAt +
                 '}';
     }

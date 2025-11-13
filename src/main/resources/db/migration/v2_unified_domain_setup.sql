@@ -36,7 +36,6 @@ CREATE TABLE corporations (
     code VARCHAR(50) NOT NULL UNIQUE,
     description VARCHAR(500),
     owner_user_id BIGINT NOT NULL,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL,
     FOREIGN KEY (owner_user_id) REFERENCES users(id)
@@ -413,7 +412,6 @@ CREATE TABLE project_progress (
 -- Indexes for corporations table
 CREATE INDEX idx_corporations_owner ON corporations(owner_user_id);
 CREATE INDEX idx_corporations_code ON corporations(code);
-CREATE INDEX idx_corporations_active ON corporations(is_active);
 
 -- Indexes for users table
 CREATE INDEX idx_users_corporation ON users(corporation_id);

@@ -100,8 +100,8 @@ public class WaterBasinServiceImpl implements WaterBasinService {
             throw new IllegalStateException("User does not belong to a corporation");
         }
         
-        return waterBasinRepository.findById(id)
-                .filter(waterBasin -> corporation.equals(waterBasin.getCorporation()));
+        // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
+        return waterBasinRepository.findByIdAndCorporationId(id, corporation.getId());
     }
     
     @Override

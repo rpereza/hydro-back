@@ -3,13 +3,14 @@ package com.univercloud.hydro.controller;
 import com.univercloud.hydro.entity.DischargeUser;
 import com.univercloud.hydro.service.DischargeUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -31,7 +32,7 @@ public class DischargeUserController {
      * @return el usuario de descarga creado
      */
     @PostMapping
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<DischargeUser> createDischargeUser(@Valid @RequestBody DischargeUser dischargeUser) {
         try {
             DischargeUser createdDischargeUser = dischargeUserService.createDischargeUser(dischargeUser);
@@ -51,7 +52,7 @@ public class DischargeUserController {
      * @return el usuario de descarga actualizado
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<DischargeUser> updateDischargeUser(@PathVariable Long id, @Valid @RequestBody DischargeUser dischargeUser) {
         try {
             dischargeUser.setId(id);
@@ -71,7 +72,7 @@ public class DischargeUserController {
      * @return el usuario de descarga si existe
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<DischargeUser> getDischargeUserById(@PathVariable Long id) {
         Optional<DischargeUser> dischargeUser = dischargeUserService.getDischargeUserById(id);
         return dischargeUser.map(ResponseEntity::ok)
@@ -79,15 +80,16 @@ public class DischargeUserController {
     }
     
     /**
-     * Obtiene todos los usuarios de descarga de la corporación.
+     * Obtiene todos los usuarios de descarga de la corporación con paginación.
      * 
-     * @return lista de usuarios de descarga
+     * @param pageable parámetros de paginación
+     * @return página de usuarios de descarga
      */
     @GetMapping
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<List<DischargeUser>> getAllDischargeUsers() {
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Page<DischargeUser>> getAllDischargeUsers(Pageable pageable) {
         try {
-            List<DischargeUser> dischargeUsers = dischargeUserService.getAllMyCorporationDischargeUsers();
+            Page<DischargeUser> dischargeUsers = dischargeUserService.getMyCorporationDischargeUsers(pageable);
             return ResponseEntity.ok(dischargeUsers);
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -101,7 +103,7 @@ public class DischargeUserController {
      * @return true si se eliminó correctamente
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Boolean> deleteDischargeUser(@PathVariable Long id) {
         try {
             boolean deleted = dischargeUserService.deleteDischargeUser(id);

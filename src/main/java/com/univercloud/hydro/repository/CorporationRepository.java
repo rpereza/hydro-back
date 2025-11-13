@@ -2,6 +2,9 @@ package com.univercloud.hydro.repository;
 
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,13 +28,6 @@ public interface CorporationRepository extends JpaRepository<Corporation, Long> 
     Optional<Corporation> findByOwner(User owner);
     
     /**
-     * Busca una corporación por su código único.
-     * @param code el código de la corporación
-     * @return la corporación con el código especificado, si existe
-     */
-    Optional<Corporation> findByCode(String code);
-    
-    /**
      * Verifica si existe una corporación para el propietario especificado.
      * @param owner el usuario propietario
      * @return true si existe una corporación para el propietario, false en caso contrario
@@ -44,18 +40,6 @@ public interface CorporationRepository extends JpaRepository<Corporation, Long> 
      * @return true si existe una corporación con el código, false en caso contrario
      */
     boolean existsByCode(String code);
-    
-    /**
-     * Busca todas las corporaciones activas.
-     * @return lista de corporaciones activas
-     */
-    List<Corporation> findByIsActiveTrue();
-    
-    /**
-     * Busca todas las corporaciones inactivas.
-     * @return lista de corporaciones inactivas
-     */
-    List<Corporation> findByIsActiveFalse();
     
     /**
      * Busca corporaciones por nombre (búsqueda parcial, case-insensitive).
@@ -89,9 +73,26 @@ public interface CorporationRepository extends JpaRepository<Corporation, Long> 
     List<Corporation> findAllOrderByCreatedAtDesc();
     
     /**
-     * Busca corporaciones activas ordenadas por nombre.
-     * @return lista de corporaciones activas ordenadas por nombre
+     * Busca una corporación por ID cargando las relaciones owner y users.
+     * @param id el ID de la corporación
+     * @return la corporación con sus relaciones cargadas, si existe
      */
-    @Query("SELECT c FROM Corporation c WHERE c.isActive = true ORDER BY c.name ASC")
-    List<Corporation> findActiveCorporationsOrderByName();
+    @Query("SELECT DISTINCT c FROM Corporation c LEFT JOIN FETCH c.owner LEFT JOIN FETCH c.users WHERE c.id = :id")
+    Optional<Corporation> findByIdWithRelations(@Param("id") Long id);
+    
+    /**
+     * Busca una corporación por usuario cargando las relaciones owner y users.
+     * @param user el usuario
+     * @return la corporación con sus relaciones cargadas, si existe
+     */
+    @Query("SELECT DISTINCT c FROM Corporation c LEFT JOIN FETCH c.owner LEFT JOIN FETCH c.users WHERE :user MEMBER OF c.users")
+    Optional<Corporation> findByUserWithRelations(@Param("user") User user);
+    
+    /**
+     * Busca todas las corporaciones con paginación, cargando la relación owner.
+     * @param pageable parámetros de paginación
+     * @return página de corporaciones con owner cargado
+     */
+    @EntityGraph(attributePaths = {"owner"})
+    Page<Corporation> findAll(Pageable pageable);
 }

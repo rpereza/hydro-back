@@ -130,11 +130,8 @@ public class BasinSectionServiceImpl implements BasinSectionService {
             throw new IllegalStateException("El usuario debe pertenecer a una corporación");
         }
         
-        Optional<BasinSection> basinSectionOpt = basinSectionRepository.findById(id);
-        if (basinSectionOpt.isPresent() && basinSectionOpt.get().getCorporation().equals(corporation)) {
-            return basinSectionOpt;
-        }
-        return Optional.empty();
+        // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
+        return basinSectionRepository.findByIdAndCorporationId(id, corporation.getId());
     }
     
     @Override

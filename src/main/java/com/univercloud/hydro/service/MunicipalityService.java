@@ -69,4 +69,11 @@ public interface MunicipalityService {
      * @return true si existe, false en caso contrario
      */
     boolean existsByCode(String code);
+    
+    /**
+     * Obtiene todos los municipios de un departamento.
+     * @param departmentId el ID del departamento
+     * @return lista de municipios del departamento
+     */
+    List<Municipality> getMunicipalitiesByDepartmentId(Long departmentId);
 }

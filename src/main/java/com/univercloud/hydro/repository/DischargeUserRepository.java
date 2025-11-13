@@ -116,6 +116,25 @@ public interface DischargeUserRepository extends JpaRepository<DischargeUser, Lo
     boolean existsByDocumentTypeAndDocumentNumber(DischargeUser.DocumentType documentType, String documentNumber);
     
     /**
+     * Verifica si existe un usuario de descarga con el código especificado en la corporación.
+     * @param code el código del usuario de descarga
+     * @param corporationId el ID de la corporación
+     * @return true si existe, false en caso contrario
+     */
+    @Query("SELECT CASE WHEN COUNT(du) > 0 THEN true ELSE false END FROM DischargeUser du WHERE du.code = :code AND du.corporation.id = :corporationId")
+    boolean existsByCodeAndCorporationId(@Param("code") String code, @Param("corporationId") Long corporationId);
+    
+    /**
+     * Verifica si existe un usuario de descarga con el tipo y número de documento especificados en la corporación.
+     * @param documentType el tipo de documento
+     * @param documentNumber el número de documento
+     * @param corporationId el ID de la corporación
+     * @return true si existe, false en caso contrario
+     */
+    @Query("SELECT CASE WHEN COUNT(du) > 0 THEN true ELSE false END FROM DischargeUser du WHERE du.documentType = :documentType AND du.documentNumber = :documentNumber AND du.corporation.id = :corporationId")
+    boolean existsByDocumentTypeAndDocumentNumberAndCorporationId(@Param("documentType") DischargeUser.DocumentType documentType, @Param("documentNumber") String documentNumber, @Param("corporationId") Long corporationId);
+    
+    /**
      * Busca usuarios de descarga creados en un rango de fechas.
      * @param startDate fecha de inicio
      * @param endDate fecha de fin
@@ -190,4 +209,13 @@ public interface DischargeUserRepository extends JpaRepository<DischargeUser, Lo
      * @return página de usuarios de descarga de la corporación
      */
     Page<DischargeUser> findByCorporation(Corporation corporation, Pageable pageable);
+    
+    /**
+     * Busca un usuario de descarga por ID y corporación.
+     * @param id el ID del usuario de descarga
+     * @param corporationId el ID de la corporación
+     * @return el usuario de descarga si existe y pertenece a la corporación
+     */
+    @Query("SELECT du FROM DischargeUser du WHERE du.id = :id AND du.corporation.id = :corporationId")
+    Optional<DischargeUser> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
 }

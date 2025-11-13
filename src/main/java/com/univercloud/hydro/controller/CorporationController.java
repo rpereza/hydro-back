@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +32,7 @@ public class CorporationController {
      * @return la corporación creada
      */
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CorporationResponse> createCorporation(@Valid @RequestBody CreateCorporationRequest request) {
         try {
             CorporationResponse response = corporationService.createCorporation(request);
@@ -48,6 +50,7 @@ public class CorporationController {
      * @return la corporación del usuario
      */
     @GetMapping("/my-corporation")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CorporationResponse> getMyCorporation() {
         Optional<CorporationResponse> corporation = corporationService.getMyCorporation();
         return corporation.map(ResponseEntity::ok)
@@ -61,6 +64,7 @@ public class CorporationController {
      * @return la corporación
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CorporationResponse> getCorporationById(@PathVariable Long id) {
         try {
             Optional<CorporationResponse> corporation = corporationService.getCorporationById(id);
@@ -72,25 +76,13 @@ public class CorporationController {
     }
     
     /**
-     * Obtiene una corporación por su código.
-     * 
-     * @param code el código de la corporación
-     * @return la corporación
-     */
-    @GetMapping("/by-code/{code}")
-    public ResponseEntity<CorporationResponse> getCorporationByCode(@PathVariable String code) {
-        Optional<CorporationResponse> corporation = corporationService.getCorporationByCode(code);
-        return corporation.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-    
-    /**
      * Obtiene todas las corporaciones (solo para administradores).
      * 
      * @param pageable parámetros de paginación
      * @return página de corporaciones
      */
     @GetMapping
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Page<CorporationResponse>> getAllCorporations(Pageable pageable) {
         try {
             Page<CorporationResponse> corporations = corporationService.getAllCorporations(pageable);
@@ -101,23 +93,13 @@ public class CorporationController {
     }
     
     /**
-     * Obtiene todas las corporaciones activas.
-     * 
-     * @return lista de corporaciones activas
-     */
-    @GetMapping("/active")
-    public ResponseEntity<List<CorporationResponse>> getActiveCorporations() {
-        List<CorporationResponse> corporations = corporationService.getActiveCorporations();
-        return ResponseEntity.ok(corporations);
-    }
-    
-    /**
      * Actualiza la información de la corporación del usuario autenticado.
      * 
      * @param request los nuevos datos de la corporación
      * @return la corporación actualizada
      */
     @PutMapping("/my-corporation")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CorporationResponse> updateMyCorporation(@Valid @RequestBody CreateCorporationRequest request) {
         try {
             CorporationResponse response = corporationService.updateMyCorporation(request);
@@ -130,42 +112,13 @@ public class CorporationController {
     }
     
     /**
-     * Desactiva la corporación del usuario autenticado.
-     * 
-     * @return true si se desactivó correctamente
-     */
-    @PutMapping("/my-corporation/deactivate")
-    public ResponseEntity<Boolean> deactivateMyCorporation() {
-        try {
-            boolean result = corporationService.deactivateMyCorporation();
-            return ResponseEntity.ok(result);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-    }
-    
-    /**
-     * Activa la corporación del usuario autenticado.
-     * 
-     * @return true si se activó correctamente
-     */
-    @PutMapping("/my-corporation/activate")
-    public ResponseEntity<Boolean> activateMyCorporation() {
-        try {
-            boolean result = corporationService.activateMyCorporation();
-            return ResponseEntity.ok(result);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-    }
-    
-    /**
      * Invita a un usuario a la corporación del usuario autenticado.
      * 
      * @param request los datos del usuario a invitar
      * @return el usuario creado e invitado
      */
     @PostMapping("/users/invite")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserCorporationResponse> inviteUser(@Valid @RequestBody InviteUserRequest request) {
         try {
             UserCorporationResponse response = corporationService.inviteUser(request);
@@ -183,6 +136,7 @@ public class CorporationController {
      * @return lista de usuarios de la corporación
      */
     @GetMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserCorporationResponse>> getUsersInMyCorporation() {
         try {
             List<UserCorporationResponse> users = corporationService.getUsersInMyCorporation();
@@ -199,6 +153,7 @@ public class CorporationController {
      * @return lista de usuarios de la corporación
      */
     @GetMapping("/{corporationId}/users")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserCorporationResponse>> getUsersInCorporation(@PathVariable Long corporationId) {
         try {
             List<UserCorporationResponse> users = corporationService.getUsersInCorporation(corporationId);
@@ -217,6 +172,7 @@ public class CorporationController {
      * @return true si se removió correctamente
      */
     @DeleteMapping("/users/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Boolean> removeUserFromMyCorporation(@PathVariable Long userId) {
         try {
             boolean result = corporationService.removeUserFromMyCorporation(userId);
@@ -236,6 +192,7 @@ public class CorporationController {
      * @return true si se removió correctamente
      */
     @DeleteMapping("/{corporationId}/users/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Boolean> removeUserFromCorporation(@PathVariable Long corporationId, 
                                                            @PathVariable Long userId) {
         try {
@@ -254,6 +211,7 @@ public class CorporationController {
      * @return true si puede crear una corporación
      */
     @GetMapping("/can-create")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Boolean> canCreateCorporation() {
         boolean canCreate = corporationService.canCreateCorporation();
         return ResponseEntity.ok(canCreate);
@@ -265,6 +223,7 @@ public class CorporationController {
      * @return true si puede invitar usuarios
      */
     @GetMapping("/can-invite")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Boolean> canInviteUsers() {
         boolean canInvite = corporationService.canInviteUsers();
         return ResponseEntity.ok(canInvite);
@@ -276,6 +235,7 @@ public class CorporationController {
      * @return estadísticas de la corporación
      */
     @GetMapping("/my-corporation/stats")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CorporationStatsResponse> getMyCorporationStats() {
         try {
             CorporationStatsResponse stats = corporationService.getMyCorporationStats();
@@ -292,22 +252,12 @@ public class CorporationController {
      * @return lista de corporaciones que coinciden
      */
     @GetMapping("/search")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<List<CorporationResponse>> searchCorporationsByName(@RequestParam String name) {
         List<CorporationResponse> corporations = corporationService.searchCorporationsByName(name);
         return ResponseEntity.ok(corporations);
     }
     
-    /**
-     * Verifica si existe una corporación con el código especificado.
-     * 
-     * @param code el código a verificar
-     * @return true si existe
-     */
-    @GetMapping("/exists/{code}")
-    public ResponseEntity<Boolean> existsByCode(@PathVariable String code) {
-        boolean exists = corporationService.existsByCode(code);
-        return ResponseEntity.ok(exists);
-    }
     
     /**
      * Verifica si el usuario autenticado es propietario de su corporación.
@@ -315,6 +265,7 @@ public class CorporationController {
      * @return true si es propietario
      */
     @GetMapping("/is-owner")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Boolean> isOwnerOfMyCorporation() {
         boolean isOwner = corporationService.isOwnerOfMyCorporation();
         return ResponseEntity.ok(isOwner);

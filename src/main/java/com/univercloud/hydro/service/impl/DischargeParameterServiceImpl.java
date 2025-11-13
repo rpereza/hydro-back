@@ -95,12 +95,8 @@ public class DischargeParameterServiceImpl implements DischargeParameterService 
             throw new IllegalStateException("User does not belong to a corporation");
         }
         
-        Optional<DischargeParameter> dischargeParameter = dischargeParameterRepository.findById(id);
-        if (dischargeParameter.isPresent() && !corporation.equals(dischargeParameter.get().getCorporation())) {
-            throw new IllegalStateException("Access denied: Discharge parameter does not belong to your corporation");
-        }
-        
-        return dischargeParameter;
+        // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
+        return dischargeParameterRepository.findByIdAndCorporationId(id, corporation.getId());
     }
     
     @Override

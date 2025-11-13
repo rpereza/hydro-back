@@ -249,6 +249,12 @@ public class EconomicActivityServiceImpl implements EconomicActivityService {
     
     @Override
     @Transactional(readOnly = true)
+    public Page<EconomicActivity> searchEconomicActivitiesByCodeOrName(String query, Pageable pageable) {
+        return economicActivityRepository.findByCodeOrNameContainingIgnoreCase(query, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public EconomicActivityStats getEconomicActivityStats() {
         EconomicActivityStats stats = new EconomicActivityStats();
         

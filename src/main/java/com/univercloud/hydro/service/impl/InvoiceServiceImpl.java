@@ -139,11 +139,8 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new IllegalStateException("El usuario debe pertenecer a una corporación");
         }
         
-        Optional<Invoice> invoiceOpt = invoiceRepository.findById(id);
-        if (invoiceOpt.isPresent() && invoiceOpt.get().getCorporation().equals(corporation)) {
-            return invoiceOpt;
-        }
-        return Optional.empty();
+        // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
+        return invoiceRepository.findByIdAndCorporationId(id, corporation.getId());
     }
     
     @Override

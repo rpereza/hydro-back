@@ -184,4 +184,17 @@ public interface EconomicActivityRepository extends JpaRepository<EconomicActivi
      */
     @Query("SELECT ea FROM EconomicActivity ea WHERE ea.isActive = true ORDER BY ea.code ASC")
     List<EconomicActivity> findByIsActiveTrueOrderByCode();
+    
+    /**
+     * Búsqueda unificada de actividades económicas por código o nombre (búsqueda parcial, case-insensitive) con paginación.
+     * Busca en ambos campos simultáneamente.
+     * @param query el término de búsqueda (código o nombre)
+     * @param pageable parámetros de paginación
+     * @return página de actividades que coinciden con el código o nombre
+     */
+    @Query("SELECT ea FROM EconomicActivity ea WHERE " +
+           "LOWER(ea.code) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(ea.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "ORDER BY ea.code ASC, ea.name ASC")
+    Page<EconomicActivity> findByCodeOrNameContainingIgnoreCase(@Param("query") String query, Pageable pageable);
 }

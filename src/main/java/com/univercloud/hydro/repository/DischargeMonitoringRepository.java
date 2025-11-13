@@ -184,4 +184,13 @@ public interface DischargeMonitoringRepository extends JpaRepository<DischargeMo
      */
     @Query("SELECT COUNT(dm) FROM DischargeMonitoring dm WHERE dm.monitoringStation.id = :monitoringStationId")
     long countByMonitoringStationId(@Param("monitoringStationId") Long monitoringStationId);
+    
+    /**
+     * Busca un monitoreo por ID y corporación.
+     * @param id el ID del monitoreo
+     * @param corporationId el ID de la corporación
+     * @return el monitoreo si existe y pertenece a la corporación
+     */
+    @Query("SELECT dm FROM DischargeMonitoring dm WHERE dm.id = :id AND dm.corporation.id = :corporationId")
+    Optional<DischargeMonitoring> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
 }

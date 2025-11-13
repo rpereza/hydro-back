@@ -34,14 +34,7 @@ public interface CorporationService {
      * @return la corporación, si existe
      */
     Optional<CorporationResponse> getCorporationById(Long id);
-    
-    /**
-     * Obtiene una corporación por su código.
-     * @param code el código de la corporación
-     * @return la corporación, si existe
-     */
-    Optional<CorporationResponse> getCorporationByCode(String code);
-    
+
     /**
      * Obtiene todas las corporaciones (solo para administradores).
      * @param pageable parámetros de paginación
@@ -50,32 +43,12 @@ public interface CorporationService {
     Page<CorporationResponse> getAllCorporations(Pageable pageable);
     
     /**
-     * Obtiene todas las corporaciones activas.
-     * @return lista de corporaciones activas
-     */
-    List<CorporationResponse> getActiveCorporations();
-    
-    /**
      * Actualiza la información de la corporación del usuario autenticado.
      * @param request los nuevos datos de la corporación
      * @return la corporación actualizada
      * @throws IllegalStateException si el usuario no tiene corporación
      */
     CorporationResponse updateMyCorporation(CreateCorporationRequest request);
-    
-    /**
-     * Desactiva la corporación del usuario autenticado.
-     * @return true si se desactivó correctamente
-     * @throws IllegalStateException si el usuario no tiene corporación
-     */
-    boolean deactivateMyCorporation();
-    
-    /**
-     * Activa la corporación del usuario autenticado.
-     * @return true si se activó correctamente
-     * @throws IllegalStateException si el usuario no tiene corporación
-     */
-    boolean activateMyCorporation();
     
     /**
      * Invita a un usuario a la corporación del usuario autenticado.
@@ -142,13 +115,6 @@ public interface CorporationService {
      * @return lista de corporaciones que coinciden
      */
     List<CorporationResponse> searchCorporationsByName(String name);
-    
-    /**
-     * Verifica si existe una corporación con el código especificado.
-     * @param code el código a verificar
-     * @return true si existe, false en caso contrario
-     */
-    boolean existsByCode(String code);
     
     /**
      * Verifica si el usuario autenticado es propietario de su corporación.

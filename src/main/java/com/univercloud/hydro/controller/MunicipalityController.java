@@ -144,4 +144,17 @@ public class MunicipalityController {
         }
     }
     
+    /**
+     * Obtiene todos los municipios de un departamento.
+     * 
+     * @param departmentId el ID del departamento
+     * @return lista de municipios del departamento
+     */
+    @GetMapping("/by-department/{departmentId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<Municipality>> getMunicipalitiesByDepartmentId(@PathVariable Long departmentId) {
+        List<Municipality> municipalities = municipalityService.getMunicipalitiesByDepartmentId(departmentId);
+        return ResponseEntity.ok(municipalities);
+    }
+    
 }

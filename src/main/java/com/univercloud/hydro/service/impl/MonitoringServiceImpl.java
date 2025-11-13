@@ -141,11 +141,8 @@ public class MonitoringServiceImpl implements MonitoringService {
             throw new IllegalStateException("El usuario debe pertenecer a una corporación");
         }
         
-        Optional<Monitoring> monitoringOpt = monitoringRepository.findById(id);
-        if (monitoringOpt.isPresent() && monitoringOpt.get().getCorporation().equals(corporation)) {
-            return monitoringOpt;
-        }
-        return Optional.empty();
+        // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
+        return monitoringRepository.findByIdAndCorporationId(id, corporation.getId());
     }
     
     @Override

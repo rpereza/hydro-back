@@ -144,4 +144,10 @@ public class MunicipalityServiceImpl implements MunicipalityService {
     public boolean existsByCode(String code) {
         return municipalityRepository.existsByCode(code);
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Municipality> getMunicipalitiesByDepartmentId(Long departmentId) {
+        return municipalityRepository.findByDepartmentIdAndIsActiveTrue(departmentId);
+    }
 }

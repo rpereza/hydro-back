@@ -154,4 +154,13 @@ public interface MonitoringRepository extends JpaRepository<Monitoring, Long> {
      */
     @Query("SELECT m FROM Monitoring m WHERE m.monitoringStation = :monitoringStation AND YEAR(m.monitoringDate) = :year")
     List<Monitoring> findByMonitoringStationAndYear(@Param("monitoringStation") MonitoringStation monitoringStation, @Param("year") int year);
+    
+    /**
+     * Busca un monitoreo por ID y corporación.
+     * @param id el ID del monitoreo
+     * @param corporationId el ID de la corporación
+     * @return el monitoreo si existe y pertenece a la corporación
+     */
+    @Query("SELECT m FROM Monitoring m WHERE m.id = :id AND m.corporation.id = :corporationId")
+    Optional<Monitoring> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
 }

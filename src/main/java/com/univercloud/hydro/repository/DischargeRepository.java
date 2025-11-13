@@ -277,4 +277,13 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
      */
     @Query("SELECT d FROM Discharge d WHERE d.corporation = :corporation ORDER BY d.createdAt DESC")
     List<Discharge> findByCorporationOrderByCreatedAtDesc(@Param("corporation") Corporation corporation);
+    
+    /**
+     * Busca una descarga por ID y corporación.
+     * @param id el ID de la descarga
+     * @param corporationId el ID de la corporación
+     * @return la descarga si existe y pertenece a la corporación
+     */
+    @Query("SELECT d FROM Discharge d WHERE d.id = :id AND d.corporation.id = :corporationId")
+    Optional<Discharge> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
 }

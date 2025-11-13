@@ -104,12 +104,8 @@ public class DischargeMonitoringServiceImpl implements DischargeMonitoringServic
             throw new IllegalStateException("User does not belong to a corporation");
         }
         
-        Optional<DischargeMonitoring> dischargeMonitoring = dischargeMonitoringRepository.findById(id);
-        if (dischargeMonitoring.isPresent() && !corporation.equals(dischargeMonitoring.get().getCorporation())) {
-            throw new IllegalStateException("Access denied: Discharge monitoring does not belong to your corporation");
-        }
-        
-        return dischargeMonitoring;
+        // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
+        return dischargeMonitoringRepository.findByIdAndCorporationId(id, corporation.getId());
     }
     
     @Override

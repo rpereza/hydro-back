@@ -219,6 +219,15 @@ public interface EconomicActivityService {
     List<EconomicActivity> getActiveEconomicActivitiesOrderByCode();
     
     /**
+     * Búsqueda unificada de actividades económicas por código o nombre (búsqueda parcial) con paginación.
+     * Busca en ambos campos simultáneamente.
+     * @param query el término de búsqueda (código o nombre)
+     * @param pageable parámetros de paginación
+     * @return página de actividades económicas que coinciden con el código o nombre
+     */
+    Page<EconomicActivity> searchEconomicActivitiesByCodeOrName(String query, Pageable pageable);
+
+    /**
      * Obtiene estadísticas de actividades económicas.
      * @return estadísticas de actividades económicas
      */

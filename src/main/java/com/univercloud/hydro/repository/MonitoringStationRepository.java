@@ -153,4 +153,13 @@ public interface MonitoringStationRepository extends JpaRepository<MonitoringSta
      */
     @Query("SELECT ms FROM MonitoringStation ms ORDER BY ms.createdAt DESC")
     List<MonitoringStation> findAllOrderByCreatedAtDesc();
+    
+    /**
+     * Busca una estación por ID y corporación.
+     * @param id el ID de la estación
+     * @param corporationId el ID de la corporación
+     * @return la estación si existe y pertenece a la corporación
+     */
+    @Query("SELECT ms FROM MonitoringStation ms WHERE ms.id = :id AND ms.corporation.id = :corporationId")
+    Optional<MonitoringStation> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
 }

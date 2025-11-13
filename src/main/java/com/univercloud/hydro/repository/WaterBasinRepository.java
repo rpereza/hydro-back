@@ -163,4 +163,13 @@ public interface WaterBasinRepository extends JpaRepository<WaterBasin, Long> {
      */
     @Query("SELECT wb FROM WaterBasin wb WHERE wb.corporation = :corporation ORDER BY wb.createdAt DESC")
     List<WaterBasin> findByCorporationOrderByCreatedAtDesc(@Param("corporation") Corporation corporation);
+    
+    /**
+     * Busca una cuenca por ID y corporación.
+     * @param id el ID de la cuenca
+     * @param corporationId el ID de la corporación
+     * @return la cuenca si existe y pertenece a la corporación
+     */
+    @Query("SELECT wb FROM WaterBasin wb WHERE wb.id = :id AND wb.corporation.id = :corporationId")
+    Optional<WaterBasin> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
 }

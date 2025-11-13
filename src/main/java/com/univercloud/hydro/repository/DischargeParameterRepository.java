@@ -238,4 +238,13 @@ public interface DischargeParameterRepository extends JpaRepository<DischargePar
      */
     @Query("SELECT dp FROM DischargeParameter dp WHERE dp.corporation = :corporation ORDER BY dp.createdAt DESC")
     List<DischargeParameter> findByCorporationOrderByCreatedAtDesc(@Param("corporation") Corporation corporation);
+    
+    /**
+     * Busca un parámetro por ID y corporación.
+     * @param id el ID del parámetro
+     * @param corporationId el ID de la corporación
+     * @return el parámetro si existe y pertenece a la corporación
+     */
+    @Query("SELECT dp FROM DischargeParameter dp WHERE dp.id = :id AND dp.corporation.id = :corporationId")
+    Optional<DischargeParameter> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
 }

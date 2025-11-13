@@ -53,14 +53,20 @@ public class DischargeUserServiceImpl implements DischargeUserService {
             throw new IllegalStateException("El usuario debe pertenecer a una corporación");
         }
         
+        // Verificar que el código no exista en la corporación
+        if (dischargeUserRepository.existsByCodeAndCorporationId(dischargeUser.getCode(), corporation.getId())) {
+            throw new IllegalArgumentException("Ya existe un usuario de descarga con el código '" + dischargeUser.getCode() + "' en esta corporación");
+        }
+        
         // Verificar que el nombre de empresa no exista
         if (existsByCompanyName(dischargeUser.getCompanyName())) {
             throw new IllegalArgumentException("Ya existe un usuario de descarga con el nombre de empresa: " + dischargeUser.getCompanyName());
         }
         
-        // Verificar que el tipo y número de documento no existan
-        if (existsByDocumentTypeAndNumber(dischargeUser.getDocumentType(), dischargeUser.getDocumentNumber())) {
-            throw new IllegalArgumentException("Ya existe un usuario de descarga con el tipo y número de documento especificados");
+        // Verificar que el tipo y número de documento no existan en la corporación
+        if (dischargeUserRepository.existsByDocumentTypeAndDocumentNumberAndCorporationId(
+                dischargeUser.getDocumentType(), dischargeUser.getDocumentNumber(), corporation.getId())) {
+            throw new IllegalArgumentException("Ya existe un usuario de descarga con el tipo y número de documento especificados en esta corporación");
         }
         
         // Verificar que el municipio pertenezca a la corporación
@@ -73,9 +79,7 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         
         dischargeUser.setCorporation(corporation);
         dischargeUser.setCreatedBy(currentUser);
-        dischargeUser.setUpdatedBy(currentUser);
         dischargeUser.setCreatedAt(LocalDateTime.now());
-        dischargeUser.setUpdatedAt(LocalDateTime.now());
         
         return dischargeUserRepository.save(dischargeUser);
     }
@@ -102,16 +106,24 @@ public class DischargeUserServiceImpl implements DischargeUserService {
             throw new IllegalArgumentException("No tiene permisos para actualizar este usuario de descarga");
         }
         
+        // Verificar que el código no exista en la corporación (si cambió)
+        if (!existing.getCode().equals(dischargeUser.getCode())) {
+            if (dischargeUserRepository.existsByCodeAndCorporationId(dischargeUser.getCode(), corporation.getId())) {
+                throw new IllegalArgumentException("Ya existe un usuario de descarga con el código '" + dischargeUser.getCode() + "' en esta corporación");
+            }
+        }
+        
         // Verificar que el nombre de empresa no exista (si cambió)
         if (!existing.getCompanyName().equals(dischargeUser.getCompanyName()) && existsByCompanyName(dischargeUser.getCompanyName())) {
             throw new IllegalArgumentException("Ya existe un usuario de descarga con el nombre de empresa: " + dischargeUser.getCompanyName());
         }
         
-        // Verificar que el tipo y número de documento no existan (si cambiaron)
+        // Verificar que el tipo y número de documento no existan en la corporación (si cambiaron)
         if (!existing.getDocumentType().equals(dischargeUser.getDocumentType()) || 
             !existing.getDocumentNumber().equals(dischargeUser.getDocumentNumber())) {
-            if (existsByDocumentTypeAndNumber(dischargeUser.getDocumentType(), dischargeUser.getDocumentNumber())) {
-                throw new IllegalArgumentException("Ya existe un usuario de descarga con el tipo y número de documento especificados");
+            if (dischargeUserRepository.existsByDocumentTypeAndDocumentNumberAndCorporationId(
+                    dischargeUser.getDocumentType(), dischargeUser.getDocumentNumber(), corporation.getId())) {
+                throw new IllegalArgumentException("Ya existe un usuario de descarga con el tipo y número de documento especificados en esta corporación");
             }
         }
         
@@ -133,6 +145,16 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         existing.setActive(dischargeUser.isActive());
         existing.setUpdatedBy(currentUser);
         existing.setUpdatedAt(LocalDateTime.now());
+        existing.setEconomicActivity(dischargeUser.getEconomicActivity());
+        existing.setAuthorizationType(dischargeUser.getAuthorizationType());
+        existing.setPublicServiceCompany(dischargeUser.isPublicServiceCompany());
+        existing.setHasPtar(dischargeUser.isHasPtar());
+        existing.setEfficiencyPercentage(dischargeUser.getEfficiencyPercentage());
+        existing.setFileNumber(dischargeUser.getFileNumber());
+        existing.setAlternativeEmail(dischargeUser.getAlternativeEmail());
+        existing.setAlternativePhone(dischargeUser.getAlternativePhone());
+        existing.setAddress(dischargeUser.getAddress());
+        existing.setCode(dischargeUser.getCode());
         
         return dischargeUserRepository.save(existing);
     }
@@ -147,11 +169,8 @@ public class DischargeUserServiceImpl implements DischargeUserService {
             throw new IllegalStateException("El usuario debe pertenecer a una corporación");
         }
         
-        Optional<DischargeUser> dischargeUserOpt = dischargeUserRepository.findById(id);
-        if (dischargeUserOpt.isPresent() && dischargeUserOpt.get().getCorporation().equals(corporation)) {
-            return dischargeUserOpt;
-        }
-        return Optional.empty();
+        // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
+        return dischargeUserRepository.findByIdAndCorporationId(id, corporation.getId());
     }
     
     @Override
