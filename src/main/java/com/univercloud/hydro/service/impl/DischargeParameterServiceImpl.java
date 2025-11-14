@@ -61,7 +61,8 @@ public class DischargeParameterServiceImpl implements DischargeParameterService 
                 .orElseThrow(() -> new IllegalArgumentException("Discharge parameter not found"));
         
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(existingDischargeParameter.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (corporation == null || existingDischargeParameter.getCorporation() == null || !existingDischargeParameter.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Discharge parameter does not belong to your corporation");
         }
         
@@ -230,7 +231,8 @@ public class DischargeParameterServiceImpl implements DischargeParameterService 
                 .orElseThrow(() -> new IllegalArgumentException("Discharge parameter not found"));
         
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(dischargeParameter.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (corporation == null || dischargeParameter.getCorporation() == null || !dischargeParameter.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Discharge parameter does not belong to your corporation");
         }
         

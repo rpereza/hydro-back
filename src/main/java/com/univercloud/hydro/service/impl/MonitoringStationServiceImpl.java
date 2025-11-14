@@ -77,7 +77,8 @@ public class MonitoringStationServiceImpl implements MonitoringStationService {
         MonitoringStation existing = existingOpt.get();
         
         // Verificar que pertenezca a la corporación del usuario
-        if (!existing.getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (existing.getCorporation() == null || !existing.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("No tiene permisos para actualizar esta estación de monitoreo");
         }
         
@@ -246,7 +247,8 @@ public class MonitoringStationServiceImpl implements MonitoringStationService {
         }
         
         MonitoringStation station = stationOpt.get();
-        if (!station.getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (station.getCorporation() == null || !station.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("No tiene permisos para activar esta estación de monitoreo");
         }
         
@@ -274,7 +276,8 @@ public class MonitoringStationServiceImpl implements MonitoringStationService {
         }
         
         MonitoringStation station = stationOpt.get();
-        if (!station.getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (station.getCorporation() == null || !station.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("No tiene permisos para desactivar esta estación de monitoreo");
         }
         
@@ -302,7 +305,8 @@ public class MonitoringStationServiceImpl implements MonitoringStationService {
         }
         
         MonitoringStation station = stationOpt.get();
-        if (!station.getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (station.getCorporation() == null || !station.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("No tiene permisos para eliminar esta estación de monitoreo");
         }
         

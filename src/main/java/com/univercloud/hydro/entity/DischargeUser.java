@@ -287,10 +287,12 @@ public class DischargeUser implements Auditable {
         this.authorizationType = authorizationType;
     }
     
+    @JsonProperty("isPublicServiceCompany")
     public boolean isPublicServiceCompany() {
         return isPublicServiceCompany;
     }
     
+    @JsonProperty("isPublicServiceCompany")
     public void setPublicServiceCompany(boolean publicServiceCompany) {
         isPublicServiceCompany = publicServiceCompany;
     }

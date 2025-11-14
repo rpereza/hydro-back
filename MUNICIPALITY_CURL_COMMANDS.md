@@ -2,7 +2,7 @@
 
 Base URL: `http://localhost:8080/api/municipalities`
 
-**Nota:** Todos los endpoints requieren autenticación con rol `SUPER_ADMIN`. Reemplaza `<JWT_TOKEN>` con tu token JWT válido.
+**Nota:** La mayoría de los endpoints requieren autenticación con rol `SUPER_ADMIN`. El endpoint para obtener municipios por departamento requiere rol `USER`. Reemplaza `<JWT_TOKEN>` con tu token JWT válido.
 
 ---
 
@@ -383,6 +383,72 @@ curl -X GET "http://localhost:8080/api/municipalities/search?name=Med" \
 
 ---
 
+## 8. Obtener municipios por departamento
+
+```bash
+curl -X GET http://localhost:8080/api/municipalities/by-department/1 \
+  -H "Authorization: Bearer <JWT_TOKEN>"
+```
+
+**Parámetros:**
+- `{departmentId}`: ID del departamento (en la URL)
+
+**Rol requerido:** `USER` o `ADMIN` (no requiere `SUPER_ADMIN`)
+
+**Descripción:** Obtiene todos los municipios activos que pertenecen al departamento especificado.
+
+**Ejemplo de respuesta exitosa (200 OK):**
+```json
+[
+  {
+    "id": 1,
+    "name": "Medellín",
+    "code": "001",
+    "department": {
+      "id": 1,
+      "name": "Antioquia",
+      "code": "AN"
+    },
+    "category": {
+      "id": 1,
+      "name": "Categoría A",
+      "code": "CAT-A"
+    },
+    "nbi": 12.50,
+    "isActive": true,
+    "createdAt": "2024-01-15T10:30:00",
+    "updatedAt": "2024-01-15T10:30:00"
+  },
+  {
+    "id": 2,
+    "name": "Envigado",
+    "code": "002",
+    "department": {
+      "id": 1,
+      "name": "Antioquia",
+      "code": "AN"
+    },
+    "category": {
+      "id": 1,
+      "name": "Categoría A",
+      "code": "CAT-A"
+    },
+    "nbi": 8.30,
+    "isActive": true,
+    "createdAt": "2024-01-15T11:00:00",
+    "updatedAt": "2024-01-15T11:00:00"
+  }
+]
+```
+
+**Nota:** Este endpoint solo retorna municipios activos (`isActive = true`). Los municipios inactivos no se incluyen en la respuesta.
+
+**Códigos de respuesta:**
+- `200 OK`: Lista de municipios activos del departamento (puede estar vacía si no hay municipios activos)
+- `403 Forbidden`: Usuario no tiene permisos
+
+---
+
 ## Ejemplos de uso completo
 
 ### Ejemplo 1: Crear y luego buscar un municipio
@@ -428,6 +494,10 @@ curl -X GET "http://localhost:8080/api/municipalities?page=1&size=10&sort=create
 # Todos los municipios sin paginación
 curl -X GET http://localhost:8080/api/municipalities/all \
   -H "Authorization: Bearer <JWT_TOKEN>"
+
+# Obtener municipios activos de un departamento específico
+curl -X GET http://localhost:8080/api/municipalities/by-department/1 \
+  -H "Authorization: Bearer <JWT_TOKEN>"
 ```
 
 ### Ejemplo 3: Actualizar un municipio
@@ -459,7 +529,9 @@ curl -X PUT http://localhost:8080/api/municipalities/1 \
 
 ## Notas importantes
 
-1. **Autenticación:** Todos los endpoints requieren un token JWT válido con el rol `SUPER_ADMIN`.
+1. **Autenticación:** 
+   - La mayoría de los endpoints requieren un token JWT válido con el rol `SUPER_ADMIN`.
+   - El endpoint `/by-department/{departmentId}` requiere rol `USER` o `ADMIN` (no requiere `SUPER_ADMIN`).
 
 2. **Código único:** El campo `code` debe ser único en todo el sistema. Si intentas crear un municipio con un código que ya existe, recibirás un error 400.
 
@@ -476,6 +548,8 @@ curl -X PUT http://localhost:8080/api/municipalities/1 \
 5. **Búsqueda parcial:** El endpoint `/search` realiza una búsqueda case-insensitive que encuentra municipios cuyo nombre contiene la cadena proporcionada.
 
 6. **Paginación:** El endpoint principal (`GET /api/municipalities`) soporta paginación estándar de Spring Data con parámetros `page`, `size` y `sort`.
+
+7. **Municipios por departamento:** El endpoint `/by-department/{departmentId}` retorna solo municipios activos del departamento especificado. Este endpoint es útil para llenar listas desplegables en formularios donde se necesita filtrar municipios por departamento.
 
 ---
 

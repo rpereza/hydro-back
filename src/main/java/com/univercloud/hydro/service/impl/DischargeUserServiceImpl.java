@@ -102,7 +102,8 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         DischargeUser existing = existingOpt.get();
         
         // Verificar que pertenezca a la corporación del usuario
-        if (!existing.getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (existing.getCorporation() == null || !existing.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("No tiene permisos para actualizar este usuario de descarga");
         }
         
@@ -343,7 +344,8 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         }
         
         DischargeUser dischargeUser = dischargeUserOpt.get();
-        if (!dischargeUser.getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (dischargeUser.getCorporation() == null || !dischargeUser.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("No tiene permisos para activar este usuario de descarga");
         }
         
@@ -371,7 +373,8 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         }
         
         DischargeUser dischargeUser = dischargeUserOpt.get();
-        if (!dischargeUser.getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (dischargeUser.getCorporation() == null || !dischargeUser.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("No tiene permisos para desactivar este usuario de descarga");
         }
         
@@ -399,7 +402,8 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         }
         
         DischargeUser dischargeUser = dischargeUserOpt.get();
-        if (!dischargeUser.getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (dischargeUser.getCorporation() == null || !dischargeUser.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("No tiene permisos para eliminar este usuario de descarga");
         }
         

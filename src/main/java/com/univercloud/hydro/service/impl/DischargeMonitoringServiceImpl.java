@@ -61,7 +61,8 @@ public class DischargeMonitoringServiceImpl implements DischargeMonitoringServic
                 .orElseThrow(() -> new IllegalArgumentException("Discharge monitoring not found"));
         
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(existingDischargeMonitoring.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (corporation == null || existingDischargeMonitoring.getCorporation() == null || !existingDischargeMonitoring.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Discharge monitoring does not belong to your corporation");
         }
         
@@ -221,7 +222,8 @@ public class DischargeMonitoringServiceImpl implements DischargeMonitoringServic
                 .orElseThrow(() -> new IllegalArgumentException("Discharge monitoring not found"));
         
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(dischargeMonitoring.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (corporation == null || dischargeMonitoring.getCorporation() == null || !dischargeMonitoring.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Discharge monitoring does not belong to your corporation");
         }
         

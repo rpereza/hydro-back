@@ -1,5 +1,7 @@
 package com.univercloud.hydro.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
@@ -11,6 +13,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "economic_activities")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class EconomicActivity {
     
     @Id
@@ -36,6 +39,7 @@ public class EconomicActivity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
+    @JsonIgnore
     @OneToMany(mappedBy = "economicActivity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<DischargeUser> users = new ArrayList<>();
     
@@ -102,6 +106,7 @@ public class EconomicActivity {
         this.updatedAt = updatedAt;
     }
     
+    @JsonIgnore
     public List<DischargeUser> getUsers() {
         return users;
     }

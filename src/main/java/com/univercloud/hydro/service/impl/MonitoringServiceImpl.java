@@ -54,7 +54,8 @@ public class MonitoringServiceImpl implements MonitoringService {
         // Verificar que la estación de monitoreo pertenezca a la corporación
         if (monitoring.getMonitoringStation() != null) {
             Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoring.getMonitoringStation().getId());
-            if (stationOpt.isEmpty() || !stationOpt.get().getCorporation().equals(corporation)) {
+            // Comparar por ID para evitar problemas con proxies de Hibernate
+            if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
                 throw new IllegalArgumentException("La estación de monitoreo no pertenece a su corporación");
             }
         }
@@ -86,7 +87,8 @@ public class MonitoringServiceImpl implements MonitoringService {
         Monitoring existing = existingOpt.get();
         
         // Verificar que pertenezca a la corporación del usuario
-        if (!existing.getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (existing.getCorporation() == null || !existing.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("No tiene permisos para actualizar este monitoreo");
         }
         
@@ -101,7 +103,8 @@ public class MonitoringServiceImpl implements MonitoringService {
         // Verificar que la estación de monitoreo pertenezca a la corporación
         if (monitoring.getMonitoringStation() != null) {
             Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoring.getMonitoringStation().getId());
-            if (stationOpt.isEmpty() || !stationOpt.get().getCorporation().equals(corporation)) {
+            // Comparar por ID para evitar problemas con proxies de Hibernate
+            if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
                 throw new IllegalArgumentException("La estación de monitoreo no pertenece a su corporación");
             }
         }
@@ -182,7 +185,8 @@ public class MonitoringServiceImpl implements MonitoringService {
         }
         
         Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
-        if (stationOpt.isEmpty() || !stationOpt.get().getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("La estación de monitoreo no pertenece a su corporación");
         }
         
@@ -206,7 +210,8 @@ public class MonitoringServiceImpl implements MonitoringService {
         }
         
         Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
-        if (stationOpt.isEmpty() || !stationOpt.get().getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("La estación de monitoreo no pertenece a su corporación");
         }
         
@@ -230,7 +235,8 @@ public class MonitoringServiceImpl implements MonitoringService {
         }
         
         Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
-        if (stationOpt.isEmpty() || !stationOpt.get().getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("La estación de monitoreo no pertenece a su corporación");
         }
         
@@ -279,7 +285,8 @@ public class MonitoringServiceImpl implements MonitoringService {
         }
         
         Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
-        if (stationOpt.isEmpty() || !stationOpt.get().getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("La estación de monitoreo no pertenece a su corporación");
         }
         
@@ -309,7 +316,8 @@ public class MonitoringServiceImpl implements MonitoringService {
         }
         
         Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
-        if (stationOpt.isEmpty() || !stationOpt.get().getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("La estación de monitoreo no pertenece a su corporación");
         }
         
@@ -332,7 +340,8 @@ public class MonitoringServiceImpl implements MonitoringService {
         }
         
         Monitoring monitoring = monitoringOpt.get();
-        if (!monitoring.getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (monitoring.getCorporation() == null || !monitoring.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("No tiene permisos para eliminar este monitoreo");
         }
         

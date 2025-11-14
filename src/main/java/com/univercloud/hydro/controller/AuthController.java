@@ -87,7 +87,7 @@ public class AuthController {
 
         Set<Role> roles = new HashSet<>();
 
-        Role userRole = roleRepository.findByName("USER")
+        Role userRole = roleRepository.findByName("ADMIN")
                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
         roles.add(userRole);
 

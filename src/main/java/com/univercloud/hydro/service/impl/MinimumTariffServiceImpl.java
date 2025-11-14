@@ -67,7 +67,8 @@ public class MinimumTariffServiceImpl implements MinimumTariffService {
                 .orElseThrow(() -> new IllegalArgumentException("Minimum tariff not found"));
         
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(existingMinimumTariff.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (corporation == null || existingMinimumTariff.getCorporation() == null || !existingMinimumTariff.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Minimum tariff does not belong to your corporation");
         }
         
@@ -284,7 +285,8 @@ public class MinimumTariffServiceImpl implements MinimumTariffService {
                 .orElseThrow(() -> new IllegalArgumentException("Minimum tariff not found"));
         
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(minimumTariff.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (corporation == null || minimumTariff.getCorporation() == null || !minimumTariff.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Minimum tariff does not belong to your corporation");
         }
         
@@ -307,7 +309,8 @@ public class MinimumTariffServiceImpl implements MinimumTariffService {
                 .orElseThrow(() -> new IllegalArgumentException("Minimum tariff not found"));
         
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(minimumTariff.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (corporation == null || minimumTariff.getCorporation() == null || !minimumTariff.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Minimum tariff does not belong to your corporation");
         }
         
@@ -330,7 +333,8 @@ public class MinimumTariffServiceImpl implements MinimumTariffService {
                 .orElseThrow(() -> new IllegalArgumentException("Minimum tariff not found"));
         
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(minimumTariff.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (corporation == null || minimumTariff.getCorporation() == null || !minimumTariff.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Minimum tariff does not belong to your corporation");
         }
         

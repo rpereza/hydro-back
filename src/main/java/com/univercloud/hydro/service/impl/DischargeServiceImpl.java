@@ -61,7 +61,8 @@ public class DischargeServiceImpl implements DischargeService {
             DischargeUser dischargeUser = dischargeUserRepository.findById(discharge.getDischargeUser().getId())
                     .orElseThrow(() -> new IllegalArgumentException("Discharge user not found"));
             
-            if (!corporation.equals(dischargeUser.getCorporation())) {
+            // Comparar por ID para evitar problemas con proxies de Hibernate
+            if (dischargeUser.getCorporation() == null || !dischargeUser.getCorporation().getId().equals(corporation.getId())) {
                 throw new IllegalArgumentException("Discharge user does not belong to your corporation");
             }
         }
@@ -77,7 +78,8 @@ public class DischargeServiceImpl implements DischargeService {
             BasinSection basinSection = basinSectionRepository.findById(discharge.getBasinSection().getId())
                     .orElseThrow(() -> new IllegalArgumentException("Basin section not found"));
             
-            if (!corporation.equals(basinSection.getCorporation())) {
+            // Comparar por ID para evitar problemas con proxies de Hibernate
+            if (basinSection.getCorporation() == null || !basinSection.getCorporation().getId().equals(corporation.getId())) {
                 throw new IllegalArgumentException("Basin section does not belong to your corporation");
             }
         }
@@ -109,7 +111,8 @@ public class DischargeServiceImpl implements DischargeService {
                 .orElseThrow(() -> new IllegalArgumentException("Discharge not found"));
         
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(existingDischarge.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (corporation == null || existingDischarge.getCorporation() == null || !existingDischarge.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Discharge does not belong to your corporation");
         }
         
@@ -217,7 +220,8 @@ public class DischargeServiceImpl implements DischargeService {
         DischargeUser dischargeUser = dischargeUserRepository.findById(dischargeUserId)
                 .orElseThrow(() -> new IllegalArgumentException("Discharge user not found"));
         
-        if (!corporation.equals(dischargeUser.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (dischargeUser.getCorporation() == null || !dischargeUser.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("Discharge user does not belong to your corporation");
         }
         
@@ -249,7 +253,8 @@ public class DischargeServiceImpl implements DischargeService {
         BasinSection basinSection = basinSectionRepository.findById(basinSectionId)
                 .orElseThrow(() -> new IllegalArgumentException("Basin section not found"));
         
-        if (!corporation.equals(basinSection.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (basinSection.getCorporation() == null || !basinSection.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("Basin section does not belong to your corporation");
         }
         
@@ -461,7 +466,8 @@ public class DischargeServiceImpl implements DischargeService {
                 .orElseThrow(() -> new IllegalArgumentException("Discharge not found"));
         
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(discharge.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (corporation == null || discharge.getCorporation() == null || !discharge.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Discharge does not belong to your corporation");
         }
         
@@ -516,7 +522,8 @@ public class DischargeServiceImpl implements DischargeService {
         BasinSection basinSection = basinSectionRepository.findById(basinSectionId)
                 .orElseThrow(() -> new IllegalArgumentException("Basin section not found"));
         
-        if (!corporation.equals(basinSection.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (basinSection.getCorporation() == null || !basinSection.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("Basin section does not belong to your corporation");
         }
         

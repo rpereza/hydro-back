@@ -8,10 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "authorization_types")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class AuthorizationType implements Auditable {
     
     @Id
@@ -45,6 +47,7 @@ public class AuthorizationType implements Auditable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
+    @JsonIgnore
     @OneToMany(mappedBy = "authorizationType", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<DischargeUser> users = new ArrayList<>();
     
@@ -102,6 +105,7 @@ public class AuthorizationType implements Auditable {
         this.updatedAt = updatedAt;
     }
     
+    @JsonIgnore
     public List<DischargeUser> getUsers() {
         return users;
     }

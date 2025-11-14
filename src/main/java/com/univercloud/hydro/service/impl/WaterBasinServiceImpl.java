@@ -66,7 +66,8 @@ public class WaterBasinServiceImpl implements WaterBasinService {
                 .orElseThrow(() -> new IllegalArgumentException("Water basin not found"));
         
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(existingWaterBasin.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (corporation == null || existingWaterBasin.getCorporation() == null || !existingWaterBasin.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Water basin does not belong to your corporation");
         }
         
@@ -264,7 +265,8 @@ public class WaterBasinServiceImpl implements WaterBasinService {
                 .orElseThrow(() -> new IllegalArgumentException("Water basin not found"));
         
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(waterBasin.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (corporation == null || waterBasin.getCorporation() == null || !waterBasin.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Water basin does not belong to your corporation");
         }
         
@@ -287,7 +289,8 @@ public class WaterBasinServiceImpl implements WaterBasinService {
                 .orElseThrow(() -> new IllegalArgumentException("Water basin not found"));
         
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(waterBasin.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (corporation == null || waterBasin.getCorporation() == null || !waterBasin.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Water basin does not belong to your corporation");
         }
         
@@ -310,7 +313,8 @@ public class WaterBasinServiceImpl implements WaterBasinService {
                 .orElseThrow(() -> new IllegalArgumentException("Water basin not found"));
         
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(waterBasin.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (corporation == null || waterBasin.getCorporation() == null || !waterBasin.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Water basin does not belong to your corporation");
         }
         

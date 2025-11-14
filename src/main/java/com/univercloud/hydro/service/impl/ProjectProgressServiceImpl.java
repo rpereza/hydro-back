@@ -68,7 +68,8 @@ public class ProjectProgressServiceImpl implements ProjectProgressService {
                 .orElseThrow(() -> new IllegalArgumentException("Project progress not found"));
         
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(existingProjectProgress.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (corporation == null || existingProjectProgress.getCorporation() == null || !existingProjectProgress.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Project progress does not belong to your corporation");
         }
         
@@ -230,7 +231,8 @@ public class ProjectProgressServiceImpl implements ProjectProgressService {
                 .orElseThrow(() -> new IllegalArgumentException("Project progress not found"));
         
         Corporation corporation = currentUser.getCorporation();
-        if (corporation == null || !corporation.equals(projectProgress.getCorporation())) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (corporation == null || projectProgress.getCorporation() == null || !projectProgress.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Project progress does not belong to your corporation");
         }
         

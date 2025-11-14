@@ -54,7 +54,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         // Verificar que la descarga pertenezca a la corporación
         if (invoice.getDischarge() != null) {
             Optional<Discharge> dischargeOpt = dischargeRepository.findById(invoice.getDischarge().getId());
-            if (dischargeOpt.isEmpty() || !dischargeOpt.get().getCorporation().equals(corporation)) {
+            // Comparar por ID para evitar problemas con proxies de Hibernate
+            if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
                 throw new IllegalArgumentException("La descarga no pertenece a su corporación");
             }
         }
@@ -86,7 +87,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         Invoice existing = existingOpt.get();
         
         // Verificar que pertenezca a la corporación del usuario
-        if (!existing.getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (existing.getCorporation() == null || !existing.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("No tiene permisos para actualizar esta factura");
         }
         
@@ -98,7 +100,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         // Verificar que la descarga pertenezca a la corporación
         if (invoice.getDischarge() != null) {
             Optional<Discharge> dischargeOpt = dischargeRepository.findById(invoice.getDischarge().getId());
-            if (dischargeOpt.isEmpty() || !dischargeOpt.get().getCorporation().equals(corporation)) {
+            // Comparar por ID para evitar problemas con proxies de Hibernate
+            if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
                 throw new IllegalArgumentException("La descarga no pertenece a su corporación");
             }
         }
@@ -180,7 +183,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
         
         Optional<Discharge> dischargeOpt = dischargeRepository.findById(dischargeId);
-        if (dischargeOpt.isEmpty() || !dischargeOpt.get().getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("La descarga no pertenece a su corporación");
         }
         
@@ -204,7 +208,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
         
         Optional<Discharge> dischargeOpt = dischargeRepository.findById(dischargeId);
-        if (dischargeOpt.isEmpty() || !dischargeOpt.get().getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("La descarga no pertenece a su corporación");
         }
         
@@ -252,7 +257,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
         
         Invoice invoice = invoiceOpt.get();
-        if (!invoice.getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (invoice.getCorporation() == null || !invoice.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("No tiene permisos para eliminar esta factura");
         }
         
@@ -286,7 +292,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
         
         Optional<Discharge> dischargeOpt = dischargeRepository.findById(dischargeId);
-        if (dischargeOpt.isEmpty() || !dischargeOpt.get().getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("La descarga no pertenece a su corporación");
         }
         
@@ -310,7 +317,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
         
         Optional<Discharge> dischargeOpt = dischargeRepository.findById(dischargeId);
-        if (dischargeOpt.isEmpty() || !dischargeOpt.get().getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("La descarga no pertenece a su corporación");
         }
         

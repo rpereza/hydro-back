@@ -61,7 +61,8 @@ public class BasinSectionServiceImpl implements BasinSectionService {
         // Verificar que la cuenca hidrográfica pertenezca a la corporación
         if (basinSection.getWaterBasin() != null) {
             Optional<WaterBasin> waterBasinOpt = waterBasinRepository.findById(basinSection.getWaterBasin().getId());
-            if (waterBasinOpt.isEmpty() || !waterBasinOpt.get().getCorporation().equals(corporation)) {
+            // Comparar por ID para evitar problemas con proxies de Hibernate
+            if (waterBasinOpt.isEmpty() || waterBasinOpt.get().getCorporation() == null || !waterBasinOpt.get().getCorporation().getId().equals(corporation.getId())) {
                 throw new IllegalArgumentException("La cuenca hidrográfica no pertenece a su corporación");
             }
         }
@@ -93,7 +94,8 @@ public class BasinSectionServiceImpl implements BasinSectionService {
         BasinSection existing = existingOpt.get();
         
         // Verificar que pertenezca a la corporación del usuario
-        if (!existing.getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (existing.getCorporation() == null || !existing.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("No tiene permisos para actualizar esta sección de cuenca");
         }
         
@@ -105,7 +107,8 @@ public class BasinSectionServiceImpl implements BasinSectionService {
         // Verificar que la cuenca hidrográfica pertenezca a la corporación
         if (basinSection.getWaterBasin() != null) {
             Optional<WaterBasin> waterBasinOpt = waterBasinRepository.findById(basinSection.getWaterBasin().getId());
-            if (waterBasinOpt.isEmpty() || !waterBasinOpt.get().getCorporation().equals(corporation)) {
+            // Comparar por ID para evitar problemas con proxies de Hibernate
+            if (waterBasinOpt.isEmpty() || waterBasinOpt.get().getCorporation() == null || !waterBasinOpt.get().getCorporation().getId().equals(corporation.getId())) {
                 throw new IllegalArgumentException("La cuenca hidrográfica no pertenece a su corporación");
             }
         }
@@ -171,7 +174,8 @@ public class BasinSectionServiceImpl implements BasinSectionService {
         }
         
         Optional<WaterBasin> waterBasinOpt = waterBasinRepository.findById(waterBasinId);
-        if (waterBasinOpt.isEmpty() || !waterBasinOpt.get().getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (waterBasinOpt.isEmpty() || waterBasinOpt.get().getCorporation() == null || !waterBasinOpt.get().getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("La cuenca hidrográfica no pertenece a su corporación");
         }
         
@@ -189,7 +193,8 @@ public class BasinSectionServiceImpl implements BasinSectionService {
         }
         
         Optional<WaterBasin> waterBasinOpt = waterBasinRepository.findById(waterBasinId);
-        if (waterBasinOpt.isEmpty() || !waterBasinOpt.get().getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (waterBasinOpt.isEmpty() || waterBasinOpt.get().getCorporation() == null || !waterBasinOpt.get().getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("La cuenca hidrográfica no pertenece a su corporación");
         }
         
@@ -244,7 +249,8 @@ public class BasinSectionServiceImpl implements BasinSectionService {
         }
         
         Optional<WaterBasin> waterBasinOpt = waterBasinRepository.findById(waterBasinId);
-        if (waterBasinOpt.isEmpty() || !waterBasinOpt.get().getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (waterBasinOpt.isEmpty() || waterBasinOpt.get().getCorporation() == null || !waterBasinOpt.get().getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("La cuenca hidrográfica no pertenece a su corporación");
         }
         
@@ -304,7 +310,8 @@ public class BasinSectionServiceImpl implements BasinSectionService {
         }
         
         BasinSection basinSection = basinSectionOpt.get();
-        if (!basinSection.getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (basinSection.getCorporation() == null || !basinSection.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("No tiene permisos para activar esta sección de cuenca");
         }
         
@@ -332,7 +339,8 @@ public class BasinSectionServiceImpl implements BasinSectionService {
         }
         
         BasinSection basinSection = basinSectionOpt.get();
-        if (!basinSection.getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (basinSection.getCorporation() == null || !basinSection.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("No tiene permisos para desactivar esta sección de cuenca");
         }
         
@@ -360,7 +368,8 @@ public class BasinSectionServiceImpl implements BasinSectionService {
         }
         
         BasinSection basinSection = basinSectionOpt.get();
-        if (!basinSection.getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (basinSection.getCorporation() == null || !basinSection.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("No tiene permisos para eliminar esta sección de cuenca");
         }
         
@@ -391,7 +400,8 @@ public class BasinSectionServiceImpl implements BasinSectionService {
         }
         
         Optional<WaterBasin> waterBasinOpt = waterBasinRepository.findById(waterBasinId);
-        if (waterBasinOpt.isEmpty() || !waterBasinOpt.get().getCorporation().equals(corporation)) {
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (waterBasinOpt.isEmpty() || waterBasinOpt.get().getCorporation() == null || !waterBasinOpt.get().getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalArgumentException("La cuenca hidrográfica no pertenece a su corporación");
         }
         
