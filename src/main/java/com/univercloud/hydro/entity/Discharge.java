@@ -1,5 +1,6 @@
 package com.univercloud.hydro.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -117,13 +118,13 @@ public class Discharge implements Auditable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    @OneToMany(mappedBy = "discharge", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "discharge", fetch = FetchType.LAZY)
     private List<DischargeParameter> dischargeParameters = new ArrayList<>();
     
-    @OneToMany(mappedBy = "discharge", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "discharge", fetch = FetchType.LAZY)
     private List<DischargeMonitoring> dischargeMonitorings = new ArrayList<>();
     
-    @OneToMany(mappedBy = "discharge", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "discharge", fetch = FetchType.LAZY)
     private List<Invoice> invoices = new ArrayList<>();
     
     
@@ -354,6 +355,7 @@ public class Discharge implements Auditable {
     
     // Auditable interface implementation
     @Override
+    @JsonIgnore
     public Corporation getCorporation() {
         return corporation;
     }
@@ -364,6 +366,7 @@ public class Discharge implements Auditable {
     }
     
     @Override
+    @JsonIgnore
     public User getCreatedBy() {
         return createdBy;
     }
@@ -374,6 +377,7 @@ public class Discharge implements Auditable {
     }
     
     @Override
+    @JsonIgnore
     public User getUpdatedBy() {
         return updatedBy;
     }

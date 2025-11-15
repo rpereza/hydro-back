@@ -3,7 +3,10 @@ package com.univercloud.hydro.service.impl;
 import com.univercloud.hydro.entity.AuthorizationType;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.User;
+import com.univercloud.hydro.exception.DuplicateResourceException;
+import com.univercloud.hydro.exception.ResourceInUseException;
 import com.univercloud.hydro.repository.AuthorizationTypeRepository;
+import com.univercloud.hydro.repository.DischargeUserRepository;
 import com.univercloud.hydro.service.AuthorizationTypeService;
 import com.univercloud.hydro.util.AuthorizationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +30,9 @@ public class AuthorizationTypeServiceImpl implements AuthorizationTypeService {
     private AuthorizationTypeRepository authorizationTypeRepository;
     
     @Autowired
+    private DischargeUserRepository dischargeUserRepository;
+    
+    @Autowired
     private AuthorizationUtils authorizationUtils;
     
     @Override
@@ -43,7 +49,7 @@ public class AuthorizationTypeServiceImpl implements AuthorizationTypeService {
         
         // Verificar que no existe un tipo de autorización con el mismo nombre
         if (authorizationType.getName() != null && authorizationTypeRepository.existsByName(authorizationType.getName())) {
-            throw new IllegalArgumentException("Authorization type with name '" + authorizationType.getName() + "' already exists");
+            throw new DuplicateResourceException("AuthorizationType", "name", authorizationType.getName());
         }
         
         // Asignar corporación y usuario creador
@@ -74,7 +80,7 @@ public class AuthorizationTypeServiceImpl implements AuthorizationTypeService {
         // Verificar cambios en el nombre
         if (authorizationType.getName() != null && !authorizationType.getName().equals(existingAuthorizationType.getName())) {
             if (authorizationTypeRepository.existsByName(authorizationType.getName())) {
-                throw new IllegalArgumentException("Authorization type with name '" + authorizationType.getName() + "' already exists");
+                throw new DuplicateResourceException("AuthorizationType", "name", authorizationType.getName());
             }
         }
         
@@ -151,6 +157,12 @@ public class AuthorizationTypeServiceImpl implements AuthorizationTypeService {
         // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
         AuthorizationType authorizationType = authorizationTypeRepository.findByIdAndCorporationId(id, corporation.getId())
                 .orElseThrow(() -> new IllegalStateException("Access denied: Authorization type not found or does not belong to your corporation"));
+        
+        // Verificar si hay usuarios de descarga asociados
+        long dischargeUserCount = dischargeUserRepository.countByAuthorizationTypeId(id);
+        if (dischargeUserCount > 0) {
+            throw new ResourceInUseException("AuthorizationType", "id", id, "DischargeUser", dischargeUserCount);
+        }
         
         authorizationTypeRepository.delete(authorizationType);
         return true;

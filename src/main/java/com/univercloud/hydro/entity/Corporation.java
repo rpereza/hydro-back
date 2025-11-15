@@ -42,7 +42,7 @@ public class Corporation {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    @OneToMany(mappedBy = "corporation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "corporation", fetch = FetchType.LAZY)
     private List<User> users = new ArrayList<>();
     
     // Constructors

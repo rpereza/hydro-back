@@ -4,6 +4,7 @@ import com.univercloud.hydro.dto.*;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.Role;
 import com.univercloud.hydro.entity.User;
+import com.univercloud.hydro.exception.DuplicateResourceException;
 import com.univercloud.hydro.repository.CorporationRepository;
 import com.univercloud.hydro.repository.RoleRepository;
 import com.univercloud.hydro.repository.UserRepository;
@@ -55,7 +56,7 @@ public class CorporationServiceImpl implements CorporationService {
         }
         
         if (corporationRepository.existsByCode(request.getCode())) {
-            throw new IllegalArgumentException("Corporation code already exists");
+            throw new DuplicateResourceException("Corporation", "code", request.getCode());
         }
         
         Corporation corporation = new Corporation();
@@ -134,7 +135,7 @@ public class CorporationServiceImpl implements CorporationService {
         // Verificar que el código no esté en uso por otra corporación
         if (!corporation.getCode().equals(request.getCode()) && 
             corporationRepository.existsByCode(request.getCode())) {
-            throw new IllegalArgumentException("Corporation code already exists");
+            throw new DuplicateResourceException("Corporation", "code", request.getCode());
         }
         
         corporation.setName(request.getName());
@@ -159,11 +160,11 @@ public class CorporationServiceImpl implements CorporationService {
         
         // Verificar si el usuario ya existe
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("Username already exists");
+            throw new DuplicateResourceException("User", "username", request.getUsername());
         }
         
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new DuplicateResourceException("User", "email", request.getEmail());
         }
         
         // Crear nuevo usuario

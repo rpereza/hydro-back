@@ -4,8 +4,12 @@ import com.univercloud.hydro.entity.DischargeUser;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.User;
 import com.univercloud.hydro.entity.Municipality;
+import com.univercloud.hydro.exception.DuplicateResourceException;
+import com.univercloud.hydro.exception.ResourceInUseException;
+import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.repository.DischargeUserRepository;
 import com.univercloud.hydro.repository.DischargeRepository;
+import com.univercloud.hydro.repository.ProjectProgressRepository;
 import com.univercloud.hydro.repository.InvoiceRepository;
 import com.univercloud.hydro.repository.MunicipalityRepository;
 import com.univercloud.hydro.service.DischargeUserService;
@@ -38,6 +42,9 @@ public class DischargeUserServiceImpl implements DischargeUserService {
     private DischargeRepository dischargeRepository;
     
     @Autowired
+    private ProjectProgressRepository projectProgressRepository;
+    
+    @Autowired
     private InvoiceRepository invoiceRepository;
     
     @Autowired
@@ -50,30 +57,30 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         // Verificar que el código no exista en la corporación
         if (dischargeUserRepository.existsByCodeAndCorporationId(dischargeUser.getCode(), corporation.getId())) {
-            throw new IllegalArgumentException("Ya existe un usuario de descarga con el código '" + dischargeUser.getCode() + "' en esta corporación");
+            throw new DuplicateResourceException("DischargeUser", "code", dischargeUser.getCode());
         }
         
-        // Verificar que el nombre de empresa no exista
-        if (existsByCompanyName(dischargeUser.getCompanyName())) {
-            throw new IllegalArgumentException("Ya existe un usuario de descarga con el nombre de empresa: " + dischargeUser.getCompanyName());
+        // Verificar que el nombre de empresa no exista en la corporación
+        if (dischargeUser.getCompanyName() != null && dischargeUserRepository.existsByCorporationAndCompanyName(corporation, dischargeUser.getCompanyName())) {
+            throw new DuplicateResourceException("DischargeUser", "companyName", dischargeUser.getCompanyName());
         }
         
         // Verificar que el tipo y número de documento no existan en la corporación
         if (dischargeUserRepository.existsByDocumentTypeAndDocumentNumberAndCorporationId(
                 dischargeUser.getDocumentType(), dischargeUser.getDocumentNumber(), corporation.getId())) {
-            throw new IllegalArgumentException("Ya existe un usuario de descarga con el tipo y número de documento especificados en esta corporación");
+            throw new DuplicateResourceException("DischargeUser", "documentType and documentNumber", dischargeUser.getDocumentType() + "/" + dischargeUser.getDocumentNumber());
         }
         
         // Verificar que el municipio pertenezca a la corporación
         if (dischargeUser.getMunicipality() != null) {
             Optional<Municipality> municipalityOpt = municipalityRepository.findById(dischargeUser.getMunicipality().getId());
             if (municipalityOpt.isEmpty()) {
-                throw new IllegalArgumentException("El municipio no existe");
+                throw new IllegalArgumentException("Municipality does not exist");
             }
         }
         
@@ -91,12 +98,12 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<DischargeUser> existingOpt = dischargeUserRepository.findById(dischargeUser.getId());
         if (existingOpt.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró el usuario de descarga con ID: " + dischargeUser.getId());
+            throw new ResourceNotFoundException("DischargeUser", "id", dischargeUser.getId());
         }
         
         DischargeUser existing = existingOpt.get();
@@ -104,19 +111,21 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         // Verificar que pertenezca a la corporación del usuario
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (existing.getCorporation() == null || !existing.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("No tiene permisos para actualizar este usuario de descarga");
+            throw new IllegalArgumentException("You do not have permission to update this discharge user");
         }
         
         // Verificar que el código no exista en la corporación (si cambió)
         if (!existing.getCode().equals(dischargeUser.getCode())) {
             if (dischargeUserRepository.existsByCodeAndCorporationId(dischargeUser.getCode(), corporation.getId())) {
-                throw new IllegalArgumentException("Ya existe un usuario de descarga con el código '" + dischargeUser.getCode() + "' en esta corporación");
+                throw new DuplicateResourceException("DischargeUser", "code", dischargeUser.getCode());
             }
         }
         
-        // Verificar que el nombre de empresa no exista (si cambió)
-        if (!existing.getCompanyName().equals(dischargeUser.getCompanyName()) && existsByCompanyName(dischargeUser.getCompanyName())) {
-            throw new IllegalArgumentException("Ya existe un usuario de descarga con el nombre de empresa: " + dischargeUser.getCompanyName());
+        // Verificar que el nombre de empresa no exista en la corporación (si cambió)
+        if (dischargeUser.getCompanyName() != null && !existing.getCompanyName().equals(dischargeUser.getCompanyName())) {
+            if (dischargeUserRepository.existsByCorporationAndCompanyNameExcludingId(corporation, dischargeUser.getCompanyName(), existing.getId())) {
+                throw new DuplicateResourceException("DischargeUser", "companyName", dischargeUser.getCompanyName());
+            }
         }
         
         // Verificar que el tipo y número de documento no existan en la corporación (si cambiaron)
@@ -124,7 +133,7 @@ public class DischargeUserServiceImpl implements DischargeUserService {
             !existing.getDocumentNumber().equals(dischargeUser.getDocumentNumber())) {
             if (dischargeUserRepository.existsByDocumentTypeAndDocumentNumberAndCorporationId(
                     dischargeUser.getDocumentType(), dischargeUser.getDocumentNumber(), corporation.getId())) {
-                throw new IllegalArgumentException("Ya existe un usuario de descarga con el tipo y número de documento especificados en esta corporación");
+                throw new DuplicateResourceException("DischargeUser", "documentType and documentNumber", dischargeUser.getDocumentType() + "/" + dischargeUser.getDocumentNumber());
             }
         }
         
@@ -132,7 +141,7 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         if (dischargeUser.getMunicipality() != null) {
             Optional<Municipality> municipalityOpt = municipalityRepository.findById(dischargeUser.getMunicipality().getId());
             if (municipalityOpt.isEmpty()) {
-                throw new IllegalArgumentException("El municipio no existe");
+                throw new IllegalArgumentException("Municipality does not exist");
             }
         }
         
@@ -167,7 +176,7 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
@@ -181,7 +190,7 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         return dischargeUserRepository.findByCorporation(corporation, pageable);
@@ -194,7 +203,7 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         return dischargeUserRepository.findByCorporation(corporation);
@@ -207,7 +216,7 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         return dischargeUserRepository.findByCorporationAndIsActiveTrue(corporation);
@@ -220,7 +229,7 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<Municipality> municipalityOpt = municipalityRepository.findById(municipalityId);
@@ -238,7 +247,7 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<Municipality> municipalityOpt = municipalityRepository.findById(municipalityId);
@@ -268,7 +277,7 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<Municipality> municipalityOpt = municipalityRepository.findById(municipalityId);
@@ -322,7 +331,7 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         return dischargeUserRepository.countByCorporationId(corporation.getId());
@@ -335,18 +344,18 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<DischargeUser> dischargeUserOpt = dischargeUserRepository.findById(id);
         if (dischargeUserOpt.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró el usuario de descarga con ID: " + id);
+            throw new ResourceNotFoundException("DischargeUser", "id", id);
         }
         
         DischargeUser dischargeUser = dischargeUserOpt.get();
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (dischargeUser.getCorporation() == null || !dischargeUser.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("No tiene permisos para activar este usuario de descarga");
+            throw new IllegalArgumentException("You do not have permission to activate this discharge user");
         }
         
         dischargeUser.setActive(true);
@@ -364,18 +373,18 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<DischargeUser> dischargeUserOpt = dischargeUserRepository.findById(id);
         if (dischargeUserOpt.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró el usuario de descarga con ID: " + id);
+            throw new ResourceNotFoundException("DischargeUser", "id", id);
         }
         
         DischargeUser dischargeUser = dischargeUserOpt.get();
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (dischargeUser.getCorporation() == null || !dischargeUser.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("No tiene permisos para desactivar este usuario de descarga");
+            throw new IllegalArgumentException("You do not have permission to deactivate this discharge user");
         }
         
         dischargeUser.setActive(false);
@@ -393,29 +402,36 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<DischargeUser> dischargeUserOpt = dischargeUserRepository.findById(id);
         if (dischargeUserOpt.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró el usuario de descarga con ID: " + id);
+            throw new ResourceNotFoundException("DischargeUser", "id", id);
         }
         
         DischargeUser dischargeUser = dischargeUserOpt.get();
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (dischargeUser.getCorporation() == null || !dischargeUser.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("No tiene permisos para eliminar este usuario de descarga");
+            throw new IllegalArgumentException("You do not have permission to delete this discharge user");
+        }
+        
+        // Verificar si hay descargas asociadas
+        long dischargeCount = dischargeRepository.countByDischargeUserId(id);
+        if (dischargeCount > 0) {
+            throw new ResourceInUseException("DischargeUser", "id", id, "Discharge", dischargeCount);
+        }
+        
+        // Verificar si hay progresos de proyecto asociados
+        long projectProgressCount = projectProgressRepository.countByDischargeUserId(id);
+        if (projectProgressCount > 0) {
+            throw new ResourceInUseException("DischargeUser", "id", id, "ProjectProgress", projectProgressCount);
         }
         
         dischargeUserRepository.delete(dischargeUser);
         return true;
     }
     
-    @Override
-    @Transactional(readOnly = true)
-    public boolean existsByCompanyName(String companyName) {
-        return dischargeUserRepository.existsByCompanyName(companyName);
-    }
     
     @Override
     @Transactional(readOnly = true)
@@ -436,7 +452,7 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<Municipality> municipalityOpt = municipalityRepository.findById(municipalityId);
@@ -466,7 +482,7 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         DischargeUserStats stats = new DischargeUserStats();

@@ -193,4 +193,5 @@ public interface DischargeMonitoringRepository extends JpaRepository<DischargeMo
      */
     @Query("SELECT dm FROM DischargeMonitoring dm WHERE dm.id = :id AND dm.corporation.id = :corporationId")
     Optional<DischargeMonitoring> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
+    
 }

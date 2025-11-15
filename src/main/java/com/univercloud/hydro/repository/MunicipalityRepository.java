@@ -60,4 +60,12 @@ public interface MunicipalityRepository extends JpaRepository<Municipality, Long
      * @return lista de municipios activos del departamento
      */
     List<Municipality> findByDepartmentIdAndIsActiveTrue(Long departmentId);
+    
+    /**
+     * Cuenta usuarios de descarga por municipio.
+     * @param municipalityId el ID del municipio
+     * @return número de usuarios de descarga asociados al municipio
+     */
+    @Query("SELECT COUNT(du) FROM DischargeUser du WHERE du.municipality.id = :municipalityId")
+    long countDischargeUsersByMunicipalityId(@Param("municipalityId") Long municipalityId);
 }

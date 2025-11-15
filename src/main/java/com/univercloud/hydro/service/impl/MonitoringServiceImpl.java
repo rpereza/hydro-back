@@ -4,6 +4,8 @@ import com.univercloud.hydro.entity.Monitoring;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.User;
 import com.univercloud.hydro.entity.MonitoringStation;
+import com.univercloud.hydro.exception.DuplicateResourceException;
+import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.repository.MonitoringRepository;
 import com.univercloud.hydro.repository.MonitoringStationRepository;
 import com.univercloud.hydro.service.MonitoringService;
@@ -43,12 +45,12 @@ public class MonitoringServiceImpl implements MonitoringService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         // Verificar que no exista un monitoreo para la misma estación y fecha
         if (existsByStationAndDate(monitoring.getMonitoringStation().getId(), monitoring.getMonitoringDate())) {
-            throw new IllegalArgumentException("Ya existe un monitoreo para esta estación en la fecha: " + monitoring.getMonitoringDate());
+            throw new DuplicateResourceException("Monitoring", "monitoringStation and monitoringDate", monitoring.getMonitoringStation().getId() + "/" + monitoring.getMonitoringDate());
         }
         
         // Verificar que la estación de monitoreo pertenezca a la corporación
@@ -56,7 +58,7 @@ public class MonitoringServiceImpl implements MonitoringService {
             Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoring.getMonitoringStation().getId());
             // Comparar por ID para evitar problemas con proxies de Hibernate
             if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
-                throw new IllegalArgumentException("La estación de monitoreo no pertenece a su corporación");
+                throw new IllegalArgumentException("Monitoring station does not belong to your corporation");
             }
         }
         
@@ -76,12 +78,12 @@ public class MonitoringServiceImpl implements MonitoringService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<Monitoring> existingOpt = monitoringRepository.findById(monitoring.getId());
         if (existingOpt.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró el monitoreo con ID: " + monitoring.getId());
+            throw new ResourceNotFoundException("Monitoring", "id", monitoring.getId());
         }
         
         Monitoring existing = existingOpt.get();
@@ -89,14 +91,14 @@ public class MonitoringServiceImpl implements MonitoringService {
         // Verificar que pertenezca a la corporación del usuario
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (existing.getCorporation() == null || !existing.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("No tiene permisos para actualizar este monitoreo");
+            throw new IllegalArgumentException("You do not have permission to update this monitoring");
         }
         
         // Verificar que no exista otro monitoreo para la misma estación y fecha (si cambió)
         if (!existing.getMonitoringStation().getId().equals(monitoring.getMonitoringStation().getId()) ||
             !existing.getMonitoringDate().equals(monitoring.getMonitoringDate())) {
             if (existsByStationAndDate(monitoring.getMonitoringStation().getId(), monitoring.getMonitoringDate())) {
-                throw new IllegalArgumentException("Ya existe un monitoreo para esta estación en la fecha: " + monitoring.getMonitoringDate());
+                throw new DuplicateResourceException("Monitoring", "monitoringStation and monitoringDate", monitoring.getMonitoringStation().getId() + "/" + monitoring.getMonitoringDate());
             }
         }
         
@@ -105,7 +107,7 @@ public class MonitoringServiceImpl implements MonitoringService {
             Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoring.getMonitoringStation().getId());
             // Comparar por ID para evitar problemas con proxies de Hibernate
             if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
-                throw new IllegalArgumentException("La estación de monitoreo no pertenece a su corporación");
+                throw new IllegalArgumentException("Monitoring station does not belong to your corporation");
             }
         }
         
@@ -141,7 +143,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
@@ -155,7 +157,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         return monitoringRepository.findByCorporation(corporation, pageable);
@@ -168,7 +170,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         return monitoringRepository.findByCorporation(corporation);
@@ -181,13 +183,13 @@ public class MonitoringServiceImpl implements MonitoringService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("La estación de monitoreo no pertenece a su corporación");
+            throw new IllegalArgumentException("Monitoring station does not belong to your corporation");
         }
         
         return monitoringRepository.findByMonitoringStation(stationOpt.get());
@@ -206,13 +208,13 @@ public class MonitoringServiceImpl implements MonitoringService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("La estación de monitoreo no pertenece a su corporación");
+            throw new IllegalArgumentException("Monitoring station does not belong to your corporation");
         }
         
         return monitoringRepository.findByMonitoringStationAndMonitoringDate(stationOpt.get(), monitoringDate);
@@ -231,13 +233,13 @@ public class MonitoringServiceImpl implements MonitoringService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("La estación de monitoreo no pertenece a su corporación");
+            throw new IllegalArgumentException("Monitoring station does not belong to your corporation");
         }
         
         return monitoringRepository.findByMonitoringStationAndMonitoringDateBetween(stationOpt.get(), startDate, endDate);
@@ -268,7 +270,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         return monitoringRepository.countByCorporationId(corporation.getId());
@@ -281,13 +283,13 @@ public class MonitoringServiceImpl implements MonitoringService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("La estación de monitoreo no pertenece a su corporación");
+            throw new IllegalArgumentException("Monitoring station does not belong to your corporation");
         }
         
         return monitoringRepository.findLatestByMonitoringStation(stationOpt.get());
@@ -312,13 +314,13 @@ public class MonitoringServiceImpl implements MonitoringService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("La estación de monitoreo no pertenece a su corporación");
+            throw new IllegalArgumentException("Monitoring station does not belong to your corporation");
         }
         
         return monitoringRepository.findByMonitoringStationAndYear(stationOpt.get(), year);
@@ -331,18 +333,18 @@ public class MonitoringServiceImpl implements MonitoringService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<Monitoring> monitoringOpt = monitoringRepository.findById(id);
         if (monitoringOpt.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró el monitoreo con ID: " + id);
+            throw new ResourceNotFoundException("Monitoring", "id", id);
         }
         
         Monitoring monitoring = monitoringOpt.get();
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (monitoring.getCorporation() == null || !monitoring.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("No tiene permisos para eliminar este monitoreo");
+            throw new IllegalArgumentException("You do not have permission to delete this monitoring");
         }
         
         monitoringRepository.delete(monitoring);
@@ -366,7 +368,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         MonitoringStats stats = new MonitoringStats();

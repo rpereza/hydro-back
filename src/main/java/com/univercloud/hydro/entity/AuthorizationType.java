@@ -48,7 +48,7 @@ public class AuthorizationType implements Auditable {
     private LocalDateTime updatedAt;
     
     @JsonIgnore
-    @OneToMany(mappedBy = "authorizationType", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "authorizationType", fetch = FetchType.LAZY)
     private List<DischargeUser> users = new ArrayList<>();
     
     // Constructors

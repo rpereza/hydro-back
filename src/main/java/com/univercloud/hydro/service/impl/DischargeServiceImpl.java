@@ -6,8 +6,14 @@ import com.univercloud.hydro.entity.DischargeUser;
 import com.univercloud.hydro.entity.Municipality;
 import com.univercloud.hydro.entity.BasinSection;
 import com.univercloud.hydro.entity.User;
+import com.univercloud.hydro.exception.DuplicateResourceException;
+import com.univercloud.hydro.exception.ResourceInUseException;
+import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.repository.DischargeRepository;
 import com.univercloud.hydro.repository.DischargeUserRepository;
+import com.univercloud.hydro.repository.DischargeParameterRepository;
+import com.univercloud.hydro.repository.DischargeMonitoringRepository;
+import com.univercloud.hydro.repository.InvoiceRepository;
 import com.univercloud.hydro.repository.MunicipalityRepository;
 import com.univercloud.hydro.repository.BasinSectionRepository;
 import com.univercloud.hydro.service.DischargeService;
@@ -36,6 +42,15 @@ public class DischargeServiceImpl implements DischargeService {
     private DischargeUserRepository dischargeUserRepository;
     
     @Autowired
+    private DischargeParameterRepository dischargeParameterRepository;
+    
+    @Autowired
+    private DischargeMonitoringRepository dischargeMonitoringRepository;
+    
+    @Autowired
+    private InvoiceRepository invoiceRepository;
+    
+    @Autowired
     private MunicipalityRepository municipalityRepository;
     
     @Autowired
@@ -59,7 +74,7 @@ public class DischargeServiceImpl implements DischargeService {
         // Validar que el usuario de descarga pertenece a la corporación
         if (discharge.getDischargeUser() != null) {
             DischargeUser dischargeUser = dischargeUserRepository.findById(discharge.getDischargeUser().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Discharge user not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("DischargeUser", "id", discharge.getDischargeUser().getId()));
             
             // Comparar por ID para evitar problemas con proxies de Hibernate
             if (dischargeUser.getCorporation() == null || !dischargeUser.getCorporation().getId().equals(corporation.getId())) {
@@ -70,13 +85,13 @@ public class DischargeServiceImpl implements DischargeService {
         // Validar que el municipio existe
         if (discharge.getMunicipality() != null) {
             municipalityRepository.findById(discharge.getMunicipality().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Municipality not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Municipality", "id", discharge.getMunicipality().getId()));
         }
         
         // Validar que la sección de cuenca pertenece a la corporación
         if (discharge.getBasinSection() != null) {
             BasinSection basinSection = basinSectionRepository.findById(discharge.getBasinSection().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Basin section not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("BasinSection", "id", discharge.getBasinSection().getId()));
             
             // Comparar por ID para evitar problemas con proxies de Hibernate
             if (basinSection.getCorporation() == null || !basinSection.getCorporation().getId().equals(corporation.getId())) {
@@ -84,11 +99,10 @@ public class DischargeServiceImpl implements DischargeService {
             }
         }
         
-        // Verificar que no existe una descarga con el mismo número y año
+        // Verificar que no existe una descarga con el mismo número y año en la corporación
         if (discharge.getNumber() != null && discharge.getYear() != null) {
-            if (dischargeRepository.existsByNumberAndYear(discharge.getNumber(), discharge.getYear())) {
-                throw new IllegalArgumentException("Discharge with number " + discharge.getNumber() + 
-                        " and year " + discharge.getYear() + " already exists");
+            if (dischargeRepository.existsByCorporationAndNumberAndYear(corporation, discharge.getNumber(), discharge.getYear())) {
+                throw new DuplicateResourceException("Discharge", "number and year", discharge.getNumber() + "/" + discharge.getYear());
             }
         }
         
@@ -108,7 +122,7 @@ public class DischargeServiceImpl implements DischargeService {
         }
         
         Discharge existingDischarge = dischargeRepository.findById(discharge.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Discharge not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Discharge", "id", discharge.getId()));
         
         Corporation corporation = currentUser.getCorporation();
         // Comparar por ID para evitar problemas con proxies de Hibernate
@@ -121,9 +135,9 @@ public class DischargeServiceImpl implements DischargeService {
             if (!discharge.getNumber().equals(existingDischarge.getNumber()) || 
                 !discharge.getYear().equals(existingDischarge.getYear())) {
                 
-                if (dischargeRepository.existsByNumberAndYear(discharge.getNumber(), discharge.getYear())) {
-                    throw new IllegalArgumentException("Discharge with number " + discharge.getNumber() + 
-                            " and year " + discharge.getYear() + " already exists");
+                if (dischargeRepository.existsByCorporationAndNumberAndYearExcludingId(corporation, discharge.getNumber(), discharge.getYear(), existingDischarge.getId())) {
+                    throw new IllegalArgumentException("A discharge with number " + discharge.getNumber() + 
+                            " and year " + discharge.getYear() + " already exists in your corporation");
                 }
             }
         }
@@ -463,12 +477,30 @@ public class DischargeServiceImpl implements DischargeService {
         }
         
         Discharge discharge = dischargeRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Discharge not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Discharge", "id", id));
         
         Corporation corporation = currentUser.getCorporation();
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (corporation == null || discharge.getCorporation() == null || !discharge.getCorporation().getId().equals(corporation.getId())) {
             throw new IllegalStateException("Access denied: Discharge does not belong to your corporation");
+        }
+        
+        // Verificar si hay parámetros de descarga asociados
+        long dischargeParameterCount = dischargeParameterRepository.countByDischargeId(id);
+        if (dischargeParameterCount > 0) {
+            throw new ResourceInUseException("Discharge", "id", id, "DischargeParameter", dischargeParameterCount);
+        }
+        
+        // Verificar si hay monitoreos de descarga asociados
+        long dischargeMonitoringCount = dischargeMonitoringRepository.countByDischargeId(id);
+        if (dischargeMonitoringCount > 0) {
+            throw new ResourceInUseException("Discharge", "id", id, "DischargeMonitoring", dischargeMonitoringCount);
+        }
+        
+        // Verificar si hay facturas asociadas
+        long invoiceCount = invoiceRepository.countByDischargeId(id);
+        if (invoiceCount > 0) {
+            throw new ResourceInUseException("Discharge", "id", id, "Invoice", invoiceCount);
         }
         
         dischargeRepository.delete(discharge);
@@ -478,7 +510,17 @@ public class DischargeServiceImpl implements DischargeService {
     @Override
     @Transactional(readOnly = true)
     public boolean existsByNumberAndYear(Integer number, Integer year) {
-        return dischargeRepository.existsByNumberAndYear(number, year);
+        User currentUser = authorizationUtils.getCurrentUser();
+        if (currentUser == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        
+        Corporation corporation = currentUser.getCorporation();
+        if (corporation == null) {
+            throw new IllegalStateException("User does not belong to a corporation");
+        }
+        
+        return dischargeRepository.existsByCorporationAndNumberAndYear(corporation, number, year);
     }
     
     @Override

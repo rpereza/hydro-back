@@ -120,10 +120,10 @@ public class DischargeUser implements Auditable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    @OneToMany(mappedBy = "dischargeUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "dischargeUser", fetch = FetchType.LAZY)
     private List<Discharge> discharges = new ArrayList<>();
     
-    @OneToMany(mappedBy = "dischargeUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "dischargeUser", fetch = FetchType.LAZY)
     private List<ProjectProgress> projectProgresses = new ArrayList<>();
     
     // Constructors

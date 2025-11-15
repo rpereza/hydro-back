@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "project_progress")
 public class ProjectProgress implements Auditable {
@@ -149,6 +151,7 @@ public class ProjectProgress implements Auditable {
     
     // Auditable interface implementation
     @Override
+    @JsonIgnore
     public Corporation getCorporation() {
         return corporation;
     }
@@ -159,6 +162,7 @@ public class ProjectProgress implements Auditable {
     }
     
     @Override
+    @JsonIgnore
     public User getCreatedBy() {
         return createdBy;
     }
@@ -169,6 +173,7 @@ public class ProjectProgress implements Auditable {
     }
     
     @Override
+    @JsonIgnore
     public User getUpdatedBy() {
         return updatedBy;
     }

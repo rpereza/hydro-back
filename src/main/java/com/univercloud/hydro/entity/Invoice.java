@@ -1,5 +1,6 @@
 package com.univercloud.hydro.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
@@ -324,6 +325,7 @@ public class Invoice implements Auditable {
     
     // Auditable interface implementation
     @Override
+    @JsonIgnore
     public Corporation getCorporation() {
         return corporation;
     }
@@ -334,6 +336,7 @@ public class Invoice implements Auditable {
     }
     
     @Override
+    @JsonIgnore
     public User getCreatedBy() {
         return createdBy;
     }
@@ -344,6 +347,7 @@ public class Invoice implements Auditable {
     }
     
     @Override
+    @JsonIgnore
     public User getUpdatedBy() {
         return updatedBy;
     }

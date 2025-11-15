@@ -167,13 +167,6 @@ public interface DischargeUserService {
     boolean deleteDischargeUser(Long id);
     
     /**
-     * Verifica si existe un usuario de descarga con el nombre de empresa especificado.
-     * @param companyName el nombre de la empresa
-     * @return true si existe, false en caso contrario
-     */
-    boolean existsByCompanyName(String companyName);
-    
-    /**
      * Verifica si existe un usuario de descarga con el tipo y número de documento especificados.
      * @param documentType el tipo de documento
      * @param documentNumber el número de documento

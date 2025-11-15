@@ -1,7 +1,11 @@
 package com.univercloud.hydro.service.impl;
 
 import com.univercloud.hydro.entity.EconomicActivity;
+import com.univercloud.hydro.exception.DuplicateResourceException;
+import com.univercloud.hydro.exception.ResourceInUseException;
+import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.repository.EconomicActivityRepository;
+import com.univercloud.hydro.repository.DischargeUserRepository;
 import com.univercloud.hydro.service.EconomicActivityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,16 +27,19 @@ public class EconomicActivityServiceImpl implements EconomicActivityService {
     @Autowired
     private EconomicActivityRepository economicActivityRepository;
     
+    @Autowired
+    private DischargeUserRepository dischargeUserRepository;
+    
     @Override
     public EconomicActivity createEconomicActivity(EconomicActivity economicActivity) {
         // Verificar que no existe una actividad económica con el mismo nombre
         if (economicActivity.getName() != null && economicActivityRepository.existsByName(economicActivity.getName())) {
-            throw new IllegalArgumentException("Economic activity with name '" + economicActivity.getName() + "' already exists");
+            throw new DuplicateResourceException("EconomicActivity", "name", economicActivity.getName());
         }
         
         // Verificar que no existe una actividad económica con el mismo código
         if (economicActivity.getCode() != null && economicActivityRepository.existsByCode(economicActivity.getCode())) {
-            throw new IllegalArgumentException("Economic activity with code '" + economicActivity.getCode() + "' already exists");
+            throw new DuplicateResourceException("EconomicActivity", "code", economicActivity.getCode());
         }
         
         // Asignar fecha de creación y estado activo
@@ -45,19 +52,19 @@ public class EconomicActivityServiceImpl implements EconomicActivityService {
     @Override
     public EconomicActivity updateEconomicActivity(EconomicActivity economicActivity) {
         EconomicActivity existingEconomicActivity = economicActivityRepository.findById(economicActivity.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Economic activity not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("EconomicActivity", "id", economicActivity.getId()));
         
         // Verificar cambios en el nombre
         if (economicActivity.getName() != null && !economicActivity.getName().equals(existingEconomicActivity.getName())) {
             if (economicActivityRepository.existsByName(economicActivity.getName())) {
-                throw new IllegalArgumentException("Economic activity with name '" + economicActivity.getName() + "' already exists");
+                throw new DuplicateResourceException("EconomicActivity", "name", economicActivity.getName());
             }
         }
         
         // Verificar cambios en el código
         if (economicActivity.getCode() != null && !economicActivity.getCode().equals(existingEconomicActivity.getCode())) {
             if (economicActivityRepository.existsByCode(economicActivity.getCode())) {
-                throw new IllegalArgumentException("Economic activity with code '" + economicActivity.getCode() + "' already exists");
+                throw new DuplicateResourceException("EconomicActivity", "code", economicActivity.getCode());
             }
         }
         
@@ -175,7 +182,7 @@ public class EconomicActivityServiceImpl implements EconomicActivityService {
     @Override
     public boolean activateEconomicActivity(Long id) {
         EconomicActivity economicActivity = economicActivityRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Economic activity not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("EconomicActivity", "id", id));
         
         economicActivity.setActive(true);
         economicActivity.setUpdatedAt(LocalDateTime.now());
@@ -187,7 +194,7 @@ public class EconomicActivityServiceImpl implements EconomicActivityService {
     @Override
     public boolean deactivateEconomicActivity(Long id) {
         EconomicActivity economicActivity = economicActivityRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Economic activity not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("EconomicActivity", "id", id));
         
         economicActivity.setActive(false);
         economicActivity.setUpdatedAt(LocalDateTime.now());
@@ -199,7 +206,13 @@ public class EconomicActivityServiceImpl implements EconomicActivityService {
     @Override
     public boolean deleteEconomicActivity(Long id) {
         EconomicActivity economicActivity = economicActivityRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Economic activity not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("EconomicActivity", "id", id));
+        
+        // Verificar si hay usuarios de descarga asociados
+        long dischargeUserCount = dischargeUserRepository.countByEconomicActivityId(id);
+        if (dischargeUserCount > 0) {
+            throw new ResourceInUseException("EconomicActivity", "id", id, "DischargeUser", dischargeUserCount);
+        }
         
         economicActivityRepository.delete(economicActivity);
         return true;

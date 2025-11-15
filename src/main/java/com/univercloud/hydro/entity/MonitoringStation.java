@@ -1,5 +1,6 @@
 package com.univercloud.hydro.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
@@ -63,7 +64,7 @@ public class MonitoringStation implements Auditable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    @OneToMany(mappedBy = "monitoringStation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "monitoringStation", fetch = FetchType.LAZY)
     private List<Monitoring> monitorings = new ArrayList<>();
     
     // Constructors
@@ -165,6 +166,7 @@ public class MonitoringStation implements Auditable {
     
     // Auditable interface implementation
     @Override
+    @JsonIgnore
     public Corporation getCorporation() {
         return corporation;
     }
@@ -175,6 +177,7 @@ public class MonitoringStation implements Auditable {
     }
     
     @Override
+    @JsonIgnore
     public User getCreatedBy() {
         return createdBy;
     }
@@ -185,6 +188,7 @@ public class MonitoringStation implements Auditable {
     }
     
     @Override
+    @JsonIgnore
     public User getUpdatedBy() {
         return updatedBy;
     }

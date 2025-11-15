@@ -4,6 +4,7 @@ import com.univercloud.hydro.entity.Municipality;
 import com.univercloud.hydro.entity.User;
 import com.univercloud.hydro.entity.Department;
 import com.univercloud.hydro.entity.Category;
+import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.repository.MunicipalityRepository;
 import com.univercloud.hydro.repository.DepartmentRepository;
 import com.univercloud.hydro.repository.CategoryRepository;
@@ -48,7 +49,7 @@ public class MunicipalityServiceImpl implements MunicipalityService {
         if (municipality.getDepartment() != null) {
             Optional<Department> departmentOpt = departmentRepository.findById(municipality.getDepartment().getId());
             if (departmentOpt.isEmpty()) {
-                throw new IllegalArgumentException("El departamento no existe");
+                throw new IllegalArgumentException("Department does not exist");
             }
         }
         
@@ -56,7 +57,7 @@ public class MunicipalityServiceImpl implements MunicipalityService {
         if (municipality.getCategory() != null) {
             Optional<Category> categoryOpt = categoryRepository.findById(municipality.getCategory().getId());
             if (categoryOpt.isEmpty()) {
-                throw new IllegalArgumentException("La categoría no existe");
+                throw new IllegalArgumentException("Category does not exist");
             }
         }
         
@@ -72,7 +73,7 @@ public class MunicipalityServiceImpl implements MunicipalityService {
         User currentUser = authorizationUtils.getCurrentUser();
         Optional<Municipality> existingOpt = municipalityRepository.findById(municipality.getId());
         if (existingOpt.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró el municipio con ID: " + municipality.getId());
+            throw new ResourceNotFoundException("Municipality", "id", municipality.getId());
         }
         
         Municipality existing = existingOpt.get();
@@ -81,7 +82,7 @@ public class MunicipalityServiceImpl implements MunicipalityService {
         if (municipality.getDepartment() != null) {
             Optional<Department> departmentOpt = departmentRepository.findById(municipality.getDepartment().getId());
             if (departmentOpt.isEmpty()) {
-                throw new IllegalArgumentException("El departamento no existe");
+                throw new IllegalArgumentException("Department does not exist");
             }
         }
         
@@ -89,7 +90,7 @@ public class MunicipalityServiceImpl implements MunicipalityService {
         if (municipality.getCategory() != null) {
             Optional<Category> categoryOpt = categoryRepository.findById(municipality.getCategory().getId());
             if (categoryOpt.isEmpty()) {
-                throw new IllegalArgumentException("La categoría no existe");
+                throw new IllegalArgumentException("Category does not exist");
             }
         }
         

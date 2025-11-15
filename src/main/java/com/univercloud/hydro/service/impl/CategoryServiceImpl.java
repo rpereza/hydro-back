@@ -1,6 +1,9 @@
 package com.univercloud.hydro.service.impl;
 
 import com.univercloud.hydro.entity.Category;
+import com.univercloud.hydro.exception.DuplicateResourceException;
+import com.univercloud.hydro.exception.ResourceInUseException;
+import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.repository.CategoryRepository;
 import com.univercloud.hydro.repository.MunicipalityRepository;
 import com.univercloud.hydro.service.CategoryService;
@@ -33,7 +36,7 @@ public class CategoryServiceImpl implements CategoryService {
     public Category createCategory(Category category) {
         // Verify that the name does not exist
         if (existsByName(category.getName())) {
-            throw new IllegalArgumentException("Ya existe una categoría con el nombre: " + category.getName());
+            throw new DuplicateResourceException("Category", "name", category.getName());
         }
 
         category.setCreatedAt(LocalDateTime.now());
@@ -47,14 +50,14 @@ public class CategoryServiceImpl implements CategoryService {
     public Category updateCategory(Category category) {
         Optional<Category> existingOpt = categoryRepository.findById(category.getId());
         if (existingOpt.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró la categoría con ID: " + category.getId());
+            throw new ResourceNotFoundException("Category", "id", category.getId());
         }
         
         Category existing = existingOpt.get();
         
         // Verificar que el nombre no exista (si cambió)
         if (!existing.getName().equals(category.getName()) && existsByName(category.getName())) {
-            throw new IllegalArgumentException("Ya existe una categoría con el nombre: " + category.getName());
+            throw new DuplicateResourceException("Category", "name", category.getName());
         }
         
         existing.setName(category.getName());
@@ -85,7 +88,7 @@ public class CategoryServiceImpl implements CategoryService {
     public boolean deleteCategory(Long id) {
         Optional<Category> categoryOpt = categoryRepository.findById(id);
         if (categoryOpt.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró la categoría con ID: " + id);
+            throw new ResourceNotFoundException("Category", "id", id);
         }
         
         Category category = categoryOpt.get();
@@ -93,7 +96,7 @@ public class CategoryServiceImpl implements CategoryService {
         // Verificar si hay municipios asociados
         long municipalityCount = municipalityRepository.countByCategoryId(id);
         if (municipalityCount > 0) {
-            throw new IllegalArgumentException("No se puede eliminar la categoría porque tiene " + municipalityCount + " municipios asociados");
+            throw new ResourceInUseException("Category", "id", id, "Municipality", municipalityCount);
         }
         
         categoryRepository.delete(category);

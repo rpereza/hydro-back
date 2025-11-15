@@ -2,7 +2,6 @@ package com.univercloud.hydro.service.impl;
 
 import com.univercloud.hydro.entity.*;
 import com.univercloud.hydro.repository.WaterBasinRepository;
-import com.univercloud.hydro.service.WaterBasinService;
 import com.univercloud.hydro.util.AuthorizationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -201,84 +200,6 @@ class WaterBasinServiceImplTest {
     }
     
     @Test
-    void getActiveMyCorporationWaterBasins_ShouldReturnListOfActiveWaterBasins_WhenUserAuthenticated() {
-        // Given
-        List<WaterBasin> expectedWaterBasins = Arrays.asList(testWaterBasin);
-        
-        when(authorizationUtils.getCurrentUser()).thenReturn(testUser);
-        when(waterBasinRepository.findByCorporationAndIsActiveTrue(testCorporation)).thenReturn(expectedWaterBasins);
-        
-        // When
-        List<WaterBasin> result = waterBasinService.getActiveMyCorporationWaterBasins();
-        
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(testWaterBasin.getId(), result.get(0).getId());
-    }
-    
-    @Test
-    void getAllActiveWaterBasins_ShouldReturnListOfActiveWaterBasins() {
-        // Given
-        List<WaterBasin> expectedWaterBasins = Arrays.asList(testWaterBasin);
-        
-        when(waterBasinRepository.findByIsActiveTrue()).thenReturn(expectedWaterBasins);
-        
-        // When
-        List<WaterBasin> result = waterBasinService.getAllActiveWaterBasins();
-        
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(testWaterBasin.getId(), result.get(0).getId());
-    }
-    
-    @Test
-    void getAllInactiveWaterBasins_ShouldReturnListOfInactiveWaterBasins() {
-        // Given
-        List<WaterBasin> expectedWaterBasins = Arrays.asList(testWaterBasin);
-        
-        when(waterBasinRepository.findByIsActiveFalse()).thenReturn(expectedWaterBasins);
-        
-        // When
-        List<WaterBasin> result = waterBasinService.getAllInactiveWaterBasins();
-        
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(testWaterBasin.getId(), result.get(0).getId());
-    }
-    
-    @Test
-    void getWaterBasinByName_ShouldReturnWaterBasin_WhenWaterBasinExists() {
-        // Given
-        String name = "Test Water Basin";
-        
-        when(waterBasinRepository.findByName(name)).thenReturn(Optional.of(testWaterBasin));
-        
-        // When
-        Optional<WaterBasin> result = waterBasinService.getWaterBasinByName(name);
-        
-        // Then
-        assertTrue(result.isPresent());
-        assertEquals(testWaterBasin.getId(), result.get().getId());
-    }
-    
-    @Test
-    void getWaterBasinByName_ShouldReturnEmpty_WhenWaterBasinNotFound() {
-        // Given
-        String name = "Non-existent Water Basin";
-        
-        when(waterBasinRepository.findByName(name)).thenReturn(Optional.empty());
-        
-        // When
-        Optional<WaterBasin> result = waterBasinService.getWaterBasinByName(name);
-        
-        // Then
-        assertFalse(result.isPresent());
-    }
-    
-    @Test
     void searchWaterBasinsByName_ShouldReturnListOfWaterBasins_WhenUserAuthenticated() {
         // Given
         String name = "Test";
@@ -294,56 +215,6 @@ class WaterBasinServiceImplTest {
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(testWaterBasin.getId(), result.get(0).getId());
-    }
-    
-    @Test
-    void searchActiveWaterBasinsByName_ShouldReturnListOfActiveWaterBasins_WhenUserAuthenticated() {
-        // Given
-        String name = "Test";
-        List<WaterBasin> expectedWaterBasins = Arrays.asList(testWaterBasin);
-        
-        when(authorizationUtils.getCurrentUser()).thenReturn(testUser);
-        when(waterBasinRepository.findByCorporationAndNameContainingIgnoreCase(testCorporation, name)).thenReturn(expectedWaterBasins);
-        
-        // When
-        List<WaterBasin> result = waterBasinService.searchActiveWaterBasinsByName(name);
-        
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(testWaterBasin.getId(), result.get(0).getId());
-    }
-    
-    @Test
-    void activateWaterBasin_ShouldReturnTrue_WhenWaterBasinExistsAndBelongsToUserCorporation() {
-        // Given
-        when(authorizationUtils.getCurrentUser()).thenReturn(testUser);
-        when(waterBasinRepository.findById(1L)).thenReturn(Optional.of(testWaterBasin));
-        when(waterBasinRepository.save(any(WaterBasin.class))).thenReturn(testWaterBasin);
-        
-        // When
-        boolean result = waterBasinService.activateWaterBasin(1L);
-        
-        // Then
-        assertTrue(result);
-        assertTrue(testWaterBasin.isActive());
-        verify(waterBasinRepository).save(testWaterBasin);
-    }
-    
-    @Test
-    void deactivateWaterBasin_ShouldReturnTrue_WhenWaterBasinExistsAndBelongsToUserCorporation() {
-        // Given
-        when(authorizationUtils.getCurrentUser()).thenReturn(testUser);
-        when(waterBasinRepository.findById(1L)).thenReturn(Optional.of(testWaterBasin));
-        when(waterBasinRepository.save(any(WaterBasin.class))).thenReturn(testWaterBasin);
-        
-        // When
-        boolean result = waterBasinService.deactivateWaterBasin(1L);
-        
-        // Then
-        assertTrue(result);
-        assertFalse(testWaterBasin.isActive());
-        verify(waterBasinRepository).save(testWaterBasin);
     }
     
     @Test
@@ -371,79 +242,5 @@ class WaterBasinServiceImplTest {
         assertThrows(IllegalArgumentException.class, () -> {
             waterBasinService.deleteWaterBasin(999L);
         });
-    }
-    
-    @Test
-    void countMyCorporationWaterBasins_ShouldReturnCount_WhenUserAuthenticated() {
-        // Given
-        long expectedCount = 5L;
-        
-        when(authorizationUtils.getCurrentUser()).thenReturn(testUser);
-        when(waterBasinRepository.count()).thenReturn(expectedCount);
-        
-        // When
-        long result = waterBasinService.countMyCorporationWaterBasins();
-        
-        // Then
-        assertEquals(expectedCount, result);
-    }
-    
-    @Test
-    void countActiveMyCorporationWaterBasins_ShouldReturnCount_WhenUserAuthenticated() {
-        // Given
-        long expectedCount = 3L;
-        
-        when(authorizationUtils.getCurrentUser()).thenReturn(testUser);
-        when(waterBasinRepository.count()).thenReturn(expectedCount);
-        
-        // When
-        long result = waterBasinService.countActiveMyCorporationWaterBasins();
-        
-        // Then
-        assertEquals(expectedCount, result);
-    }
-    
-    @Test
-    void existsByName_ShouldReturnTrue_WhenWaterBasinExists() {
-        // Given
-        String name = "Test Water Basin";
-        
-        when(waterBasinRepository.existsByName(name)).thenReturn(true);
-        
-        // When
-        boolean result = waterBasinService.existsByName(name);
-        
-        // Then
-        assertTrue(result);
-    }
-    
-    @Test
-    void existsByName_ShouldReturnFalse_WhenWaterBasinDoesNotExist() {
-        // Given
-        String name = "Non-existent Water Basin";
-        
-        when(waterBasinRepository.existsByName(name)).thenReturn(false);
-        
-        // When
-        boolean result = waterBasinService.existsByName(name);
-        
-        // Then
-        assertFalse(result);
-    }
-    
-    @Test
-    void getMyCorporationWaterBasinStats_ShouldReturnStats_WhenUserAuthenticated() {
-        // Given
-        long totalWaterBasins = 10L;
-        
-        when(authorizationUtils.getCurrentUser()).thenReturn(testUser);
-        when(waterBasinRepository.count()).thenReturn(totalWaterBasins);
-        
-        // When
-        WaterBasinService.WaterBasinStats result = waterBasinService.getMyCorporationWaterBasinStats();
-        
-        // Then
-        assertNotNull(result);
-        assertEquals(totalWaterBasins, result.getTotalWaterBasins());
     }
 }

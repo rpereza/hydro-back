@@ -4,6 +4,8 @@ import com.univercloud.hydro.entity.Invoice;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.User;
 import com.univercloud.hydro.entity.Discharge;
+import com.univercloud.hydro.exception.DuplicateResourceException;
+import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.repository.InvoiceRepository;
 import com.univercloud.hydro.repository.DischargeRepository;
 import com.univercloud.hydro.service.InvoiceService;
@@ -43,12 +45,12 @@ public class InvoiceServiceImpl implements InvoiceService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         // Verificar que el número de factura no exista
         if (existsByNumber(invoice.getNumber())) {
-            throw new IllegalArgumentException("Ya existe una factura con el número: " + invoice.getNumber());
+            throw new DuplicateResourceException("Invoice", "number", invoice.getNumber());
         }
         
         // Verificar que la descarga pertenezca a la corporación
@@ -56,7 +58,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             Optional<Discharge> dischargeOpt = dischargeRepository.findById(invoice.getDischarge().getId());
             // Comparar por ID para evitar problemas con proxies de Hibernate
             if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
-                throw new IllegalArgumentException("La descarga no pertenece a su corporación");
+                throw new IllegalArgumentException("Discharge does not belong to your corporation");
             }
         }
         
@@ -76,12 +78,12 @@ public class InvoiceServiceImpl implements InvoiceService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<Invoice> existingOpt = invoiceRepository.findById(invoice.getId());
         if (existingOpt.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró la factura con ID: " + invoice.getId());
+            throw new ResourceNotFoundException("Invoice", "id", invoice.getId());
         }
         
         Invoice existing = existingOpt.get();
@@ -89,12 +91,12 @@ public class InvoiceServiceImpl implements InvoiceService {
         // Verificar que pertenezca a la corporación del usuario
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (existing.getCorporation() == null || !existing.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("No tiene permisos para actualizar esta factura");
+            throw new IllegalArgumentException("You do not have permission to update this invoice");
         }
         
         // Verificar que el número de factura no exista (si cambió)
         if (!existing.getNumber().equals(invoice.getNumber()) && existsByNumber(invoice.getNumber())) {
-            throw new IllegalArgumentException("Ya existe una factura con el número: " + invoice.getNumber());
+            throw new DuplicateResourceException("Invoice", "number", invoice.getNumber());
         }
         
         // Verificar que la descarga pertenezca a la corporación
@@ -102,7 +104,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             Optional<Discharge> dischargeOpt = dischargeRepository.findById(invoice.getDischarge().getId());
             // Comparar por ID para evitar problemas con proxies de Hibernate
             if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
-                throw new IllegalArgumentException("La descarga no pertenece a su corporación");
+                throw new IllegalArgumentException("Discharge does not belong to your corporation");
             }
         }
         
@@ -139,7 +141,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
@@ -153,7 +155,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         return invoiceRepository.findByCorporation(corporation, pageable);
@@ -166,7 +168,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         return invoiceRepository.findByCorporation(corporation);
@@ -179,13 +181,13 @@ public class InvoiceServiceImpl implements InvoiceService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<Discharge> dischargeOpt = dischargeRepository.findById(dischargeId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("La descarga no pertenece a su corporación");
+            throw new IllegalArgumentException("Discharge does not belong to your corporation");
         }
         
         return invoiceRepository.findByDischarge(dischargeOpt.get());
@@ -204,13 +206,13 @@ public class InvoiceServiceImpl implements InvoiceService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<Discharge> dischargeOpt = dischargeRepository.findById(dischargeId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("La descarga no pertenece a su corporación");
+            throw new IllegalArgumentException("Discharge does not belong to your corporation");
         }
         
         return invoiceRepository.findByDischargeAndNumber(dischargeOpt.get(), number);
@@ -235,7 +237,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         return invoiceRepository.countByCorporationId(corporation.getId());
@@ -248,18 +250,18 @@ public class InvoiceServiceImpl implements InvoiceService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<Invoice> invoiceOpt = invoiceRepository.findById(id);
         if (invoiceOpt.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró la factura con ID: " + id);
+            throw new ResourceNotFoundException("Invoice", "id", id);
         }
         
         Invoice invoice = invoiceOpt.get();
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (invoice.getCorporation() == null || !invoice.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("No tiene permisos para eliminar esta factura");
+            throw new IllegalArgumentException("You do not have permission to delete this invoice");
         }
         
         invoiceRepository.delete(invoice);
@@ -270,7 +272,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Transactional(readOnly = true)
     public boolean existsByNumber(int number) {
         if (number < 1 || number > 999999999) {
-            throw new IllegalArgumentException("El número de factura debe estar entre 1 y 999999999");
+            throw new IllegalArgumentException("Invoice number must be between 1 and 999999999");
         }
         return invoiceRepository.existsByNumber(number);
     }
@@ -288,13 +290,13 @@ public class InvoiceServiceImpl implements InvoiceService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<Discharge> dischargeOpt = dischargeRepository.findById(dischargeId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("La descarga no pertenece a su corporación");
+            throw new IllegalArgumentException("Discharge does not belong to your corporation");
         }
         
         return invoiceRepository.findByDischargeOrderByCreatedAtDesc(dischargeOpt.get());
@@ -313,13 +315,13 @@ public class InvoiceServiceImpl implements InvoiceService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         Optional<Discharge> dischargeOpt = dischargeRepository.findById(dischargeId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("La descarga no pertenece a su corporación");
+            throw new IllegalArgumentException("Discharge does not belong to your corporation");
         }
         
         return invoiceRepository.findByDischargeAndYear(dischargeOpt.get(), year);
@@ -332,7 +334,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         InvoiceStats stats = new InvoiceStats();

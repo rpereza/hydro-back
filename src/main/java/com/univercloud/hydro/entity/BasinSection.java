@@ -1,5 +1,7 @@
 package com.univercloud.hydro.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
@@ -12,6 +14,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "basin_sections")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class BasinSection implements Auditable {
     
     @Id
@@ -20,7 +23,7 @@ public class BasinSection implements Auditable {
     
     @NotBlank(message = "Section name is required")
     @Size(max = 100, message = "Section name cannot exceed 100 characters")
-    @Column(nullable = false)
+    @Column(nullable = false)   
     private String name;
     
     @NotNull(message = "Water basin is required")
@@ -34,10 +37,12 @@ public class BasinSection implements Auditable {
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
     
-    @Column(name = "start_point")
+    @Size(max = 100, message = "Start point cannot exceed 100 characters")
+    @Column(name = "start_point", length = 100)
     private String startPoint;
     
-    @Column(name = "end_point")
+    @Size(max = 100, message = "End point cannot exceed 100 characters")
+    @Column(name = "end_point", length = 100)
     private String endPoint;
     
     @Column(name = "created_at", nullable = false)
@@ -46,18 +51,18 @@ public class BasinSection implements Auditable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    @OneToMany(mappedBy = "basinSection", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    @OneToMany(mappedBy = "basinSection", fetch = FetchType.LAZY)
     private List<MonitoringStation> monitoringStations = new ArrayList<>();
     
-    @OneToMany(mappedBy = "basinSection", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    @OneToMany(mappedBy = "basinSection", fetch = FetchType.LAZY)
     private List<Discharge> discharges = new ArrayList<>();
     
-    @NotNull(message = "Corporation is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "corporation_id", nullable = false)
     private Corporation corporation;
     
-    @NotNull(message = "Created by is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;
@@ -153,6 +158,7 @@ public class BasinSection implements Auditable {
         this.updatedAt = updatedAt;
     }
     
+    @JsonIgnore
     public List<MonitoringStation> getMonitoringStations() {
         return monitoringStations;
     }
@@ -161,6 +167,7 @@ public class BasinSection implements Auditable {
         this.monitoringStations = monitoringStations;
     }
     
+    @JsonIgnore
     public List<Discharge> getDischarges() {
         return discharges;
     }
@@ -170,6 +177,7 @@ public class BasinSection implements Auditable {
     }
     
     @Override
+    @JsonIgnore
     public Corporation getCorporation() {
         return corporation;
     }
@@ -180,6 +188,7 @@ public class BasinSection implements Auditable {
     }
     
     @Override
+    @JsonIgnore
     public User getCreatedBy() {
         return createdBy;
     }
@@ -190,6 +199,7 @@ public class BasinSection implements Auditable {
     }
     
     @Override
+    @JsonIgnore
     public User getUpdatedBy() {
         return updatedBy;
     }

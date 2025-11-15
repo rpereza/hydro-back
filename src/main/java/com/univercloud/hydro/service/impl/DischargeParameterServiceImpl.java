@@ -3,6 +3,7 @@ package com.univercloud.hydro.service.impl;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.DischargeParameter;
 import com.univercloud.hydro.entity.User;
+import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.repository.DischargeParameterRepository;
 import com.univercloud.hydro.service.DischargeParameterService;
 import com.univercloud.hydro.util.AuthorizationUtils;
@@ -58,7 +59,7 @@ public class DischargeParameterServiceImpl implements DischargeParameterService 
         }
         
         DischargeParameter existingDischargeParameter = dischargeParameterRepository.findById(dischargeParameter.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Discharge parameter not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("DischargeParameter", "id", dischargeParameter.getId()));
         
         Corporation corporation = currentUser.getCorporation();
         // Comparar por ID para evitar problemas con proxies de Hibernate
@@ -228,7 +229,7 @@ public class DischargeParameterServiceImpl implements DischargeParameterService 
         }
         
         DischargeParameter dischargeParameter = dischargeParameterRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Discharge parameter not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("DischargeParameter", "id", id));
         
         Corporation corporation = currentUser.getCorporation();
         // Comparar por ID para evitar problemas con proxies de Hibernate

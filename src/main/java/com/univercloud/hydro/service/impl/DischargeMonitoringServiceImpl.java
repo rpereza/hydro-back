@@ -3,6 +3,7 @@ package com.univercloud.hydro.service.impl;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.DischargeMonitoring;
 import com.univercloud.hydro.entity.User;
+import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.repository.DischargeMonitoringRepository;
 import com.univercloud.hydro.service.DischargeMonitoringService;
 import com.univercloud.hydro.util.AuthorizationUtils;
@@ -58,7 +59,7 @@ public class DischargeMonitoringServiceImpl implements DischargeMonitoringServic
         }
         
         DischargeMonitoring existingDischargeMonitoring = dischargeMonitoringRepository.findById(dischargeMonitoring.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Discharge monitoring not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("DischargeMonitoring", "id", dischargeMonitoring.getId()));
         
         Corporation corporation = currentUser.getCorporation();
         // Comparar por ID para evitar problemas con proxies de Hibernate
@@ -219,7 +220,7 @@ public class DischargeMonitoringServiceImpl implements DischargeMonitoringServic
         }
         
         DischargeMonitoring dischargeMonitoring = dischargeMonitoringRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Discharge monitoring not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("DischargeMonitoring", "id", id));
         
         Corporation corporation = currentUser.getCorporation();
         // Comparar por ID para evitar problemas con proxies de Hibernate

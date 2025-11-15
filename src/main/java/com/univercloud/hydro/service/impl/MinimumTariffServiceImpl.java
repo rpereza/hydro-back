@@ -3,6 +3,8 @@ package com.univercloud.hydro.service.impl;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.MinimumTariff;
 import com.univercloud.hydro.entity.User;
+import com.univercloud.hydro.exception.DuplicateResourceException;
+import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.repository.MinimumTariffRepository;
 import com.univercloud.hydro.service.MinimumTariffService;
 import com.univercloud.hydro.util.AuthorizationUtils;
@@ -44,14 +46,14 @@ public class MinimumTariffServiceImpl implements MinimumTariffService {
         
         // Verificar que no existe una tarifa mínima para el mismo año en la corporación
         if (minimumTariff.getYear() != null && minimumTariffRepository.existsByCorporationAndYear(corporation, minimumTariff.getYear())) {
-            throw new IllegalArgumentException("Minimum tariff for year " + minimumTariff.getYear() + " already exists in your corporation");
+            throw new DuplicateResourceException("MinimumTariff", "year", minimumTariff.getYear());
         }
         
         // Asignar corporación y usuario creador
         minimumTariff.setCorporation(corporation);
         minimumTariff.setCreatedBy(currentUser);
         minimumTariff.setCreatedAt(LocalDateTime.now());
-        minimumTariff.setActive(true);
+        minimumTariff.setActive(minimumTariff.isActive());
         
         return minimumTariffRepository.save(minimumTariff);
     }
@@ -64,7 +66,7 @@ public class MinimumTariffServiceImpl implements MinimumTariffService {
         }
         
         MinimumTariff existingMinimumTariff = minimumTariffRepository.findById(minimumTariff.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Minimum tariff not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("MinimumTariff", "id", minimumTariff.getId()));
         
         Corporation corporation = currentUser.getCorporation();
         // Comparar por ID para evitar problemas con proxies de Hibernate
@@ -75,7 +77,7 @@ public class MinimumTariffServiceImpl implements MinimumTariffService {
         // Verificar cambios en el año
         if (minimumTariff.getYear() != null && !minimumTariff.getYear().equals(existingMinimumTariff.getYear())) {
             if (minimumTariffRepository.existsByCorporationAndYear(corporation, minimumTariff.getYear())) {
-                throw new IllegalArgumentException("Minimum tariff for year " + minimumTariff.getYear() + " already exists in your corporation");
+                throw new DuplicateResourceException("MinimumTariff", "year", minimumTariff.getYear());
             }
         }
         
@@ -282,7 +284,7 @@ public class MinimumTariffServiceImpl implements MinimumTariffService {
         }
         
         MinimumTariff minimumTariff = minimumTariffRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Minimum tariff not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("MinimumTariff", "id", id));
         
         Corporation corporation = currentUser.getCorporation();
         // Comparar por ID para evitar problemas con proxies de Hibernate
@@ -306,7 +308,7 @@ public class MinimumTariffServiceImpl implements MinimumTariffService {
         }
         
         MinimumTariff minimumTariff = minimumTariffRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Minimum tariff not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("MinimumTariff", "id", id));
         
         Corporation corporation = currentUser.getCorporation();
         // Comparar por ID para evitar problemas con proxies de Hibernate
@@ -330,7 +332,7 @@ public class MinimumTariffServiceImpl implements MinimumTariffService {
         }
         
         MinimumTariff minimumTariff = minimumTariffRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Minimum tariff not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("MinimumTariff", "id", id));
         
         Corporation corporation = currentUser.getCorporation();
         // Comparar por ID para evitar problemas con proxies de Hibernate

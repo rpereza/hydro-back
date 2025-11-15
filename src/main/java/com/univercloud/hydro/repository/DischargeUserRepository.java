@@ -62,11 +62,23 @@ public interface DischargeUserRepository extends JpaRepository<DischargeUser, Lo
     Optional<DischargeUser> findByCompanyName(String companyName);
     
     /**
-     * Verifica si existe un usuario de descarga con el nombre de empresa especificado.
+     * Verifica si existe un usuario de descarga con el nombre de empresa especificado en la corporación (comparación case-insensitive).
+     * @param corporation la corporación
      * @param companyName el nombre de la empresa
      * @return true si existe, false en caso contrario
      */
-    boolean existsByCompanyName(String companyName);
+    @Query("SELECT COUNT(du) > 0 FROM DischargeUser du WHERE du.corporation = :corporation AND LOWER(du.companyName) = LOWER(:companyName)")
+    boolean existsByCorporationAndCompanyName(@Param("corporation") Corporation corporation, @Param("companyName") String companyName);
+    
+    /**
+     * Verifica si existe un usuario de descarga con el nombre de empresa especificado en la corporación, excluyendo un ID específico.
+     * @param corporation la corporación
+     * @param companyName el nombre de la empresa
+     * @param excludeId el ID a excluir de la búsqueda
+     * @return true si existe, false en caso contrario
+     */
+    @Query("SELECT COUNT(du) > 0 FROM DischargeUser du WHERE du.corporation = :corporation AND LOWER(du.companyName) = LOWER(:companyName) AND du.id != :excludeId")
+    boolean existsByCorporationAndCompanyNameExcludingId(@Param("corporation") Corporation corporation, @Param("companyName") String companyName, @Param("excludeId") Long excludeId);
     
     /**
      * Busca usuarios de descarga por nombre de empresa (búsqueda parcial, case-insensitive).
@@ -143,14 +155,6 @@ public interface DischargeUserRepository extends JpaRepository<DischargeUser, Lo
     List<DischargeUser> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
     
     /**
-     * Cuenta usuarios de descarga por municipio.
-     * @param municipalityId el ID del municipio
-     * @return número de usuarios de descarga del municipio
-     */
-    @Query("SELECT COUNT(du) FROM DischargeUser du WHERE du.municipality.id = :municipalityId")
-    long countByMunicipalityId(@Param("municipalityId") Long municipalityId);
-    
-    /**
      * Cuenta usuarios de descarga activos por municipio.
      * @param municipalityId el ID del municipio
      * @return número de usuarios de descarga activos del municipio
@@ -218,4 +222,29 @@ public interface DischargeUserRepository extends JpaRepository<DischargeUser, Lo
      */
     @Query("SELECT du FROM DischargeUser du WHERE du.id = :id AND du.corporation.id = :corporationId")
     Optional<DischargeUser> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
+    
+    /**
+     * Cuenta usuarios de descarga por municipio.
+     * @param municipalityId el ID del municipio
+     * @return número de usuarios de descarga asociados al municipio
+     */
+    @Query("SELECT COUNT(du) FROM DischargeUser du WHERE du.municipality.id = :municipalityId")
+    long countByMunicipalityId(@Param("municipalityId") Long municipalityId);
+    
+    /**
+     * Cuenta usuarios de descarga por actividad económica.
+     * @param economicActivityId el ID de la actividad económica
+     * @return número de usuarios de descarga asociados a la actividad económica
+     */
+    @Query("SELECT COUNT(du) FROM DischargeUser du WHERE du.economicActivity.id = :economicActivityId")
+    long countByEconomicActivityId(@Param("economicActivityId") Long economicActivityId);
+    
+    /**
+     * Cuenta usuarios de descarga por tipo de autorización.
+     * @param authorizationTypeId el ID del tipo de autorización
+     * @return número de usuarios de descarga asociados al tipo de autorización
+     */
+    @Query("SELECT COUNT(du) FROM DischargeUser du WHERE du.authorizationType.id = :authorizationTypeId")
+    long countByAuthorizationTypeId(@Param("authorizationTypeId") Long authorizationTypeId);
 }
+

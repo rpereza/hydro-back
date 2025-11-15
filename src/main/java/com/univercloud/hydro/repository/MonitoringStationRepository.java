@@ -62,11 +62,23 @@ public interface MonitoringStationRepository extends JpaRepository<MonitoringSta
     Optional<MonitoringStation> findByName(String name);
     
     /**
-     * Verifica si existe una estación con el nombre especificado.
+     * Verifica si existe una estación con el nombre especificado en la corporación (comparación case-insensitive).
+     * @param corporation la corporación
      * @param name el nombre de la estación
      * @return true si existe, false en caso contrario
      */
-    boolean existsByName(String name);
+    @Query("SELECT COUNT(ms) > 0 FROM MonitoringStation ms WHERE ms.corporation = :corporation AND LOWER(ms.name) = LOWER(:name)")
+    boolean existsByCorporationAndName(@Param("corporation") Corporation corporation, @Param("name") String name);
+    
+    /**
+     * Verifica si existe una estación con el nombre especificado en la corporación, excluyendo un ID específico.
+     * @param corporation la corporación
+     * @param name el nombre de la estación
+     * @param excludeId el ID a excluir de la búsqueda
+     * @return true si existe, false en caso contrario
+     */
+    @Query("SELECT COUNT(ms) > 0 FROM MonitoringStation ms WHERE ms.corporation = :corporation AND LOWER(ms.name) = LOWER(:name) AND ms.id != :excludeId")
+    boolean existsByCorporationAndNameExcludingId(@Param("corporation") Corporation corporation, @Param("name") String name, @Param("excludeId") Long excludeId);
     
     /**
      * Busca estaciones por nombre (búsqueda parcial, case-insensitive).
@@ -162,4 +174,13 @@ public interface MonitoringStationRepository extends JpaRepository<MonitoringSta
      */
     @Query("SELECT ms FROM MonitoringStation ms WHERE ms.id = :id AND ms.corporation.id = :corporationId")
     Optional<MonitoringStation> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
+    
+    /**
+     * Cuenta estaciones de monitoreo por sección de cuenca.
+     * @param basinSectionId el ID de la sección de cuenca
+     * @return número de estaciones asociadas a la sección
+     */
+    @Query("SELECT COUNT(ms) FROM MonitoringStation ms WHERE ms.basinSection.id = :basinSectionId")
+    long countByBasinSectionId(@Param("basinSectionId") Long basinSectionId);
 }
+

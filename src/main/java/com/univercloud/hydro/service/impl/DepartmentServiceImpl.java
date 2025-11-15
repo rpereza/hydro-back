@@ -3,6 +3,9 @@ package com.univercloud.hydro.service.impl;
 import com.univercloud.hydro.entity.Department;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.User;
+import com.univercloud.hydro.exception.DuplicateResourceException;
+import com.univercloud.hydro.exception.ResourceInUseException;
+import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.repository.DepartmentRepository;
 import com.univercloud.hydro.repository.MunicipalityRepository;
 import com.univercloud.hydro.service.DepartmentService;
@@ -39,7 +42,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     public Department createDepartment(Department department) {
         // Verificar que el nombre no exista
         if (existsByName(department.getName())) {
-            throw new IllegalArgumentException("Ya existe un departamento con el nombre: " + department.getName());
+            throw new DuplicateResourceException("Department", "name", department.getName());
         }
         
         department.setCreatedAt(LocalDateTime.now());
@@ -53,14 +56,14 @@ public class DepartmentServiceImpl implements DepartmentService {
     public Department updateDepartment(Department department) {
         Optional<Department> existingOpt = departmentRepository.findById(department.getId());
         if (existingOpt.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró el departamento con ID: " + department.getId());
+            throw new ResourceNotFoundException("Department", "id", department.getId());
         }
         
         Department existing = existingOpt.get();
 
         // Verificar que el nombre no exista (si cambió)
         if (!existing.getName().equals(department.getName()) && existsByName(department.getName())) {
-            throw new IllegalArgumentException("Ya existe un departamento con el nombre: " + department.getName());
+            throw new DuplicateResourceException("Department", "name", department.getName());
         }
         
         existing.setName(department.getName());
@@ -117,7 +120,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         Corporation corporation = currentUser.getCorporation();
         
         if (corporation == null) {
-            throw new IllegalStateException("El usuario debe pertenecer a una corporación");
+            throw new IllegalStateException("User must belong to a corporation");
         }
         
         DepartmentStats stats = new DepartmentStats();

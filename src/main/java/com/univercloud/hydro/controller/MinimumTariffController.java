@@ -3,13 +3,14 @@ package com.univercloud.hydro.controller;
 import com.univercloud.hydro.entity.MinimumTariff;
 import com.univercloud.hydro.service.MinimumTariffService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -31,7 +32,7 @@ public class MinimumTariffController {
      * @return la tarifa mínima creada
      */
     @PostMapping
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MinimumTariff> createMinimumTariff(@Valid @RequestBody MinimumTariff minimumTariff) {
         try {
             MinimumTariff createdMinimumTariff = minimumTariffService.createMinimumTariff(minimumTariff);
@@ -51,14 +52,14 @@ public class MinimumTariffController {
      * @return la tarifa mínima actualizada
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MinimumTariff> updateMinimumTariff(@PathVariable Long id, @Valid @RequestBody MinimumTariff minimumTariff) {
         try {
             minimumTariff.setId(id);
             MinimumTariff updatedMinimumTariff = minimumTariffService.updateMinimumTariff(minimumTariff);
             return ResponseEntity.ok(updatedMinimumTariff);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.badRequest().build();
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -71,7 +72,7 @@ public class MinimumTariffController {
      * @return la tarifa mínima si existe
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MinimumTariff> getMinimumTariffById(@PathVariable Long id) {
         Optional<MinimumTariff> minimumTariff = minimumTariffService.getMinimumTariffById(id);
         return minimumTariff.map(ResponseEntity::ok)
@@ -79,15 +80,16 @@ public class MinimumTariffController {
     }
     
     /**
-     * Obtiene todas las tarifas mínimas de la corporación.
+     * Obtiene todas las tarifas mínimas de la corporación con paginación.
      * 
-     * @return lista de tarifas mínimas
+     * @param pageable parámetros de paginación
+     * @return página de tarifas mínimas
      */
     @GetMapping
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<List<MinimumTariff>> getAllMinimumTariffs() {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<MinimumTariff>> getAllMinimumTariffs(Pageable pageable) {
         try {
-            List<MinimumTariff> minimumTariffs = minimumTariffService.getAllMyCorporationMinimumTariffs();
+            Page<MinimumTariff> minimumTariffs = minimumTariffService.getMyCorporationMinimumTariffs(pageable);
             return ResponseEntity.ok(minimumTariffs);
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -102,7 +104,7 @@ public class MinimumTariffController {
      * @return true si se eliminó correctamente
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Boolean> deleteMinimumTariff(@PathVariable Long id) {
         try {
             boolean deleted = minimumTariffService.deleteMinimumTariff(id);

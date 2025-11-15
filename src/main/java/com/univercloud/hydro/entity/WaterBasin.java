@@ -1,10 +1,11 @@
 package com.univercloud.hydro.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "water_basins")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class WaterBasin implements Auditable {
     
     @Id
@@ -35,15 +37,14 @@ public class WaterBasin implements Auditable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    @OneToMany(mappedBy = "waterBasin", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    @OneToMany(mappedBy = "waterBasin", fetch = FetchType.LAZY)
     private List<BasinSection> sections = new ArrayList<>();
     
-    @NotNull(message = "Corporation is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "corporation_id", nullable = false)
     private Corporation corporation;
     
-    @NotNull(message = "Created by is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;
@@ -114,6 +115,7 @@ public class WaterBasin implements Auditable {
         this.updatedAt = updatedAt;
     }
     
+    @JsonIgnore
     public List<BasinSection> getSections() {
         return sections;
     }
@@ -123,6 +125,7 @@ public class WaterBasin implements Auditable {
     }
     
     @Override
+    @JsonIgnore
     public Corporation getCorporation() {
         return corporation;
     }
@@ -133,6 +136,7 @@ public class WaterBasin implements Auditable {
     }
     
     @Override
+    @JsonIgnore
     public User getCreatedBy() {
         return createdBy;
     }
@@ -143,6 +147,7 @@ public class WaterBasin implements Auditable {
     }
     
     @Override
+    @JsonIgnore
     public User getUpdatedBy() {
         return updatedBy;
     }

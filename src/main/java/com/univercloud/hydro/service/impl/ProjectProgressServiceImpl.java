@@ -3,6 +3,7 @@ package com.univercloud.hydro.service.impl;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.ProjectProgress;
 import com.univercloud.hydro.entity.User;
+import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.repository.ProjectProgressRepository;
 import com.univercloud.hydro.service.ProjectProgressService;
 import com.univercloud.hydro.util.AuthorizationUtils;
@@ -65,7 +66,7 @@ public class ProjectProgressServiceImpl implements ProjectProgressService {
         }
         
         ProjectProgress existingProjectProgress = projectProgressRepository.findById(projectProgress.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Project progress not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("ProjectProgress", "id", projectProgress.getId()));
         
         Corporation corporation = currentUser.getCorporation();
         // Comparar por ID para evitar problemas con proxies de Hibernate
@@ -228,7 +229,7 @@ public class ProjectProgressServiceImpl implements ProjectProgressService {
         }
         
         ProjectProgress projectProgress = projectProgressRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Project progress not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("ProjectProgress", "id", id));
         
         Corporation corporation = currentUser.getCorporation();
         // Comparar por ID para evitar problemas con proxies de Hibernate

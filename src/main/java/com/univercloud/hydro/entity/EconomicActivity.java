@@ -40,7 +40,7 @@ public class EconomicActivity {
     private LocalDateTime updatedAt;
     
     @JsonIgnore
-    @OneToMany(mappedBy = "economicActivity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "economicActivity", fetch = FetchType.LAZY)
     private List<DischargeUser> users = new ArrayList<>();
     
     // Constructors

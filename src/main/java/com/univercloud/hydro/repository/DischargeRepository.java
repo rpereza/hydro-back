@@ -81,12 +81,25 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
     Optional<Discharge> findByNumberAndYear(Integer number, Integer year);
     
     /**
-     * Verifica si existe una descarga con el número y año especificados.
+     * Verifica si existe una descarga con el número y año especificados en la corporación.
+     * @param corporation la corporación
      * @param number el número de descarga
      * @param year el año
      * @return true si existe, false en caso contrario
      */
-    boolean existsByNumberAndYear(Integer number, Integer year);
+    @Query("SELECT COUNT(d) > 0 FROM Discharge d WHERE d.corporation = :corporation AND d.number = :number AND d.year = :year")
+    boolean existsByCorporationAndNumberAndYear(@Param("corporation") Corporation corporation, @Param("number") Integer number, @Param("year") Integer year);
+    
+    /**
+     * Verifica si existe una descarga con el número y año especificados en la corporación, excluyendo un ID específico.
+     * @param corporation la corporación
+     * @param number el número de descarga
+     * @param year el año
+     * @param excludeId el ID a excluir de la búsqueda
+     * @return true si existe, false en caso contrario
+     */
+    @Query("SELECT COUNT(d) > 0 FROM Discharge d WHERE d.corporation = :corporation AND d.number = :number AND d.year = :year AND d.id != :excludeId")
+    boolean existsByCorporationAndNumberAndYearExcludingId(@Param("corporation") Corporation corporation, @Param("number") Integer number, @Param("year") Integer year, @Param("excludeId") Long excludeId);
     
     /**
      * Busca descargas por nombre (búsqueda parcial, case-insensitive).
@@ -286,4 +299,13 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
      */
     @Query("SELECT d FROM Discharge d WHERE d.id = :id AND d.corporation.id = :corporationId")
     Optional<Discharge> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
+    
+    /**
+     * Cuenta descargas por usuario de descarga.
+     * @param dischargeUserId el ID del usuario de descarga
+     * @return número de descargas asociadas al usuario
+     */
+    @Query("SELECT COUNT(d) FROM Discharge d WHERE d.dischargeUser.id = :dischargeUserId")
+    long countByDischargeUserId(@Param("dischargeUserId") Long dischargeUserId);
 }
+

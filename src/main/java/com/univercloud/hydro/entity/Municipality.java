@@ -54,7 +54,7 @@ public class Municipality {
     private LocalDateTime updatedAt;
     
     @JsonIgnore
-    @OneToMany(mappedBy = "municipality", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "municipality", fetch = FetchType.LAZY)
     private List<DischargeUser> users = new ArrayList<>();
     
     @JsonIgnore
