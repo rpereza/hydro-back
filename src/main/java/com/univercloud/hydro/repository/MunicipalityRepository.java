@@ -7,7 +7,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Repository para la entidad Municipality.
@@ -46,14 +45,7 @@ public interface MunicipalityRepository extends JpaRepository<Municipality, Long
      */
     @Query("SELECT COUNT(m) FROM Municipality m WHERE m.category.id = :categoryId")
     long countByCategoryId(@Param("categoryId") Long categoryId);
-    
-    /**
-     * Busca un municipio por nombre.
-     * @param name el nombre del municipio
-     * @return el municipio si existe
-     */
-    Optional<Municipality> findByName(String name);
-    
+       
     /**
      * Busca municipios activos por ID de departamento.
      * @param departmentId el ID del departamento

@@ -279,7 +279,7 @@ CREATE TABLE discharge_monitorings (
 CREATE TABLE monitoring_stations (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(200) NOT NULL,
-    description VARCHAR(1000),
+    description VARCHAR(500),
     location VARCHAR(500),
     latitude DECIMAL(10,8),
     longitude DECIMAL(11,8),

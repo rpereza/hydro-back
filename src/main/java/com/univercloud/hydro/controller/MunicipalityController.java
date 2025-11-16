@@ -112,20 +112,6 @@ public class MunicipalityController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
-        
-    /**
-     * Busca un municipio por nombre.
-     * 
-     * @param name el nombre del municipio
-     * @return el municipio si existe
-     */
-    @GetMapping("/by-name")
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public ResponseEntity<Municipality> getMunicipalityByName(@RequestParam String name) {
-        Optional<Municipality> municipality = municipalityService.getMunicipalityByName(name);
-        return municipality.map(ResponseEntity::ok)
-                         .orElse(ResponseEntity.notFound().build());
-    }
     
     /**
      * Busca municipios por nombre (búsqueda parcial).

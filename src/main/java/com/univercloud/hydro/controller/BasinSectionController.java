@@ -120,7 +120,7 @@ public class BasinSectionController {
      * @return lista de secciones de la cuenca
      */
     @GetMapping("/by-water-basin/{waterBasinId}")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<List<BasinSection>> getBasinSectionsByWaterBasin(@PathVariable Long waterBasinId) {
         try {
             List<BasinSection> basinSections = basinSectionService.getBasinSectionsByWaterBasin(waterBasinId);

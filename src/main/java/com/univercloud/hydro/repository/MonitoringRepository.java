@@ -30,18 +30,19 @@ public interface MonitoringRepository extends JpaRepository<Monitoring, Long> {
     List<Monitoring> findByMonitoringStation(MonitoringStation monitoringStation);
     
     /**
+     * Busca monitoreos por estación de monitoreo con paginación.
+     * @param monitoringStation la estación de monitoreo
+     * @param pageable parámetros de paginación
+     * @return página de monitoreos de la estación
+     */
+    Page<Monitoring> findByMonitoringStation(MonitoringStation monitoringStation, Pageable pageable);
+    
+    /**
      * Busca monitoreos por fecha de monitoreo.
      * @param monitoringDate la fecha de monitoreo
      * @return lista de monitoreos de la fecha
      */
     List<Monitoring> findByMonitoringDate(LocalDate monitoringDate);
-    
-    /**
-     * Busca monitoreos por corporación.
-     * @param corporation la corporación
-     * @return lista de monitoreos de la corporación
-     */
-    List<Monitoring> findByCorporation(Corporation corporation);
 
     /**
      * Busca monitoreos por corporación con paginación.

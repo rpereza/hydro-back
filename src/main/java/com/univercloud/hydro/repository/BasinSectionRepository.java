@@ -28,6 +28,13 @@ public interface BasinSectionRepository extends JpaRepository<BasinSection, Long
     List<BasinSection> findByWaterBasin(WaterBasin waterBasin);
     
     /**
+     * Busca secciones activas por cuenca hidrográfica.
+     * @param waterBasin la cuenca hidrográfica
+     * @return lista de secciones activas de la cuenca
+     */
+    List<BasinSection> findByWaterBasinAndIsActiveTrue(WaterBasin waterBasin);
+    
+    /**
      * Busca secciones por corporación.
      * @param corporation la corporación
      * @return lista de secciones de la corporación

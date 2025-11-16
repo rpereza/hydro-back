@@ -57,13 +57,6 @@ public interface MunicipalityService {
     List<Municipality> searchMunicipalitiesByName(String name);
     
     /**
-     * Busca un municipio por nombre.
-     * @param name el nombre del municipio
-     * @return el municipio si existe
-     */
-    Optional<Municipality> getMunicipalityByName(String name);
-    
-    /**
      * Verifica si existe un municipio con el código especificado.
      * @param code el código del municipio
      * @return true si existe, false en caso contrario

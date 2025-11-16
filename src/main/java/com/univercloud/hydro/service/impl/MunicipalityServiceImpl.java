@@ -136,12 +136,6 @@ public class MunicipalityServiceImpl implements MunicipalityService {
     
     @Override
     @Transactional(readOnly = true)
-    public Optional<Municipality> getMunicipalityByName(String name) {
-        return municipalityRepository.findByName(name);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
     public boolean existsByCode(String code) {
         return municipalityRepository.existsByCode(code);
     }

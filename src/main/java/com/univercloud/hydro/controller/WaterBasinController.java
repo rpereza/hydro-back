@@ -103,7 +103,7 @@ public class WaterBasinController {
      * @return lista de cuencas hidrográficas
      */
     @GetMapping("/all")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<List<WaterBasin>> getAllMyCorporationWaterBasins() {
         try {
             List<WaterBasin> waterBasins = waterBasinService.getAllMyCorporationWaterBasins();

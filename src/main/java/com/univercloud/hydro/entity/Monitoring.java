@@ -24,8 +24,7 @@ public class Monitoring implements Auditable {
     @NotNull(message = "Monitoring date is required")
     @Column(name = "monitoring_date", nullable = false)
     private LocalDate monitoringDate;
-    
-    
+        
     @Column(name = "weather_conditions")
     private String weatherConditions;
     
@@ -70,26 +69,32 @@ public class Monitoring implements Auditable {
     @Column(name = "rnp", precision = 11, scale = 3)
     private BigDecimal rnp;
     
+    @JsonIgnore
     @NotNull(message = "IOD is required")
     @Column(name = "iod", precision = 11, scale = 3, nullable = false)
     private BigDecimal iod;
     
+    @JsonIgnore
     @NotNull(message = "ISST is required")
     @Column(name = "isst", precision = 11, scale = 3, nullable = false)
     private BigDecimal isst;
     
+    @JsonIgnore
     @NotNull(message = "IDQO is required")
     @Column(name = "idqo", precision = 11, scale = 3, nullable = false)
     private BigDecimal idqo;
     
+    @JsonIgnore
     @NotNull(message = "ICE is required")
     @Column(name = "ice", precision = 11, scale = 3, nullable = false)
     private BigDecimal ice;
     
+    @JsonIgnore
     @NotNull(message = "IPH is required")
     @Column(name = "iph", precision = 11, scale = 3, nullable = false)
     private BigDecimal iph;
     
+    @JsonIgnore
     @Column(name = "irnp", precision = 11, scale = 3)
     private BigDecimal irnp;
     
@@ -97,12 +102,10 @@ public class Monitoring implements Auditable {
     @Column(name = "caudal_volumen", precision = 12, scale = 2, nullable = false)
     private BigDecimal caudalVolumen;
     
-    @NotNull(message = "Corporation is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "corporation_id", nullable = false)
     private Corporation corporation;
     
-    @NotNull(message = "Created by is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;

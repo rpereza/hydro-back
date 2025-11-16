@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,12 +43,14 @@ public interface MonitoringService {
      * @return página de monitoreos
      */
     Page<Monitoring> getMyCorporationMonitorings(Pageable pageable);
-    
+        
     /**
-     * Obtiene todos los monitoreos de la corporación del usuario autenticado.
-     * @return lista de monitoreos
+     * Obtiene monitoreos por estación de monitoreo con paginación.
+     * @param monitoringStationId el ID de la estación de monitoreo
+     * @param pageable parámetros de paginación
+     * @return página de monitoreos de la estación
      */
-    List<Monitoring> getAllMyCorporationMonitorings();
+    Page<Monitoring> getMonitoringsByStation(Long monitoringStationId, Pageable pageable);
     
     /**
      * Obtiene monitoreos por estación de monitoreo.
@@ -91,61 +92,12 @@ public interface MonitoringService {
     List<Monitoring> getMonitoringsByStationAndDateRange(Long monitoringStationId, LocalDate startDate, LocalDate endDate);
     
     /**
-     * Obtiene monitoreos por quien los realizó.
-     * @param performedBy quien realizó el monitoreo
-     * @return lista de monitoreos realizados por la persona
-     */
-    List<Monitoring> getMonitoringsByPerformer(String performedBy);
-    
-    /**
-     * Obtiene monitoreos creados en un rango de fechas.
-     * @param startDate fecha de inicio
-     * @param endDate fecha de fin
-     * @return lista de monitoreos creados en el rango
-     */
-    List<Monitoring> getMonitoringsByCreatedDateRange(LocalDateTime startDate, LocalDateTime endDate);
-    
-    /**
-     * Cuenta monitoreos por estación.
-     * @param monitoringStationId el ID de la estación
-     * @return número de monitoreos de la estación
-     */
-    long countMonitoringsByStation(Long monitoringStationId);
-    
-    /**
-     * Cuenta el número de monitoreos de la corporación del usuario autenticado.
-     * @return número de monitoreos
-     */
-    long countMyCorporationMonitorings();
-    
-    /**
      * Obtiene el último monitoreo de una estación.
      * @param monitoringStationId el ID de la estación de monitoreo
      * @return el último monitoreo de la estación
      */
     Optional<Monitoring> getLatestMonitoringByStation(Long monitoringStationId);
-    
-    /**
-     * Obtiene monitoreos ordenados por fecha de monitoreo descendente.
-     * @return lista de monitoreos ordenados por fecha descendente
-     */
-    List<Monitoring> getMonitoringsOrderByDateDesc();
-    
-    /**
-     * Obtiene monitoreos por año.
-     * @param year el año
-     * @return lista de monitoreos del año
-     */
-    List<Monitoring> getMonitoringsByYear(int year);
-    
-    /**
-     * Obtiene monitoreos por estación y año.
-     * @param monitoringStationId el ID de la estación de monitoreo
-     * @param year el año
-     * @return lista de monitoreos de la estación y año
-     */
-    List<Monitoring> getMonitoringsByStationAndYear(Long monitoringStationId, int year);
-    
+        
     /**
      * Elimina un monitoreo.
      * @param id el ID del monitoreo a eliminar

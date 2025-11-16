@@ -64,9 +64,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         
         monitoring.setCorporation(corporation);
         monitoring.setCreatedBy(currentUser);
-        monitoring.setUpdatedBy(currentUser);
         monitoring.setCreatedAt(LocalDateTime.now());
-        monitoring.setUpdatedAt(LocalDateTime.now());
         
         return monitoringRepository.save(monitoring);
     }
@@ -165,7 +163,7 @@ public class MonitoringServiceImpl implements MonitoringService {
     
     @Override
     @Transactional(readOnly = true)
-    public List<Monitoring> getAllMyCorporationMonitorings() {
+    public Page<Monitoring> getMonitoringsByStation(Long monitoringStationId, Pageable pageable) {
         User currentUser = authorizationUtils.getCurrentUser();
         Corporation corporation = currentUser.getCorporation();
         
@@ -173,7 +171,13 @@ public class MonitoringServiceImpl implements MonitoringService {
             throw new IllegalStateException("User must belong to a corporation");
         }
         
-        return monitoringRepository.findByCorporation(corporation);
+        Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
+        // Comparar por ID para evitar problemas con proxies de Hibernate
+        if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
+            throw new IllegalArgumentException("Monitoring station does not belong to your corporation");
+        }
+        
+        return monitoringRepository.findByMonitoringStation(stationOpt.get(), pageable);
     }
     
     @Override
@@ -244,38 +248,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         
         return monitoringRepository.findByMonitoringStationAndMonitoringDateBetween(stationOpt.get(), startDate, endDate);
     }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Monitoring> getMonitoringsByPerformer(String performedBy) {
-        return monitoringRepository.findByPerformedBy(performedBy);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Monitoring> getMonitoringsByCreatedDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-        return monitoringRepository.findByCreatedAtBetween(startDate, endDate);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public long countMonitoringsByStation(Long monitoringStationId) {
-        return monitoringRepository.countByMonitoringStationId(monitoringStationId);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public long countMyCorporationMonitorings() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        Corporation corporation = currentUser.getCorporation();
         
-        if (corporation == null) {
-            throw new IllegalStateException("User must belong to a corporation");
-        }
-        
-        return monitoringRepository.countByCorporationId(corporation.getId());
-    }
-    
     @Override
     @Transactional(readOnly = true)
     public Optional<Monitoring> getLatestMonitoringByStation(Long monitoringStationId) {
@@ -294,38 +267,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         
         return monitoringRepository.findLatestByMonitoringStation(stationOpt.get());
     }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Monitoring> getMonitoringsOrderByDateDesc() {
-        return monitoringRepository.findAllOrderByMonitoringDateDesc();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Monitoring> getMonitoringsByYear(int year) {
-        return monitoringRepository.findByYear(year);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Monitoring> getMonitoringsByStationAndYear(Long monitoringStationId, int year) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        Corporation corporation = currentUser.getCorporation();
         
-        if (corporation == null) {
-            throw new IllegalStateException("User must belong to a corporation");
-        }
-        
-        Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
-        // Comparar por ID para evitar problemas con proxies de Hibernate
-        if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("Monitoring station does not belong to your corporation");
-        }
-        
-        return monitoringRepository.findByMonitoringStationAndYear(stationOpt.get(), year);
-    }
-    
     @Override
     @Transactional
     public boolean deleteMonitoring(Long id) {
@@ -373,74 +315,12 @@ public class MonitoringServiceImpl implements MonitoringService {
         
         MonitoringStats stats = new MonitoringStats();
         
-        // Estadísticas básicas
-        List<Monitoring> allMonitorings = monitoringRepository.findByCorporation(corporation);
-        long totalMonitorings = allMonitorings.size();
-        
-        // Estadísticas por año y mes
-        int currentYear = LocalDateTime.now().getYear();
-        int currentMonth = LocalDateTime.now().getMonthValue();
-        
-        long monitoringsThisYear = allMonitorings.stream()
-            .filter(monitoring -> monitoring.getMonitoringDate().getYear() == currentYear)
-            .count();
-        
-        long monitoringsThisMonth = allMonitorings.stream()
-            .filter(monitoring -> monitoring.getMonitoringDate().getYear() == currentYear && 
-                                 monitoring.getMonitoringDate().getMonthValue() == currentMonth)
-            .count();
-        
+       
         // Estadísticas de estaciones activas
         List<MonitoringStation> activeStations = monitoringStationRepository.findByCorporationAndIsActiveTrue(corporation);
         long activeStationsCount = activeStations.size();
         
-        // Calcular promedios de parámetros
-        double averageWaterTemperature = allMonitorings.stream()
-            .filter(m -> m.getWaterTemperature() != null)
-            .mapToDouble(Monitoring::getWaterTemperature)
-            .average()
-            .orElse(0.0);
-        
-        double averageAirTemperature = allMonitorings.stream()
-            .filter(m -> m.getAirTemperature() != null)
-            .mapToDouble(Monitoring::getAirTemperature)
-            .average()
-            .orElse(0.0);
-        
-        double averagePh = allMonitorings.stream()
-            .filter(m -> m.getPh() != null)
-            .mapToDouble(m -> m.getPh().doubleValue())
-            .average()
-            .orElse(0.0);
-        
-        double averageOd = allMonitorings.stream()
-            .filter(m -> m.getOd() != null)
-            .mapToDouble(m -> m.getOd().doubleValue())
-            .average()
-            .orElse(0.0);
-        
-        double averageSst = allMonitorings.stream()
-            .filter(m -> m.getSst() != null)
-            .mapToDouble(m -> m.getSst().doubleValue())
-            .average()
-            .orElse(0.0);
-        
-        double averageDqo = allMonitorings.stream()
-            .filter(m -> m.getDqo() != null)
-            .mapToDouble(m -> m.getDqo().doubleValue())
-            .average()
-            .orElse(0.0);
-        
-        stats.setTotalMonitorings(totalMonitorings);
-        stats.setMonitoringsThisYear(monitoringsThisYear);
-        stats.setMonitoringsThisMonth(monitoringsThisMonth);
         stats.setActiveStations(activeStationsCount);
-        stats.setAverageWaterTemperature(averageWaterTemperature);
-        stats.setAverageAirTemperature(averageAirTemperature);
-        stats.setAveragePh(averagePh);
-        stats.setAverageOd(averageOd);
-        stats.setAverageSst(averageSst);
-        stats.setAverageDqo(averageDqo);
         
         return stats;
     }

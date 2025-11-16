@@ -31,7 +31,7 @@ public class MonitoringStation implements Auditable {
     @JoinColumn(name = "basin_section_id", nullable = false)
     private BasinSection basinSection;
     
-    @Size(max = 1000, message = "Description cannot exceed 1000 characters")
+    @Size(max = 500, message = "Description cannot exceed 500 characters")
     private String description;
     
     @Column(name = "latitude", precision = 10, scale = 8)
@@ -44,12 +44,10 @@ public class MonitoringStation implements Auditable {
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
     
-    @NotNull(message = "Corporation is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "corporation_id", nullable = false)
     private Corporation corporation;
     
-    @NotNull(message = "Created by is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;
@@ -64,6 +62,7 @@ public class MonitoringStation implements Auditable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
+    @JsonIgnore
     @OneToMany(mappedBy = "monitoringStation", fetch = FetchType.LAZY)
     private List<Monitoring> monitorings = new ArrayList<>();
     
@@ -95,7 +94,6 @@ public class MonitoringStation implements Auditable {
     public void setName(String name) {
         this.name = name;
     }
-    
     
     public BasinSection getBasinSection() {
         return basinSection;

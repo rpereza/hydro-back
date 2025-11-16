@@ -193,7 +193,7 @@ public class BasinSectionServiceImpl implements BasinSectionService {
             throw new IllegalArgumentException("Water basin does not belong to your corporation");
         }
         
-        return basinSectionRepository.findByWaterBasin(waterBasinOpt.get());
+        return basinSectionRepository.findByWaterBasinAndIsActiveTrue(waterBasinOpt.get());
     }
     
     @Override
