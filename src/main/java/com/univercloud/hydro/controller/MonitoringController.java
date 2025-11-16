@@ -59,7 +59,7 @@ public class MonitoringController {
             Monitoring updatedMonitoring = monitoringService.updateMonitoring(monitoring);
             return ResponseEntity.ok(updatedMonitoring);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.badRequest().build();
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }

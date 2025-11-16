@@ -7,9 +7,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "monitorings")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Monitoring implements Auditable {
     
     @Id
@@ -70,33 +72,38 @@ public class Monitoring implements Auditable {
     private BigDecimal rnp;
     
     @JsonIgnore
-    @NotNull(message = "IOD is required")
     @Column(name = "iod", precision = 11, scale = 3, nullable = false)
     private BigDecimal iod;
     
     @JsonIgnore
-    @NotNull(message = "ISST is required")
     @Column(name = "isst", precision = 11, scale = 3, nullable = false)
     private BigDecimal isst;
     
     @JsonIgnore
-    @NotNull(message = "IDQO is required")
     @Column(name = "idqo", precision = 11, scale = 3, nullable = false)
     private BigDecimal idqo;
     
     @JsonIgnore
-    @NotNull(message = "ICE is required")
     @Column(name = "ice", precision = 11, scale = 3, nullable = false)
     private BigDecimal ice;
     
     @JsonIgnore
-    @NotNull(message = "IPH is required")
     @Column(name = "iph", precision = 11, scale = 3, nullable = false)
     private BigDecimal iph;
     
     @JsonIgnore
     @Column(name = "irnp", precision = 11, scale = 3)
     private BigDecimal irnp;
+    
+    @Column(name = "number_ica_variables")
+    private Integer numberIcaVariables;
+    
+    @Column(name = "ica_coefficient", precision = 3, scale = 2)
+    private BigDecimal icaCoefficient;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "quality_clasification")
+    private QualityClasification qualityClasification;
     
     @NotNull(message = "Caudal volumen is required")
     @Column(name = "caudal_volumen", precision = 12, scale = 2, nullable = false)
@@ -310,6 +317,30 @@ public class Monitoring implements Auditable {
         this.irnp = irnp;
     }
     
+    public Integer getNumberIcaVariables() {
+        return numberIcaVariables;
+    }
+    
+    public void setNumberIcaVariables(Integer numberIcaVariables) {
+        this.numberIcaVariables = numberIcaVariables;
+    }
+    
+    public BigDecimal getIcaCoefficient() {
+        return icaCoefficient;
+    }
+    
+    public void setIcaCoefficient(BigDecimal icaCoefficient) {
+        this.icaCoefficient = icaCoefficient;
+    }
+    
+    public QualityClasification getQualityClasification() {
+        return qualityClasification;
+    }
+    
+    public void setQualityClasification(QualityClasification qualityClasification) {
+        this.qualityClasification = qualityClasification;
+    }
+    
     public BigDecimal getCaudalVolumen() {
         return caudalVolumen;
     }
@@ -398,8 +429,30 @@ public class Monitoring implements Auditable {
                 ", ice=" + ice +
                 ", iph=" + iph +
                 ", irnp=" + irnp +
+                ", numberIcaVariables=" + numberIcaVariables +
+                ", icaCoefficient=" + icaCoefficient +
+                ", qualityClasification=" + qualityClasification +
                 ", caudalVolumen=" + caudalVolumen +
                 ", createdAt=" + createdAt +
                 '}';
+    }
+    
+    // Enum for quality classification
+    public enum QualityClasification {
+        BUENA("Buena"),
+        ACEPTABLE("Aceptable"),
+        REGULAR("Regular"),
+        MALA("Mala"),
+        MUY_MALA("Muy Mala");
+        
+        private final String displayName;
+        
+        QualityClasification(String displayName) {
+            this.displayName = displayName;
+        }
+        
+        public String getDisplayName() {
+            return displayName;
+        }
     }
 }

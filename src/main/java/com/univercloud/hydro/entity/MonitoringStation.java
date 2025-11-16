@@ -1,6 +1,7 @@
 package com.univercloud.hydro.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "monitoring_stations")
+@JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 public class MonitoringStation implements Auditable {
     
     @Id
