@@ -3,7 +3,8 @@ package com.univercloud.hydro.service.impl;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.Discharge;
 import com.univercloud.hydro.entity.DischargeUser;
-import com.univercloud.hydro.entity.Municipality;
+import com.univercloud.hydro.entity.DischargeParameter;
+import com.univercloud.hydro.entity.DischargeMonitoring;
 import com.univercloud.hydro.entity.BasinSection;
 import com.univercloud.hydro.entity.User;
 import com.univercloud.hydro.exception.DuplicateResourceException;
@@ -78,7 +79,7 @@ public class DischargeServiceImpl implements DischargeService {
             
             // Comparar por ID para evitar problemas con proxies de Hibernate
             if (dischargeUser.getCorporation() == null || !dischargeUser.getCorporation().getId().equals(corporation.getId())) {
-                throw new IllegalArgumentException("Discharge user does not belong to your corporation");
+                throw new IllegalStateException("Discharge user does not belong to your corporation");
             }
         }
         
@@ -95,7 +96,7 @@ public class DischargeServiceImpl implements DischargeService {
             
             // Comparar por ID para evitar problemas con proxies de Hibernate
             if (basinSection.getCorporation() == null || !basinSection.getCorporation().getId().equals(corporation.getId())) {
-                throw new IllegalArgumentException("Basin section does not belong to your corporation");
+                throw new IllegalStateException("Basin section does not belong to your corporation");
             }
         }
         
@@ -111,7 +112,45 @@ public class DischargeServiceImpl implements DischargeService {
         discharge.setCreatedBy(currentUser);
         discharge.setCreatedAt(LocalDateTime.now());
         
-        return dischargeRepository.save(discharge);
+        // Guardar la descarga primero para obtener el ID
+        Discharge savedDischarge = dischargeRepository.save(discharge);
+        
+        // Procesar DischargeParameters si existen
+        if (discharge.getDischargeParameters() != null && !discharge.getDischargeParameters().isEmpty()) {
+            for (DischargeParameter param : discharge.getDischargeParameters()) {
+                // Validar que no existe un parámetro con el mismo mes y origen para esta descarga
+                if (dischargeParameterRepository.existsByDischargeAndMonthAndOrigin(savedDischarge, param.getMonth(), param.getOrigin())) {
+                    throw new DuplicateResourceException("DischargeParameter", "month and origin", param.getMonth() + "/" + param.getOrigin());
+                }
+                
+                // Establecer relaciones y auditoría
+                param.setDischarge(savedDischarge);
+                param.setCorporation(corporation);
+                param.setCreatedBy(currentUser);
+                param.setCreatedAt(LocalDateTime.now());
+            }
+            dischargeParameterRepository.saveAll(discharge.getDischargeParameters());
+        }
+        
+        // Procesar DischargeMonitorings si existen
+        if (discharge.getDischargeMonitorings() != null && !discharge.getDischargeMonitorings().isEmpty()) {
+            for (DischargeMonitoring monitoring : discharge.getDischargeMonitorings()) {
+                // Validar que la estación de monitoreo pertenece a la corporación (si se proporciona)
+                if (monitoring.getMonitoringStation() != null && monitoring.getMonitoringStation().getId() != null) {
+                    // La validación se hará en el servicio de DischargeMonitoring si es necesario
+                    // Por ahora solo establecemos las relaciones
+                }
+                
+                // Establecer relaciones y auditoría
+                monitoring.setDischarge(savedDischarge);
+                monitoring.setCorporation(corporation);
+                monitoring.setCreatedBy(currentUser);
+                monitoring.setCreatedAt(LocalDateTime.now());
+            }
+            dischargeMonitoringRepository.saveAll(discharge.getDischargeMonitorings());
+        }
+        
+        return savedDischarge;
     }
     
     @Override
@@ -152,8 +191,6 @@ public class DischargeServiceImpl implements DischargeService {
         existingDischarge.setName(discharge.getName());
         existingDischarge.setDischargePoint(discharge.getDischargePoint());
         existingDischarge.setWaterResourceType(discharge.getWaterResourceType());
-        existingDischarge.setLatitude(discharge.getLatitude());
-        existingDischarge.setLongitude(discharge.getLongitude());
         existingDischarge.setBasinRehuse(discharge.isBasinRehuse());
         existingDischarge.setCcDboVert(discharge.getCcDboVert());
         existingDischarge.setCcSstVert(discharge.getCcSstVert());
@@ -165,6 +202,134 @@ public class DischargeServiceImpl implements DischargeService {
         existingDischarge.setSourceMonitored(discharge.isSourceMonitored());
         existingDischarge.setUpdatedBy(currentUser);
         existingDischarge.setUpdatedAt(LocalDateTime.now());
+        
+        // Procesar DischargeParameters
+        if (discharge.getDischargeParameters() != null) {
+            // Cargar los parámetros existentes
+            List<DischargeParameter> existingParameters = dischargeParameterRepository.findByDischarge(existingDischarge);
+            
+            // Crear un mapa de parámetros existentes por ID para búsqueda rápida
+            java.util.Map<Long, DischargeParameter> existingParamsMap = new java.util.HashMap<>();
+            for (DischargeParameter param : existingParameters) {
+                existingParamsMap.put(param.getId(), param);
+            }
+            
+            // Procesar los nuevos parámetros
+            List<DischargeParameter> paramsToSave = new java.util.ArrayList<>();
+            for (DischargeParameter newParam : discharge.getDischargeParameters()) {
+                if (newParam.getId() != null && existingParamsMap.containsKey(newParam.getId())) {
+                    // Actualizar parámetro existente
+                    DischargeParameter existingParam = existingParamsMap.get(newParam.getId());
+                    // Validar que no existe otro parámetro con el mismo mes y origen (excluyendo el actual)
+                    if (dischargeParameterRepository.existsByDischargeAndMonthAndOriginExcludingId(
+                            existingDischarge, newParam.getMonth(), newParam.getOrigin(), existingParam.getId())) {
+                        throw new DuplicateResourceException("DischargeParameter", "month and origin", 
+                                newParam.getMonth() + "/" + newParam.getOrigin());
+                    }
+                    
+                    // Actualizar campos
+                    existingParam.setMonth(newParam.getMonth());
+                    existingParam.setOrigin(newParam.getOrigin());
+                    existingParam.setCaudalVolumen(newParam.getCaudalVolumen());
+                    existingParam.setFrequency(newParam.getFrequency());
+                    existingParam.setDuration(newParam.getDuration());
+                    existingParam.setConcDbo(newParam.getConcDbo());
+                    existingParam.setConcSst(newParam.getConcSst());
+                    existingParam.setCcDbo(newParam.getCcDbo());
+                    existingParam.setCcSst(newParam.getCcSst());
+                    existingParam.setUpdatedBy(currentUser);
+                    existingParam.setUpdatedAt(LocalDateTime.now());
+                    paramsToSave.add(existingParam);
+                    existingParamsMap.remove(newParam.getId()); // Marcar como procesado
+                } else {
+                    // Nuevo parámetro
+                    // Validar que no existe un parámetro con el mismo mes y origen
+                    if (dischargeParameterRepository.existsByDischargeAndMonthAndOrigin(
+                            existingDischarge, newParam.getMonth(), newParam.getOrigin())) {
+                        throw new DuplicateResourceException("DischargeParameter", "month and origin", 
+                                newParam.getMonth() + "/" + newParam.getOrigin());
+                    }
+                    
+                    newParam.setDischarge(existingDischarge);
+                    newParam.setCorporation(corporation);
+                    newParam.setCreatedBy(currentUser);
+                    newParam.setCreatedAt(LocalDateTime.now());
+                    paramsToSave.add(newParam);
+                }
+            }
+            
+            // Eliminar parámetros que ya no están en la lista
+            for (DischargeParameter paramToDelete : existingParamsMap.values()) {
+                dischargeParameterRepository.delete(paramToDelete);
+            }
+            
+            // Guardar los parámetros actualizados y nuevos
+            if (!paramsToSave.isEmpty()) {
+                dischargeParameterRepository.saveAll(paramsToSave);
+            }
+        }
+        
+        // Procesar DischargeMonitorings
+        if (discharge.getDischargeMonitorings() != null) {
+            // Cargar los monitoreos existentes
+            List<DischargeMonitoring> existingMonitorings = dischargeMonitoringRepository.findByDischarge(existingDischarge);
+            
+            // Crear un mapa de monitoreos existentes por ID para búsqueda rápida
+            java.util.Map<Long, DischargeMonitoring> existingMonitoringsMap = new java.util.HashMap<>();
+            for (DischargeMonitoring monitoring : existingMonitorings) {
+                existingMonitoringsMap.put(monitoring.getId(), monitoring);
+            }
+            
+            // Procesar los nuevos monitoreos
+            List<DischargeMonitoring> monitoringsToSave = new java.util.ArrayList<>();
+            for (DischargeMonitoring newMonitoring : discharge.getDischargeMonitorings()) {
+                if (newMonitoring.getId() != null && existingMonitoringsMap.containsKey(newMonitoring.getId())) {
+                    // Actualizar monitoreo existente
+                    DischargeMonitoring existingMonitoring = existingMonitoringsMap.get(newMonitoring.getId());
+                    
+                    // Actualizar campos
+                    existingMonitoring.setMonitoringStation(newMonitoring.getMonitoringStation());
+                    existingMonitoring.setOd(newMonitoring.getOd());
+                    existingMonitoring.setSst(newMonitoring.getSst());
+                    existingMonitoring.setDqo(newMonitoring.getDqo());
+                    existingMonitoring.setCe(newMonitoring.getCe());
+                    existingMonitoring.setPh(newMonitoring.getPh());
+                    existingMonitoring.setN(newMonitoring.getN());
+                    existingMonitoring.setP(newMonitoring.getP());
+                    existingMonitoring.setRnp(newMonitoring.getRnp());
+                    existingMonitoring.setIod(newMonitoring.getIod());
+                    existingMonitoring.setIsst(newMonitoring.getIsst());
+                    existingMonitoring.setIdqo(newMonitoring.getIdqo());
+                    existingMonitoring.setIce(newMonitoring.getIce());
+                    existingMonitoring.setIph(newMonitoring.getIph());
+                    existingMonitoring.setIrnp(newMonitoring.getIrnp());
+                    existingMonitoring.setCaudalVolumen(newMonitoring.getCaudalVolumen());
+                    existingMonitoring.setLatitude(newMonitoring.getLatitude());
+                    existingMonitoring.setLongitude(newMonitoring.getLongitude());
+                    existingMonitoring.setUpdatedBy(currentUser);
+                    existingMonitoring.setUpdatedAt(LocalDateTime.now());
+                    monitoringsToSave.add(existingMonitoring);
+                    existingMonitoringsMap.remove(newMonitoring.getId()); // Marcar como procesado
+                } else {
+                    // Nuevo monitoreo
+                    newMonitoring.setDischarge(existingDischarge);
+                    newMonitoring.setCorporation(corporation);
+                    newMonitoring.setCreatedBy(currentUser);
+                    newMonitoring.setCreatedAt(LocalDateTime.now());
+                    monitoringsToSave.add(newMonitoring);
+                }
+            }
+            
+            // Eliminar monitoreos que ya no están en la lista
+            for (DischargeMonitoring monitoringToDelete : existingMonitoringsMap.values()) {
+                dischargeMonitoringRepository.delete(monitoringToDelete);
+            }
+            
+            // Guardar los monitoreos actualizados y nuevos
+            if (!monitoringsToSave.isEmpty()) {
+                dischargeMonitoringRepository.saveAll(monitoringsToSave);
+            }
+        }
         
         return dischargeRepository.save(existingDischarge);
     }
@@ -204,22 +369,6 @@ public class DischargeServiceImpl implements DischargeService {
     
     @Override
     @Transactional(readOnly = true)
-    public List<Discharge> getAllMyCorporationDischarges() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return dischargeRepository.findByCorporation(corporation);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
     public List<Discharge> getDischargesByDischargeUser(Long dischargeUserId) {
         User currentUser = authorizationUtils.getCurrentUser();
         if (currentUser == null) {
@@ -236,43 +385,10 @@ public class DischargeServiceImpl implements DischargeService {
         
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (dischargeUser.getCorporation() == null || !dischargeUser.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("Discharge user does not belong to your corporation");
+            throw new IllegalStateException("Discharge user does not belong to your corporation");
         }
         
         return dischargeRepository.findByDischargeUser(dischargeUser);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Discharge> getDischargesByMunicipality(Long municipalityId) {
-        Municipality municipality = municipalityRepository.findById(municipalityId)
-                .orElseThrow(() -> new IllegalArgumentException("Municipality not found"));
-        
-        return dischargeRepository.findByMunicipality(municipality);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Discharge> getDischargesByBasinSection(Long basinSectionId) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        BasinSection basinSection = basinSectionRepository.findById(basinSectionId)
-                .orElseThrow(() -> new IllegalArgumentException("Basin section not found"));
-        
-        // Comparar por ID para evitar problemas con proxies de Hibernate
-        if (basinSection.getCorporation() == null || !basinSection.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("Basin section does not belong to your corporation");
-        }
-        
-        return dischargeRepository.findByBasinSection(basinSection);
     }
     
     @Override
@@ -289,38 +405,6 @@ public class DischargeServiceImpl implements DischargeService {
         }
         
         return dischargeRepository.findByCorporationAndYear(corporation, year);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Discharge> getDischargesByType(Discharge.DischargeType dischargeType) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return dischargeRepository.findByCorporationAndDischargeType(corporation, dischargeType);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Discharge> getDischargesByWaterResourceType(Discharge.WaterResourceType waterResourceType) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return dischargeRepository.findByCorporationAndWaterResourceType(corporation, waterResourceType);
     }
     
     @Override
@@ -343,130 +427,6 @@ public class DischargeServiceImpl implements DischargeService {
         }
         
         return dischargeRepository.findByCorporationAndNameContainingIgnoreCase(corporation, name);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Discharge> getMonitoredDischarges() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return dischargeRepository.findByCorporationAndIsSourceMonitoredTrue(corporation);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Discharge> getUnmonitoredDischarges() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return dischargeRepository.findByCorporationAndIsSourceMonitoredFalse(corporation);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Discharge> getDischargesWithBasinReuse() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return dischargeRepository.findByCorporationAndIsBasinRehuseTrue(corporation);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Discharge> getDischargesWithoutBasinReuse() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return dischargeRepository.findByCorporationAndIsBasinRehuseFalse(corporation);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Discharge> getDischargesByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return dischargeRepository.findByCorporationAndCreatedAtBetween(corporation, startDate, endDate);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public long countMyCorporationDischarges() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return dischargeRepository.countByCorporationId(corporation.getId());
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public long countDischargesByMunicipality(Long municipalityId) {
-        return dischargeRepository.countByMunicipalityId(municipalityId);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public long countDischargesByBasinSection(Long basinSectionId) {
-        return dischargeRepository.countByBasinSectionId(basinSectionId);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public long countDischargesByYear(Integer year) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return dischargeRepository.countByCorporationAndYear(corporation.getId(), year);
     }
     
     @Override
@@ -507,98 +467,4 @@ public class DischargeServiceImpl implements DischargeService {
         return true;
     }
     
-    @Override
-    @Transactional(readOnly = true)
-    public boolean existsByNumberAndYear(Integer number, Integer year) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return dischargeRepository.existsByCorporationAndNumberAndYear(corporation, number, year);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Discharge> getDischargesOrderByCreatedAtDesc() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return dischargeRepository.findByCorporationOrderByCreatedAtDesc(corporation);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Discharge> getDischargesByMunicipalityAndYear(Long municipalityId, Integer year) {
-        Municipality municipality = municipalityRepository.findById(municipalityId)
-                .orElseThrow(() -> new IllegalArgumentException("Municipality not found"));
-        
-        return dischargeRepository.findByMunicipalityAndYear(municipality, year);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Discharge> getDischargesByBasinSectionAndYear(Long basinSectionId, Integer year) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        BasinSection basinSection = basinSectionRepository.findById(basinSectionId)
-                .orElseThrow(() -> new IllegalArgumentException("Basin section not found"));
-        
-        // Comparar por ID para evitar problemas con proxies de Hibernate
-        if (basinSection.getCorporation() == null || !basinSection.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("Basin section does not belong to your corporation");
-        }
-        
-        return dischargeRepository.findByBasinSectionAndYear(basinSection, year);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public DischargeStats getMyCorporationDischargeStats() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        DischargeStats stats = new DischargeStats();
-        
-        List<Discharge> allDischarges = dischargeRepository.findByCorporation(corporation);
-        
-        stats.setTotalDischarges(allDischarges.size());
-        stats.setMonitoredDischarges((int) allDischarges.stream().filter(Discharge::isSourceMonitored).count());
-        stats.setUnmonitoredDischarges((int) allDischarges.stream().filter(d -> !d.isSourceMonitored()).count());
-        stats.setDischargesWithBasinReuse((int) allDischarges.stream().filter(Discharge::isBasinRehuse).count());
-        stats.setDischargesWithoutBasinReuse((int) allDischarges.stream().filter(d -> !d.isBasinRehuse()).count());
-        stats.setDomesticDischarges((int) allDischarges.stream().filter(d -> d.getDischargeType() == Discharge.DischargeType.ARD).count());
-        stats.setNonDomesticDischarges((int) allDischarges.stream().filter(d -> d.getDischargeType() == Discharge.DischargeType.ARND).count());
-        stats.setRiverDischarges((int) allDischarges.stream().filter(d -> d.getWaterResourceType() == Discharge.WaterResourceType.RIVER).count());
-        stats.setLakeDischarges((int) allDischarges.stream().filter(d -> d.getWaterResourceType() == Discharge.WaterResourceType.LAKE).count());
-        
-        return stats;
-    }
 }

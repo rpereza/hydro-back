@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -90,6 +91,23 @@ public class DischargeUserController {
     public ResponseEntity<Page<DischargeUser>> getAllDischargeUsers(Pageable pageable) {
         try {
             Page<DischargeUser> dischargeUsers = dischargeUserService.getMyCorporationDischargeUsers(pageable);
+            return ResponseEntity.ok(dischargeUsers);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+    
+    /**
+     * Busca usuarios de descarga por nombre de empresa (búsqueda parcial).
+     * 
+     * @param companyName el nombre o parte del nombre de empresa a buscar
+     * @return lista de usuarios de descarga que coinciden
+     */
+    @GetMapping("/search")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<DischargeUser>> searchDischargeUserByCompanyName(@RequestParam String companyName) {
+        try {
+            List<DischargeUser> dischargeUsers = dischargeUserService.searchDischargeUsersByCompanyName(companyName);
             return ResponseEntity.ok(dischargeUsers);
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

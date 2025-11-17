@@ -67,6 +67,26 @@ public interface DischargeParameterRepository extends JpaRepository<DischargePar
     boolean existsByDischargeAndMonth(Discharge discharge, DischargeParameter.Month month);
     
     /**
+     * Verifica si existe un parámetro para la descarga, mes y origen especificados.
+     * @param discharge la descarga
+     * @param month el mes
+     * @param origin el origen
+     * @return true si existe, false en caso contrario
+     */
+    boolean existsByDischargeAndMonthAndOrigin(Discharge discharge, DischargeParameter.Month month, DischargeParameter.Origin origin);
+    
+    /**
+     * Verifica si existe un parámetro para la descarga, mes y origen especificados, excluyendo un ID.
+     * @param discharge la descarga
+     * @param month el mes
+     * @param origin el origen
+     * @param excludeId el ID a excluir de la búsqueda
+     * @return true si existe, false en caso contrario
+     */
+    @Query("SELECT COUNT(dp) > 0 FROM DischargeParameter dp WHERE dp.discharge = :discharge AND dp.month = :month AND dp.origin = :origin AND dp.id != :excludeId")
+    boolean existsByDischargeAndMonthAndOriginExcludingId(@Param("discharge") Discharge discharge, @Param("month") DischargeParameter.Month month, @Param("origin") DischargeParameter.Origin origin, @Param("excludeId") Long excludeId);
+    
+    /**
      * Busca parámetros por descarga y origen.
      * @param discharge la descarga
      * @param origin el origen

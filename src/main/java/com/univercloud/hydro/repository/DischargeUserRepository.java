@@ -89,6 +89,15 @@ public interface DischargeUserRepository extends JpaRepository<DischargeUser, Lo
     List<DischargeUser> findByCompanyNameContainingIgnoreCase(@Param("companyName") String companyName);
     
     /**
+     * Busca usuarios de descarga por corporación y nombre de empresa (búsqueda parcial, case-insensitive).
+     * @param corporation la corporación
+     * @param companyName el nombre o parte del nombre de empresa a buscar
+     * @return lista de usuarios de descarga de la corporación que coinciden con el nombre
+     */
+    @Query("SELECT du FROM DischargeUser du WHERE du.corporation = :corporation AND LOWER(du.companyName) LIKE LOWER(CONCAT('%', :companyName, '%'))")
+    List<DischargeUser> findByCorporationAndCompanyNameContainingIgnoreCase(@Param("corporation") Corporation corporation, @Param("companyName") String companyName);
+    
+    /**
      * Busca usuarios de descarga por municipio y nombre de empresa (búsqueda parcial, case-insensitive).
      * @param municipality el municipio
      * @param companyName el nombre o parte del nombre de empresa a buscar

@@ -50,20 +50,16 @@ public class DischargeParameter implements Auditable {
     @Column(name = "conc_sst", precision = 9, scale = 2, nullable = false)
     private BigDecimal concSst;
     
-    @NotNull(message = "CC DBO is required")
     @Column(name = "cc_dbo", precision = 9, scale = 2, nullable = false)
     private BigDecimal ccDbo;
     
-    @NotNull(message = "CC SST is required")
     @Column(name = "cc_sst", precision = 9, scale = 2, nullable = false)
     private BigDecimal ccSst;
     
-    @NotNull(message = "Corporation is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "corporation_id", nullable = false)
     private Corporation corporation;
     
-    @NotNull(message = "Created by is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;
@@ -84,8 +80,7 @@ public class DischargeParameter implements Auditable {
     }
     
     public DischargeParameter(Discharge discharge, Month month, Origin origin, BigDecimal caudalVolumen,
-                             Short frequency, Short duration, BigDecimal concDbo, BigDecimal concSst,
-                             BigDecimal ccDbo, BigDecimal ccSst) {
+                             Short frequency, Short duration, BigDecimal concDbo, BigDecimal concSst) {
         this();
         this.discharge = discharge;
         this.month = month;
@@ -95,8 +90,6 @@ public class DischargeParameter implements Auditable {
         this.duration = duration;
         this.concDbo = concDbo;
         this.concSst = concSst;
-        this.ccDbo = ccDbo;
-        this.ccSst = ccSst;
     }
     
     // Getters and Setters

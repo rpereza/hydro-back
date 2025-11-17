@@ -38,8 +38,8 @@ public class AuthorizationTypeController {
         try {
             AuthorizationType createdAuthorizationType = authorizationTypeService.createAuthorizationType(authorizationType);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdAuthorizationType);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
     
@@ -57,8 +57,8 @@ public class AuthorizationTypeController {
             authorizationType.setId(id);
             AuthorizationType updatedAuthorizationType = authorizationTypeService.updateAuthorizationType(authorizationType);
             return ResponseEntity.ok(updatedAuthorizationType);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
     
@@ -121,8 +121,8 @@ public class AuthorizationTypeController {
         try {
             boolean deleted = authorizationTypeService.deleteAuthorizationType(id);
             return ResponseEntity.ok(deleted);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 }

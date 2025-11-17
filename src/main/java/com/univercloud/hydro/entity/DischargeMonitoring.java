@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.univercloud.hydro.enums.QualityClasification;
 
 @Entity
 @Table(name = "discharge_monitorings")
@@ -53,28 +54,33 @@ public class DischargeMonitoring implements Auditable {
     @Column(name = "rnp", precision = 11, scale = 3)
     private BigDecimal rnp;
     
-    @NotNull(message = "IOD is required")
     @Column(name = "iod", precision = 11, scale = 3, nullable = false)
     private BigDecimal iod;
     
-    @NotNull(message = "ISST is required")
     @Column(name = "isst", precision = 11, scale = 3, nullable = false)
     private BigDecimal isst;
     
-    @NotNull(message = "IDQO is required")
     @Column(name = "idqo", precision = 11, scale = 3, nullable = false)
     private BigDecimal idqo;
     
-    @NotNull(message = "ICE is required")
     @Column(name = "ice", precision = 11, scale = 3, nullable = false)
     private BigDecimal ice;
     
-    @NotNull(message = "IPH is required")
     @Column(name = "iph", precision = 11, scale = 3, nullable = false)
     private BigDecimal iph;
     
     @Column(name = "irnp", precision = 11, scale = 3)
     private BigDecimal irnp;
+    
+    @Column(name = "number_ica_variables")
+    private Integer numberIcaVariables;
+    
+    @Column(name = "ica_coefficient", precision = 3, scale = 2)
+    private BigDecimal icaCoefficient;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "quality_clasification")
+    private QualityClasification qualityClasification;
     
     @NotNull(message = "Caudal volumen is required")
     @Column(name = "caudal_volumen", precision = 12, scale = 2, nullable = false)
@@ -86,12 +92,10 @@ public class DischargeMonitoring implements Auditable {
     @Column(name = "longitude", precision = 11, scale = 8)
     private BigDecimal longitude;
     
-    @NotNull(message = "Corporation is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "corporation_id", nullable = false)
     private Corporation corporation;
     
-    @NotNull(message = "Created by is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;
@@ -266,6 +270,30 @@ public class DischargeMonitoring implements Auditable {
         this.irnp = irnp;
     }
     
+    public Integer getNumberIcaVariables() {
+        return numberIcaVariables;
+    }
+    
+    public void setNumberIcaVariables(Integer numberIcaVariables) {
+        this.numberIcaVariables = numberIcaVariables;
+    }
+    
+    public BigDecimal getIcaCoefficient() {
+        return icaCoefficient;
+    }
+    
+    public void setIcaCoefficient(BigDecimal icaCoefficient) {
+        this.icaCoefficient = icaCoefficient;
+    }
+    
+    public QualityClasification getQualityClasification() {
+        return qualityClasification;
+    }
+    
+    public void setQualityClasification(QualityClasification qualityClasification) {
+        this.qualityClasification = qualityClasification;
+    }
+    
     public BigDecimal getCaudalVolumen() {
         return caudalVolumen;
     }
@@ -365,6 +393,9 @@ public class DischargeMonitoring implements Auditable {
                 ", ice=" + ice +
                 ", iph=" + iph +
                 ", irnp=" + irnp +
+                ", numberIcaVariables=" + numberIcaVariables +
+                ", icaCoefficient=" + icaCoefficient +
+                ", qualityClasification=" + qualityClasification +
                 ", caudalVolumen=" + caudalVolumen +
                 ", latitude=" + latitude +
                 ", longitude=" + longitude +

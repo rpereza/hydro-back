@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.univercloud.hydro.enums.QualityClasification;
 
 @Entity
 @Table(name = "monitorings")
@@ -435,24 +436,5 @@ public class Monitoring implements Auditable {
                 ", caudalVolumen=" + caudalVolumen +
                 ", createdAt=" + createdAt +
                 '}';
-    }
-    
-    // Enum for quality classification
-    public enum QualityClasification {
-        BUENA("Buena"),
-        ACEPTABLE("Aceptable"),
-        REGULAR("Regular"),
-        MALA("Mala"),
-        MUY_MALA("Muy Mala");
-        
-        private final String displayName;
-        
-        QualityClasification(String displayName) {
-            this.displayName = displayName;
-        }
-        
-        public String getDisplayName() {
-            return displayName;
-        }
     }
 }

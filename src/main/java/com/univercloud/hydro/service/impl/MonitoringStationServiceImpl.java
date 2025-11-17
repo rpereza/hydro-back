@@ -79,7 +79,7 @@ public class MonitoringStationServiceImpl implements MonitoringStationService {
         // Verificar que pertenezca a la corporación del usuario
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (existing.getCorporation() == null || !existing.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("You do not have permission to update this monitoring station");
+            throw new IllegalStateException("You do not have permission to update this monitoring station");
         }
         
         // Verificar que el nombre no exista en la corporación (si cambió)
@@ -165,7 +165,7 @@ public class MonitoringStationServiceImpl implements MonitoringStationService {
         MonitoringStation station = stationOpt.get();
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (station.getCorporation() == null || !station.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("You do not have permission to delete this monitoring station");
+            throw new IllegalStateException("You do not have permission to delete this monitoring station");
         }
         
         // Verificar si hay monitoreos asociados

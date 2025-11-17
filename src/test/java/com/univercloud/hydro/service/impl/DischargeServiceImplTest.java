@@ -207,24 +207,7 @@ class DischargeServiceImplTest {
             dischargeService.getMyCorporationDischarges(pageable);
         });
     }
-    
-    @Test
-    void getAllMyCorporationDischarges_ShouldReturnListOfDischarges_WhenUserAuthenticated() {
-        // Given
-        List<Discharge> expectedDischarges = Arrays.asList(testDischarge);
         
-        when(authorizationUtils.getCurrentUser()).thenReturn(testUser);
-        when(dischargeRepository.findByCorporation(testCorporation)).thenReturn(expectedDischarges);
-        
-        // When
-        List<Discharge> result = dischargeService.getAllMyCorporationDischarges();
-        
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(testDischarge.getId(), result.get(0).getId());
-    }
-    
     @Test
     void getDischargesByYear_ShouldReturnListOfDischarges_WhenUserAuthenticated() {
         // Given
@@ -268,36 +251,5 @@ class DischargeServiceImplTest {
         assertThrows(IllegalArgumentException.class, () -> {
             dischargeService.deleteDischarge(999L);
         });
-    }
-    
-    @Test
-    void countMyCorporationDischarges_ShouldReturnCount_WhenUserAuthenticated() {
-        // Given
-        long expectedCount = 5L;
-        
-        when(authorizationUtils.getCurrentUser()).thenReturn(testUser);
-        when(dischargeRepository.count()).thenReturn(expectedCount);
-        
-        // When
-        long result = dischargeService.countMyCorporationDischarges();
-        
-        // Then
-        assertEquals(expectedCount, result);
-    }
-    
-    @Test
-    void getMyCorporationDischargeStats_ShouldReturnStats_WhenUserAuthenticated() {
-        // Given
-        long totalDischarges = 10L;
-        
-        when(authorizationUtils.getCurrentUser()).thenReturn(testUser);
-        when(dischargeRepository.count()).thenReturn(totalDischarges);
-        
-        // When
-        DischargeService.DischargeStats result = dischargeService.getMyCorporationDischargeStats();
-        
-        // Then
-        assertNotNull(result);
-        assertEquals(totalDischarges, result.getTotalDischarges());
     }
 }

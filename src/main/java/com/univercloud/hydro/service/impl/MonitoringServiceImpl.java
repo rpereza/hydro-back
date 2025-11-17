@@ -4,6 +4,7 @@ import com.univercloud.hydro.entity.Monitoring;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.User;
 import com.univercloud.hydro.entity.MonitoringStation;
+import com.univercloud.hydro.enums.QualityClasification;
 import com.univercloud.hydro.exception.DuplicateResourceException;
 import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.repository.MonitoringRepository;
@@ -269,7 +270,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("Monitoring station does not belong to your corporation");
+            throw new IllegalStateException("Monitoring station does not belong to your corporation");
         }
         
         return monitoringRepository.findByMonitoringStation(stationOpt.get(), pageable);
@@ -288,7 +289,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("Monitoring station does not belong to your corporation");
+            throw new IllegalStateException("Monitoring station does not belong to your corporation");
         }
         
         return monitoringRepository.findByMonitoringStation(stationOpt.get());
@@ -313,7 +314,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("Monitoring station does not belong to your corporation");
+            throw new IllegalStateException("Monitoring station does not belong to your corporation");
         }
         
         return monitoringRepository.findByMonitoringStationAndMonitoringDate(stationOpt.get(), monitoringDate);
@@ -338,7 +339,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("Monitoring station does not belong to your corporation");
+            throw new IllegalStateException("Monitoring station does not belong to your corporation");
         }
         
         return monitoringRepository.findByMonitoringStationAndMonitoringDateBetween(stationOpt.get(), startDate, endDate);
@@ -357,7 +358,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         Optional<MonitoringStation> stationOpt = monitoringStationRepository.findById(monitoringStationId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (stationOpt.isEmpty() || stationOpt.get().getCorporation() == null || !stationOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("Monitoring station does not belong to your corporation");
+            throw new IllegalStateException("Monitoring station does not belong to your corporation");
         }
         
         return monitoringRepository.findLatestByMonitoringStation(stationOpt.get());
@@ -381,7 +382,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         Monitoring monitoring = monitoringOpt.get();
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (monitoring.getCorporation() == null || !monitoring.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("You do not have permission to delete this monitoring");
+            throw new IllegalStateException("You do not have permission to delete this monitoring");
         }
         
         monitoringRepository.delete(monitoring);
@@ -948,7 +949,7 @@ public class MonitoringServiceImpl implements MonitoringService {
      * @return Clasificación de calidad correspondiente
      * @throws IllegalArgumentException si el icaCoefficient está fuera del rango válido (0-1)
      */
-    private Monitoring.QualityClasification calculateQualityClasification(BigDecimal icaCoefficient) {
+    private QualityClasification calculateQualityClasification(BigDecimal icaCoefficient) {
         if (icaCoefficient == null) {
             return null;
         }
@@ -963,27 +964,27 @@ public class MonitoringServiceImpl implements MonitoringService {
         
         // Si icaCoefficient >= 0 y <= 0.25: MUY_MALA
         if (icaCoefficient.compareTo(zero) >= 0 && icaCoefficient.compareTo(zeroPoint25) <= 0) {
-            return Monitoring.QualityClasification.MUY_MALA;
+            return QualityClasification.MUY_MALA;
         }
         
         // Si icaCoefficient > 0.25 y <= 0.5: MALA
         if (icaCoefficient.compareTo(zeroPoint25) > 0 && icaCoefficient.compareTo(zeroPoint5) <= 0) {
-            return Monitoring.QualityClasification.MALA;
+            return QualityClasification.MALA;
         }
         
         // Si icaCoefficient > 0.5 y <= 0.7: REGULAR
         if (icaCoefficient.compareTo(zeroPoint5) > 0 && icaCoefficient.compareTo(zeroPoint7) <= 0) {
-            return Monitoring.QualityClasification.REGULAR;
+            return QualityClasification.REGULAR;
         }
         
         // Si icaCoefficient > 0.7 y <= 0.9: ACEPTABLE
         if (icaCoefficient.compareTo(zeroPoint7) > 0 && icaCoefficient.compareTo(zeroPoint9) <= 0) {
-            return Monitoring.QualityClasification.ACEPTABLE;
+            return QualityClasification.ACEPTABLE;
         }
         
         // Si icaCoefficient > 0.9 y <= 1: BUENA
         if (icaCoefficient.compareTo(zeroPoint9) > 0 && icaCoefficient.compareTo(one) <= 0) {
-            return Monitoring.QualityClasification.BUENA;
+            return QualityClasification.BUENA;
         }
         
         // Para otros valores: lanzar IllegalArgumentException

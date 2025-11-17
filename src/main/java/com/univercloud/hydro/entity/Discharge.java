@@ -58,12 +58,6 @@ public class Discharge implements Auditable {
     @Column(name = "water_resource_type", nullable = false)
     private WaterResourceType waterResourceType;
     
-    @Column(name = "latitude", precision = 10, scale = 8)
-    private BigDecimal latitude;
-    
-    @Column(name = "longitude", precision = 11, scale = 8)
-    private BigDecimal longitude;
-    
     @Column(name = "is_basin_rehuse", nullable = false)
     private boolean isBasinRehuse = false;
     
@@ -98,12 +92,10 @@ public class Discharge implements Auditable {
     @Column(name = "is_source_monitored", nullable = false)
     private boolean isSourceMonitored = false;
     
-    @NotNull(message = "Corporation is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "corporation_id", nullable = false)
     private Corporation corporation;
     
-    @NotNull(message = "Created by is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;
@@ -118,10 +110,10 @@ public class Discharge implements Auditable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    @OneToMany(mappedBy = "discharge", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "discharge", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DischargeParameter> dischargeParameters = new ArrayList<>();
     
-    @OneToMany(mappedBy = "discharge", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "discharge", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DischargeMonitoring> dischargeMonitorings = new ArrayList<>();
     
     @OneToMany(mappedBy = "discharge", fetch = FetchType.LAZY)
@@ -223,22 +215,6 @@ public class Discharge implements Auditable {
     
     public void setWaterResourceType(WaterResourceType waterResourceType) {
         this.waterResourceType = waterResourceType;
-    }
-    
-    public BigDecimal getLatitude() {
-        return latitude;
-    }
-    
-    public void setLatitude(BigDecimal latitude) {
-        this.latitude = latitude;
-    }
-    
-    public BigDecimal getLongitude() {
-        return longitude;
-    }
-    
-    public void setLongitude(BigDecimal longitude) {
-        this.longitude = longitude;
     }
     
     public boolean isBasinRehuse() {

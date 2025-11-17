@@ -64,7 +64,7 @@ public class BasinSectionServiceImpl implements BasinSectionService {
         Optional<WaterBasin> waterBasinOpt = waterBasinRepository.findById(basinSection.getWaterBasin().getId());
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (waterBasinOpt.isEmpty() || waterBasinOpt.get().getCorporation() == null || !waterBasinOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("Water basin does not belong to your corporation");
+            throw new IllegalStateException("Water basin does not belong to your corporation");
         }
         
         WaterBasin waterBasin = waterBasinOpt.get();
@@ -101,7 +101,7 @@ public class BasinSectionServiceImpl implements BasinSectionService {
         // Verificar que pertenezca a la corporación del usuario
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (existing.getCorporation() == null || !existing.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("You do not have permission to update this basin section");
+            throw new IllegalStateException("You do not have permission to update this basin section");
         }
         
         // Verificar que la cuenca hidrográfica pertenezca a la corporación
@@ -112,7 +112,7 @@ public class BasinSectionServiceImpl implements BasinSectionService {
         Optional<WaterBasin> waterBasinOpt = waterBasinRepository.findById(basinSection.getWaterBasin().getId());
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (waterBasinOpt.isEmpty() || waterBasinOpt.get().getCorporation() == null || !waterBasinOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("Water basin does not belong to your corporation");
+            throw new IllegalStateException("Water basin does not belong to your corporation");
         }
         
         WaterBasin waterBasin = waterBasinOpt.get();
@@ -190,7 +190,7 @@ public class BasinSectionServiceImpl implements BasinSectionService {
         Optional<WaterBasin> waterBasinOpt = waterBasinRepository.findById(waterBasinId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (waterBasinOpt.isEmpty() || waterBasinOpt.get().getCorporation() == null || !waterBasinOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("Water basin does not belong to your corporation");
+            throw new IllegalStateException("Water basin does not belong to your corporation");
         }
         
         return basinSectionRepository.findByWaterBasinAndIsActiveTrue(waterBasinOpt.get());
@@ -220,7 +220,7 @@ public class BasinSectionServiceImpl implements BasinSectionService {
         BasinSection basinSection = basinSectionOpt.get();
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (basinSection.getCorporation() == null || !basinSection.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("You do not have permission to delete this basin section");
+            throw new IllegalStateException("You do not have permission to delete this basin section");
         }
         
         // Verificar si hay estaciones de monitoreo asociadas
@@ -230,7 +230,7 @@ public class BasinSectionServiceImpl implements BasinSectionService {
         }
         
         // Verificar si hay descargas asociadas
-        long dischargeCount = dischargeRepository.countByBasinSectionId(id);
+        long dischargeCount = basinSection.getDischarges().size();
         if (dischargeCount > 0) {
             throw new ResourceInUseException("BasinSection", "id", id, "Discharge", dischargeCount);
         }

@@ -58,7 +58,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             Optional<Discharge> dischargeOpt = dischargeRepository.findById(invoice.getDischarge().getId());
             // Comparar por ID para evitar problemas con proxies de Hibernate
             if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
-                throw new IllegalArgumentException("Discharge does not belong to your corporation");
+                throw new IllegalStateException("Discharge does not belong to your corporation");
             }
         }
         
@@ -91,7 +91,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         // Verificar que pertenezca a la corporación del usuario
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (existing.getCorporation() == null || !existing.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("You do not have permission to update this invoice");
+            throw new IllegalStateException("You do not have permission to update this invoice");
         }
         
         // Verificar que el número de factura no exista (si cambió)
@@ -104,7 +104,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             Optional<Discharge> dischargeOpt = dischargeRepository.findById(invoice.getDischarge().getId());
             // Comparar por ID para evitar problemas con proxies de Hibernate
             if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
-                throw new IllegalArgumentException("Discharge does not belong to your corporation");
+                throw new IllegalStateException("Discharge does not belong to your corporation");
             }
         }
         
@@ -187,7 +187,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         Optional<Discharge> dischargeOpt = dischargeRepository.findById(dischargeId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("Discharge does not belong to your corporation");
+            throw new IllegalStateException("Discharge does not belong to your corporation");
         }
         
         return invoiceRepository.findByDischarge(dischargeOpt.get());
@@ -212,7 +212,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         Optional<Discharge> dischargeOpt = dischargeRepository.findById(dischargeId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("Discharge does not belong to your corporation");
+            throw new IllegalStateException("Discharge does not belong to your corporation");
         }
         
         return invoiceRepository.findByDischargeAndNumber(dischargeOpt.get(), number);
@@ -261,7 +261,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         Invoice invoice = invoiceOpt.get();
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (invoice.getCorporation() == null || !invoice.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("You do not have permission to delete this invoice");
+            throw new IllegalStateException("You do not have permission to delete this invoice");
         }
         
         invoiceRepository.delete(invoice);
@@ -296,7 +296,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         Optional<Discharge> dischargeOpt = dischargeRepository.findById(dischargeId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("Discharge does not belong to your corporation");
+            throw new IllegalStateException("Discharge does not belong to your corporation");
         }
         
         return invoiceRepository.findByDischargeOrderByCreatedAtDesc(dischargeOpt.get());
@@ -321,7 +321,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         Optional<Discharge> dischargeOpt = dischargeRepository.findById(dischargeId);
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("Discharge does not belong to your corporation");
+            throw new IllegalStateException("Discharge does not belong to your corporation");
         }
         
         return invoiceRepository.findByDischargeAndYear(dischargeOpt.get(), year);
@@ -376,12 +376,6 @@ public class InvoiceServiceImpl implements InvoiceService {
             .count();
         
         // Estadísticas de descargas
-        List<Discharge> allDischarges = dischargeRepository.findByCorporation(corporation);
-        long dischargesWithInvoices = allDischarges.stream()
-            .filter(discharge -> invoiceRepository.countByDischargeId(discharge.getId()) > 0)
-            .count();
-        long dischargesWithoutInvoices = allDischarges.size() - dischargesWithInvoices;
-        
         stats.setTotalInvoices(totalInvoices);
         stats.setTotalAmount(totalAmount);
         stats.setAverageAmount(averageAmount);
@@ -389,8 +383,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         stats.setMaxAmount(maxAmount);
         stats.setInvoicesThisYear(invoicesThisYear);
         stats.setInvoicesThisMonth(invoicesThisMonth);
-        stats.setDischargesWithInvoices(dischargesWithInvoices);
-        stats.setDischargesWithoutInvoices(dischargesWithoutInvoices);
         
         return stats;
     }

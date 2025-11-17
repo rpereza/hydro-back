@@ -111,7 +111,7 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         // Verificar que pertenezca a la corporación del usuario
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (existing.getCorporation() == null || !existing.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("You do not have permission to update this discharge user");
+            throw new IllegalStateException("You do not have permission to update this discharge user");
         }
         
         // Verificar que el código no exista en la corporación (si cambió)
@@ -267,7 +267,17 @@ public class DischargeUserServiceImpl implements DischargeUserService {
     @Override
     @Transactional(readOnly = true)
     public List<DischargeUser> searchDischargeUsersByCompanyName(String companyName) {
-        return dischargeUserRepository.findByCompanyNameContainingIgnoreCase(companyName);
+        User currentUser = authorizationUtils.getCurrentUser();
+        if (currentUser == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        
+        Corporation corporation = currentUser.getCorporation();
+        if (corporation == null) {
+            throw new IllegalStateException("User does not belong to a corporation");
+        }
+        
+        return dischargeUserRepository.findByCorporationAndCompanyNameContainingIgnoreCase(corporation, companyName);
     }
     
     @Override
@@ -355,7 +365,7 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         DischargeUser dischargeUser = dischargeUserOpt.get();
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (dischargeUser.getCorporation() == null || !dischargeUser.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("You do not have permission to activate this discharge user");
+            throw new IllegalStateException("You do not have permission to activate this discharge user");
         }
         
         dischargeUser.setActive(true);
@@ -384,7 +394,7 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         DischargeUser dischargeUser = dischargeUserOpt.get();
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (dischargeUser.getCorporation() == null || !dischargeUser.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("You do not have permission to deactivate this discharge user");
+            throw new IllegalStateException("You do not have permission to deactivate this discharge user");
         }
         
         dischargeUser.setActive(false);
@@ -413,11 +423,11 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         DischargeUser dischargeUser = dischargeUserOpt.get();
         // Comparar por ID para evitar problemas con proxies de Hibernate
         if (dischargeUser.getCorporation() == null || !dischargeUser.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalArgumentException("You do not have permission to delete this discharge user");
+            throw new IllegalStateException("You do not have permission to delete this discharge user");
         }
         
         // Verificar si hay descargas asociadas
-        long dischargeCount = dischargeRepository.countByDischargeUserId(id);
+        long dischargeCount = dischargeUser.getDischarges().size();
         if (dischargeCount > 0) {
             throw new ResourceInUseException("DischargeUser", "id", id, "Discharge", dischargeCount);
         }
@@ -494,7 +504,10 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         long inactiveDischargeUsers = totalDischargeUsers - activeDischargeUsers;
         
         // Estadísticas de descargas
-        long totalDischarges = dischargeRepository.countByCorporationId(corporation.getId());
+        long totalDischarges = allDischargeUsers.stream()
+            .map(DischargeUser::getDischarges)
+            .flatMap(List::stream)
+            .count();
         
         // Estadísticas de facturas
         long totalInvoices = invoiceRepository.countByCorporationId(corporation.getId());
