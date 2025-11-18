@@ -4,8 +4,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-import java.util.Set;
-
 public class SignupRequest {
     
     @NotBlank(message = "Username is required")
@@ -25,8 +23,6 @@ public class SignupRequest {
     
     @Size(max = 100, message = "Last name cannot exceed 100 characters")
     private String lastName;
-    
-    private Set<String> roles;
     
     // Constructors
     public SignupRequest() {}
@@ -76,13 +72,5 @@ public class SignupRequest {
     
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-    
-    public Set<String> getRoles() {
-        return roles;
-    }
-    
-    public void setRoles(Set<String> roles) {
-        this.roles = roles;
     }
 }

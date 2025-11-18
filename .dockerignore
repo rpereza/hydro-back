@@ -1,0 +1,58 @@
+# Maven
+target/
+# Note: .mvn/wrapper files are needed for Maven wrapper to work in Docker build
+# Do NOT exclude .mvn/wrapper/maven-wrapper.jar or .mvn/wrapper/maven-wrapper.properties
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+bin/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!README.md
+
+# Test files
+src/test/
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Build artifacts
+*.jar
+!target/*.jar
+*.war
+*.ear
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+*~
+
+# Railway specific
+.railway/
+
