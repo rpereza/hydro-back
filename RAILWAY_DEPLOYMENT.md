@@ -148,6 +148,55 @@ Para actualizar la aplicación:
 2. Railway detectará automáticamente los cambios y desplegará una nueva versión
 3. Puedes configurar "Auto Deploy" en Settings para desplegar automáticamente en cada push
 
+## Optimización de Memoria (1GB RAM)
+
+La aplicación está optimizada para funcionar eficientemente con el límite de 1GB de RAM en Railway. Las siguientes optimizaciones están implementadas:
+
+### Optimizaciones JVM
+
+- **Heap máximo**: 512MB (`-Xmx512m`)
+- **Heap inicial**: 256MB (`-Xms256m`)
+- **Metaspace máximo**: 128MB (metadatos de clases)
+- **Code cache**: 64MB
+- **Garbage Collector**: G1GC (optimizado para bajos recursos)
+- **Compresión de punteros**: Habilitada para reducir uso de memoria
+- **Deduplicación de strings**: Automática para ahorrar memoria
+
+### Optimizaciones de Base de Datos
+
+- **Pool de conexiones reducido**: Máximo 5 conexiones (antes 10)
+- **Conexiones idle mínimas**: 2 (antes 5)
+- **Batch processing**: Habilitado para operaciones en lote
+- **Cache de segundo nivel**: Deshabilitado (ahorra memoria significativa)
+- **Open-in-View**: Deshabilitado (mejora el rendimiento y reduce memoria)
+
+### Optimizaciones de Spring Boot
+
+- **JMX**: Deshabilitado
+- **Background pre-initialization**: Deshabilitado
+- **Actuator**: Solo endpoint de health (métricas deshabilitadas)
+- **Logging**: Reducido a niveles esenciales (WARN/ERROR para frameworks)
+- **File logging**: Deshabilitado en producción
+
+### Monitoreo de Memoria
+
+Para monitorear el uso de memoria en Railway:
+
+1. Ve a la pestaña "Metrics" en tu servicio
+2. Revisa el uso de memoria en tiempo real
+3. Si ves picos cercanos a 1GB, considera:
+   - Reducir aún más el pool de conexiones
+   - Revisar consultas que carguen muchos datos
+   - Implementar paginación en endpoints que devuelvan listas grandes
+
+### Ajustes Adicionales (si es necesario)
+
+Si después del despliegue observas problemas de memoria, puedes ajustar en `docker-entrypoint.sh`:
+
+- Reducir `-Xmx512m` a `-Xmx384m` (dejar más espacio para no-heap)
+- Reducir `spring.datasource.hikari.maximum-pool-size` a 3
+- Aumentar `-XX:MaxGCPauseMillis` a 300 si hay pausas frecuentes
+
 ## Costos
 
 - **Plan Hobby**: $5/mes (incluye $5 de crédito)
