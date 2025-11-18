@@ -340,7 +340,7 @@ CREATE TABLE invoices (
     year INTEGER NOT NULL,
     environmental_variable DECIMAL(5,2) NOT NULL,
     socioeconomic_variable DECIMAL(5,2) NOT NULL,
-    Economic_variable DECIMAL(5,2) NOT NULL,
+    economic_variable DECIMAL(5,2) NOT NULL,
     regional_factor DECIMAL(5,2) NOT NULL,
     cc_dbo DECIMAL(9,2) NOT NULL,
     cc_sst DECIMAL(9,2) NOT NULL,

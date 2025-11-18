@@ -1,6 +1,9 @@
 package com.univercloud.hydro.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -11,6 +14,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "discharges")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Discharge implements Auditable {
     
     @Id
@@ -61,27 +65,21 @@ public class Discharge implements Auditable {
     @Column(name = "is_basin_rehuse", nullable = false)
     private boolean isBasinRehuse = false;
     
-    @NotNull(message = "CC DBO Vert is required")
     @Column(name = "cc_dbo_vert", precision = 9, scale = 2, nullable = false)
     private BigDecimal ccDboVert;
     
-    @NotNull(message = "CC SST Vert is required")
     @Column(name = "cc_sst_vert", precision = 9, scale = 2, nullable = false)
     private BigDecimal ccSstVert;
     
-    @NotNull(message = "CC DBO Cap is required")
     @Column(name = "cc_dbo_cap", precision = 9, scale = 2, nullable = false)
     private BigDecimal ccDboCap;
     
-    @NotNull(message = "CC SST Cap is required")
     @Column(name = "cc_sst_cap", precision = 9, scale = 2, nullable = false)
     private BigDecimal ccSstCap;
     
-    @NotNull(message = "CC DBO Total is required")
     @Column(name = "cc_dbo_total", precision = 9, scale = 2, nullable = false)
     private BigDecimal ccDboTotal;
     
-    @NotNull(message = "CC SST Total is required")
     @Column(name = "cc_sst_total", precision = 9, scale = 2, nullable = false)
     private BigDecimal ccSstTotal;
     
@@ -217,10 +215,12 @@ public class Discharge implements Auditable {
         this.waterResourceType = waterResourceType;
     }
     
+    @JsonProperty("isBasinRehuse")
     public boolean isBasinRehuse() {
         return isBasinRehuse;
     }
-    
+
+    @JsonProperty("isBasinRehuse")
     public void setBasinRehuse(boolean isBasinRehuse) {
         this.isBasinRehuse = isBasinRehuse;
     }
@@ -281,10 +281,12 @@ public class Discharge implements Auditable {
         this.dqo = dqo;
     }
     
+    @JsonProperty("isSourceMonitored")
     public boolean isSourceMonitored() {
         return isSourceMonitored;
     }
     
+    @JsonProperty("isSourceMonitored")
     public void setSourceMonitored(boolean isSourceMonitored) {
         this.isSourceMonitored = isSourceMonitored;
     }

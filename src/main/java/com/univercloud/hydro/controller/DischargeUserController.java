@@ -115,6 +115,23 @@ public class DischargeUserController {
     }
     
     /**
+     * Busca usuarios de descarga por nombre de empresa (búsqueda parcial) que sean empresas de servicio público.
+     * 
+     * @param companyName el nombre o parte del nombre de empresa a buscar
+     * @return lista de usuarios de descarga que coinciden y son empresas de servicio público
+     */
+    @GetMapping("/search/public-service")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<DischargeUser>> searchPublicServiceCompanyDischargeUserByCompanyName(@RequestParam String companyName) {
+        try {
+            List<DischargeUser> dischargeUsers = dischargeUserService.searchPublicServiceCompanyDischargeUsersByCompanyName(companyName);
+            return ResponseEntity.ok(dischargeUsers);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+    
+    /**
      * Elimina un usuario de descarga.
      * 
      * @param id el ID del usuario de descarga a eliminar

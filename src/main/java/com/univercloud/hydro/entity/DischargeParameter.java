@@ -101,6 +101,7 @@ public class DischargeParameter implements Auditable {
         this.id = id;
     }
     
+    @JsonIgnore
     public Discharge getDischarge() {
         return discharge;
     }

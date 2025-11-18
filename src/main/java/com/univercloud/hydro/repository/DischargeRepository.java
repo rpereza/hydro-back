@@ -5,6 +5,7 @@ import com.univercloud.hydro.entity.Discharge;
 import com.univercloud.hydro.entity.DischargeUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -71,6 +72,7 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
      * @param pageable parámetros de paginación
      * @return página de descargas de la corporación
      */
+    @EntityGraph(attributePaths = {"dischargeUser", "basinSection", "municipality"})
     Page<Discharge> findByCorporation(Corporation corporation, Pageable pageable);
     
     /**

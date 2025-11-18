@@ -84,5 +84,14 @@ public interface MonitoringStationRepository extends JpaRepository<MonitoringSta
      */
     @Query("SELECT COUNT(ms) FROM MonitoringStation ms WHERE ms.basinSection.id = :basinSectionId")
     long countByBasinSectionId(@Param("basinSectionId") Long basinSectionId);
+    
+    /**
+     * Busca estaciones de monitoreo por nombre y sección de cuenca (búsqueda parcial, case-insensitive).
+     * @param name el nombre o parte del nombre de la estación a buscar
+     * @param basinSectionId el ID de la sección de cuenca
+     * @return lista de estaciones que coinciden con el nombre y la sección de cuenca
+     */
+    @Query("SELECT ms FROM MonitoringStation ms WHERE LOWER(ms.name) LIKE LOWER(CONCAT('%', :name, '%')) AND ms.basinSection.id = :basinSectionId")
+    List<MonitoringStation> findByNameAndBasinSectionId(@Param("name") String name, @Param("basinSectionId") Long basinSectionId);
 }
 

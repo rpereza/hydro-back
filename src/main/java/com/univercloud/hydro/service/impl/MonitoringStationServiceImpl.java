@@ -1,11 +1,15 @@
 package com.univercloud.hydro.service.impl;
 
+import com.univercloud.hydro.dto.MonitoringStationWithLastMonitoringDTO;
+import com.univercloud.hydro.entity.Monitoring;
 import com.univercloud.hydro.entity.MonitoringStation;
+import com.univercloud.hydro.entity.BasinSection;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.User;
 import com.univercloud.hydro.exception.DuplicateResourceException;
 import com.univercloud.hydro.exception.ResourceInUseException;
 import com.univercloud.hydro.exception.ResourceNotFoundException;
+import com.univercloud.hydro.repository.BasinSectionRepository;
 import com.univercloud.hydro.repository.MonitoringStationRepository;
 import com.univercloud.hydro.repository.MonitoringRepository;
 import com.univercloud.hydro.service.MonitoringStationService;
@@ -33,6 +37,9 @@ public class MonitoringStationServiceImpl implements MonitoringStationService {
     
     @Autowired
     private MonitoringRepository monitoringRepository;
+    
+    @Autowired
+    private BasinSectionRepository basinSectionRepository;
     
     @Autowired
     private AuthorizationUtils authorizationUtils;
@@ -176,5 +183,87 @@ public class MonitoringStationServiceImpl implements MonitoringStationService {
         
         monitoringStationRepository.delete(station);
         return true;
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<MonitoringStationWithLastMonitoringDTO> findMonitoringStationWithLastMonitoring(String name, Long basinSectionId) {
+        User currentUser = authorizationUtils.getCurrentUser();
+        Corporation corporation = currentUser.getCorporation();
+        
+        if (corporation == null) {
+            throw new IllegalStateException("User must belong to a corporation");
+        }
+        
+        // Validar que la sección de cuenca exista y pertenezca a la corporación
+        Optional<BasinSection> basinSectionOpt = basinSectionRepository.findByIdAndCorporationId(basinSectionId, corporation.getId());
+        if (basinSectionOpt.isEmpty()) {
+            throw new ResourceNotFoundException("BasinSection", "id", basinSectionId);
+        }
+        
+        // Buscar las estaciones de monitoreo por nombre (búsqueda parcial) y sección de cuenca
+        List<MonitoringStation> stations = monitoringStationRepository.findByNameAndBasinSectionId(name, basinSectionId);
+        if (stations.isEmpty()) {
+            throw new ResourceNotFoundException("MonitoringStation", "name and basinSection", name + "/" + basinSectionId);
+        }
+        
+        // Filtrar estaciones que pertenezcan a la corporación del usuario y estén activas
+        List<MonitoringStation> validStations = stations.stream()
+            .filter(s -> s.getCorporation() != null && s.getCorporation().getId().equals(corporation.getId()))
+            .filter(MonitoringStation::isActive)
+            .toList();
+        
+        if (validStations.isEmpty()) {
+            // Si hay estaciones pero ninguna cumple las condiciones, determinar el error específico
+            boolean hasInactive = stations.stream().anyMatch(s -> 
+                s.getCorporation() != null && s.getCorporation().getId().equals(corporation.getId()) && !s.isActive());
+            if (hasInactive) {
+                throw new IllegalArgumentException("No active monitoring stations found");
+            }
+            throw new IllegalStateException("No monitoring stations found that belong to your corporation");
+        }
+        
+        // Procesar cada estación válida y construir los DTOs
+        return validStations.stream()
+            .filter(station -> {
+                // Validar que la estación tenga al menos un monitoreo
+                long monitoringCount = monitoringRepository.countByMonitoringStationId(station.getId());
+                return monitoringCount > 0;
+            })
+            .map(station -> {
+                // Obtener el último monitoreo (más reciente por fecha)
+                Optional<Monitoring> latestMonitoringOpt = monitoringRepository.findLatestByMonitoringStation(station);
+                if (latestMonitoringOpt.isEmpty()) {
+                    return null; // Filtrar estaciones sin monitoreos válidos
+                }
+                
+                Monitoring latestMonitoring = latestMonitoringOpt.get();
+                
+                // Construir el DTO del último monitoreo
+                MonitoringStationWithLastMonitoringDTO.LastMonitoringDTO lastMonitoringDTO = 
+                    new MonitoringStationWithLastMonitoringDTO.LastMonitoringDTO(
+                        latestMonitoring.getId(),
+                        latestMonitoring.getOd(),
+                        latestMonitoring.getSst(),
+                        latestMonitoring.getDqo(),
+                        latestMonitoring.getCe(),
+                        latestMonitoring.getPh(),
+                        latestMonitoring.getN(),
+                        latestMonitoring.getP(),
+                        latestMonitoring.getCaudalVolumen()
+                    );
+                
+                // Construir y retornar el DTO de la estación
+                return new MonitoringStationWithLastMonitoringDTO(
+                    station.getId(),
+                    station.getName(),
+                    station.getDescription(),
+                    station.getLatitude(),
+                    station.getLongitude(),
+                    lastMonitoringDTO
+                );
+            })
+            .filter(dto -> dto != null) // Filtrar nulos (estaciones sin monitoreos)
+            .toList();
     }
 }

@@ -85,6 +85,13 @@ public interface DischargeUserService {
     List<DischargeUser> searchDischargeUsersByCompanyName(String companyName);
     
     /**
+     * Busca usuarios de descarga por nombre de empresa (búsqueda parcial) que sean empresas de servicio público.
+     * @param companyName el nombre o parte del nombre de empresa a buscar
+     * @return lista de usuarios de descarga que coinciden y son empresas de servicio público
+     */
+    List<DischargeUser> searchPublicServiceCompanyDischargeUsersByCompanyName(String companyName);
+    
+    /**
      * Busca usuarios de descarga por municipio y nombre de empresa (búsqueda parcial).
      * @param municipalityId el ID del municipio
      * @param companyName el nombre o parte del nombre de empresa a buscar

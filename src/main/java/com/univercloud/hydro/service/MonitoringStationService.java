@@ -1,5 +1,6 @@
 package com.univercloud.hydro.service;
 
+import com.univercloud.hydro.dto.MonitoringStationWithLastMonitoringDTO;
 import com.univercloud.hydro.entity.MonitoringStation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -63,4 +64,16 @@ public interface MonitoringStationService {
      * @throws IllegalArgumentException si la estación de monitoreo no existe
      */
     boolean deleteMonitoringStation(Long id);
+    
+    /**
+     * Busca estaciones de monitoreo por nombre y sección de cuenca, validando que:
+     * - La sección de cuenca pertenezca a la corporación del usuario
+     * - La estación esté activa
+     * - La estación tenga al menos un monitoreo
+     * @param name el nombre de la estación (búsqueda parcial)
+     * @param basinSectionId el ID de la sección de cuenca
+     * @return Lista de DTOs con las estaciones y su último monitoreo
+     * @throws IllegalArgumentException si no se encuentran estaciones o no cumplen las validaciones
+     */
+    List<MonitoringStationWithLastMonitoringDTO> findMonitoringStationWithLastMonitoring(String name, Long basinSectionId);
 }

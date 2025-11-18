@@ -1,6 +1,7 @@
 package com.univercloud.hydro.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "invoices")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Invoice implements Auditable {
     
     @Id
@@ -38,7 +40,7 @@ public class Invoice implements Auditable {
     private BigDecimal socioeconomicVariable;
 
     @NotNull(message = "Economic variable is required")
-    @Column(name = "Economic_variable", precision = 5, scale = 2, nullable = false)
+    @Column(name = "economic_variable", precision = 5, scale = 2, nullable = false)
     private BigDecimal economicVariable;
     
     @NotNull(message = "Regional factor is required")
@@ -92,12 +94,10 @@ public class Invoice implements Auditable {
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
     
-    @NotNull(message = "Corporation is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "corporation_id", nullable = false)
     private Corporation corporation;
     
-    @NotNull(message = "Created by is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;

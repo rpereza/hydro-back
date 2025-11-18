@@ -6,7 +6,9 @@ Este documento contiene ejemplos de cURL para todos los endpoints del `Monitorin
 
 **Autenticación**: Todos los endpoints requieren un token JWT en el header `Authorization: Bearer <token>`
 
-**Roles requeridos**: Todos los endpoints requieren el rol `ADMIN`
+**Roles requeridos**: 
+- La mayoría de los endpoints requieren el rol `ADMIN`
+- El endpoint de búsqueda por nombre y sección de cuenca (`GET /api/monitoring-stations/find`) requiere el rol `USER`
 
 ---
 
@@ -411,6 +413,103 @@ true
 
 ---
 
+## 7. Buscar Estaciones de Monitoreo por Nombre y Sección de Cuenca (con Último Monitoreo)
+
+**Endpoint**: `GET /api/monitoring-stations/find`
+
+**Descripción**: Busca estaciones de monitoreo por nombre (búsqueda parcial) y sección de cuenca, retornando todas las estaciones que cumplan las validaciones con su último monitoreo (fecha más reciente). Requiere rol USER.
+
+**Validaciones**:
+- La sección de cuenca debe pertenecer a la corporación del usuario
+- La estación debe estar activa (`isActive == true`)
+- La estación debe tener al menos un monitoreo
+
+**Headers**:
+- `Authorization: Bearer <JWT_TOKEN>`
+
+**Query Parameters**:
+- `name`: Nombre o parte del nombre de la estación de monitoreo (requerido, búsqueda parcial case-insensitive)
+- `basinSectionId`: ID de la sección de cuenca (requerido)
+
+**cURL Command**:
+```bash
+curl -X GET "http://localhost:8080/api/monitoring-stations/find?name=Río Grande&basinSectionId=1" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Nota**: La búsqueda por nombre es parcial, por lo que buscar "Río Grande" encontrará estaciones como "Estación Río Grande", "Estación Río Grande Norte", etc.
+
+**Response (200 OK)**:
+```json
+[
+  {
+    "id": 1,
+    "name": "Estación Río Grande",
+    "description": "Estación de monitoreo ubicada en el río Grande",
+    "latitude": 14.634915,
+    "longitude": -90.506882,
+    "lastMonitoring": {
+      "id": 15,
+      "od": 5.250,
+      "sst": 12.500,
+      "dqo": 8.750,
+      "ce": 450.000,
+      "ph": 7.200,
+      "n": 2.100,
+      "p": 0.850,
+      "caudalVolumen": 1250.50
+    }
+  },
+  {
+    "id": 3,
+    "name": "Estación Río Grande Norte",
+    "description": "Estación adicional en el río Grande",
+    "latitude": 14.635000,
+    "longitude": -90.507000,
+    "lastMonitoring": {
+      "id": 22,
+      "od": 4.800,
+      "sst": 11.200,
+      "dqo": 7.950,
+      "ce": 420.000,
+      "ph": 7.150,
+      "n": 1.950,
+      "p": 0.780,
+      "caudalVolumen": 1180.25
+    }
+  }
+]
+```
+
+**Nota**: La respuesta es un array que puede contener cero o más estaciones. Si no se encuentran estaciones que cumplan todas las validaciones, se retornará un array vacío `[]` o un error según corresponda.
+
+**Errores posibles**:
+- `400 Bad Request`: 
+  - No se encontraron estaciones activas que cumplan los criterios
+  - Parámetros inválidos
+- `404 Not Found`: 
+  - No se encontraron estaciones que contengan el nombre especificado en la sección de cuenca
+  - Sección de cuenca no encontrada o no pertenece a la corporación
+- `403 Forbidden`: Usuario no autenticado o no pertenece a una corporación
+
+**Ejemplo de error cuando no hay estaciones activas**:
+```json
+{
+  "error": "No active monitoring stations found"
+}
+```
+
+**Ejemplo de error cuando ninguna estación pertenece a la corporación**:
+```json
+{
+  "error": "No monitoring stations found that belong to your corporation"
+}
+```
+
+**Nota**: Si se encuentran estaciones pero ninguna tiene monitoreos registrados, la respuesta será un array vacío `[]` en lugar de un error, ya que las estaciones sin monitoreos se filtran silenciosamente.
+
+---
+
 ## Notas Adicionales
 
 ### Campos Requeridos para Crear/Actualizar:
@@ -495,4 +594,12 @@ curl -X PUT "http://localhost:8080/api/monitoring-stations/1" \
 curl -X DELETE "http://localhost:8080/api/monitoring-stations/1" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
+
+### 7. Buscar estaciones con último monitoreo (requiere rol USER)
+```bash
+curl -X GET "http://localhost:8080/api/monitoring-stations/find?name=Río Grande&basinSectionId=1" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Nota**: Este endpoint retorna una lista de todas las estaciones que coincidan con el nombre (búsqueda parcial) y cumplan las validaciones.
 

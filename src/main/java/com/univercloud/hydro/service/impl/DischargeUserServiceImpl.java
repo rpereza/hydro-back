@@ -39,9 +39,6 @@ public class DischargeUserServiceImpl implements DischargeUserService {
     private MunicipalityRepository municipalityRepository;
     
     @Autowired
-    private DischargeRepository dischargeRepository;
-    
-    @Autowired
     private ProjectProgressRepository projectProgressRepository;
     
     @Autowired
@@ -278,6 +275,22 @@ public class DischargeUserServiceImpl implements DischargeUserService {
         }
         
         return dischargeUserRepository.findByCorporationAndCompanyNameContainingIgnoreCase(corporation, companyName);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<DischargeUser> searchPublicServiceCompanyDischargeUsersByCompanyName(String companyName) {
+        User currentUser = authorizationUtils.getCurrentUser();
+        if (currentUser == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        
+        Corporation corporation = currentUser.getCorporation();
+        if (corporation == null) {
+            throw new IllegalStateException("User does not belong to a corporation");
+        }
+        
+        return dischargeUserRepository.findByCorporationAndCompanyNameContainingIgnoreCaseAndIsPublicServiceCompanyTrue(corporation, companyName);
     }
     
     @Override

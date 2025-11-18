@@ -1,5 +1,6 @@
 package com.univercloud.hydro.controller;
 
+import com.univercloud.hydro.dto.MonitoringStationWithLastMonitoringDTO;
 import com.univercloud.hydro.entity.MonitoringStation;
 import com.univercloud.hydro.service.MonitoringStationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,6 +129,29 @@ public class MonitoringStationController {
             return ResponseEntity.ok(deleted);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+    
+    /**
+     * Busca estaciones de monitoreo por nombre y sección de cuenca.
+     * Retorna las estaciones con su último monitoreo.
+     * 
+     * @param name el nombre de la estación de monitoreo (búsqueda parcial)
+     * @param basinSectionId el ID de la sección de cuenca
+     * @return Lista de DTOs con las estaciones y su último monitoreo
+     */
+    @GetMapping("/find")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<MonitoringStationWithLastMonitoringDTO>> findMonitoringStationWithLastMonitoring(
+            @RequestParam String name,
+            @RequestParam Long basinSectionId) {
+        try {
+            List<MonitoringStationWithLastMonitoringDTO> dtos = monitoringStationService.findMonitoringStationWithLastMonitoring(name, basinSectionId);
+            return ResponseEntity.ok(dtos);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }

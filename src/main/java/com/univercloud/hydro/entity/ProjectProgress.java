@@ -40,12 +40,10 @@ public class ProjectProgress implements Auditable {
     @Column(name = "ccs_percentage", precision = 7, scale = 2, nullable = false)
     private BigDecimal ccsPercentage;
     
-    @NotNull(message = "Corporation is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "corporation_id", nullable = false)
     private Corporation corporation;
     
-    @NotNull(message = "Created by is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;

@@ -3,6 +3,7 @@ package com.univercloud.hydro.service.impl;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.ProjectProgress;
 import com.univercloud.hydro.entity.User;
+import com.univercloud.hydro.exception.DuplicateResourceException;
 import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.repository.ProjectProgressRepository;
 import com.univercloud.hydro.service.ProjectProgressService;
@@ -13,9 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -46,7 +45,7 @@ public class ProjectProgressServiceImpl implements ProjectProgressService {
         // Verificar que no existe un progreso de proyecto para el mismo usuario de descarga y año en la corporación
         if (projectProgress.getDischargeUser() != null && projectProgress.getYear() != null && 
             projectProgressRepository.existsByCorporationAndDischargeUserAndYear(corporation, projectProgress.getDischargeUser(), projectProgress.getYear())) {
-            throw new IllegalArgumentException("Project progress for discharge user " + projectProgress.getDischargeUser().getId() + 
+            throw new DuplicateResourceException("Project progress for discharge user " + projectProgress.getDischargeUser().getId() + 
                                                " and year " + projectProgress.getYear() + " already exists in your corporation");
         }
         
@@ -75,10 +74,10 @@ public class ProjectProgressServiceImpl implements ProjectProgressService {
         }
         
         // Verificar cambios en usuario de descarga y año
-        if ((projectProgress.getDischargeUser() != null && !projectProgress.getDischargeUser().equals(existingProjectProgress.getDischargeUser())) ||
+        if ((projectProgress.getDischargeUser() != null && !projectProgress.getDischargeUser().getId().equals(existingProjectProgress.getDischargeUser().getId())) ||
             (projectProgress.getYear() != null && !projectProgress.getYear().equals(existingProjectProgress.getYear()))) {
             if (projectProgressRepository.existsByCorporationAndDischargeUserAndYear(corporation, projectProgress.getDischargeUser(), projectProgress.getYear())) {
-                throw new IllegalArgumentException("Project progress for discharge user " + projectProgress.getDischargeUser().getId() + 
+                throw new DuplicateResourceException("Project progress for discharge user " + projectProgress.getDischargeUser().getId() + 
                                                    " and year " + projectProgress.getYear() + " already exists in your corporation");
             }
         }
@@ -130,98 +129,6 @@ public class ProjectProgressServiceImpl implements ProjectProgressService {
     }
     
     @Override
-    @Transactional(readOnly = true)
-    public List<ProjectProgress> getAllMyCorporationProjectProgresses() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return projectProgressRepository.findByCorporation(corporation);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProjectProgress> getProjectProgressesByDischargeUser(Long dischargeUserId) {
-        return projectProgressRepository.findByDischargeUserId(dischargeUserId);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProjectProgress> getProjectProgressesByYear(Integer year) {
-        return projectProgressRepository.findByYear(year);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProjectProgress> getProjectProgressesByDischargeUserAndYear(Long dischargeUserId, Integer year) {
-        return projectProgressRepository.findByDischargeUserIdAndYear(dischargeUserId, year);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProjectProgress> getProjectProgressesByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-        return projectProgressRepository.findByCreatedAtBetween(startDate, endDate);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProjectProgress> getProjectProgressesByCciPercentageRange(BigDecimal minCciPercentage, BigDecimal maxCciPercentage) {
-        return projectProgressRepository.findByCciPercentageBetween(minCciPercentage, maxCciPercentage);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProjectProgress> getProjectProgressesByCevPercentageRange(BigDecimal minCevPercentage, BigDecimal maxCevPercentage) {
-        return projectProgressRepository.findByCevPercentageBetween(minCevPercentage, maxCevPercentage);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProjectProgress> getProjectProgressesByCdsPercentageRange(BigDecimal minCdsPercentage, BigDecimal maxCdsPercentage) {
-        return projectProgressRepository.findByCdsPercentageBetween(minCdsPercentage, maxCdsPercentage);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProjectProgress> getProjectProgressesByCcsPercentageRange(BigDecimal minCcsPercentage, BigDecimal maxCcsPercentage) {
-        return projectProgressRepository.findByCcsPercentageBetween(minCcsPercentage, maxCcsPercentage);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public long countMyCorporationProjectProgresses() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return projectProgressRepository.countByCorporation(corporation);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public long countProjectProgressesByDischargeUser(Long dischargeUserId) {
-        return projectProgressRepository.countByDischargeUserId(dischargeUserId);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public long countProjectProgressesByYear(Integer year) {
-        return projectProgressRepository.countByYear(year);
-    }
-    
-    @Override
     public boolean deleteProjectProgress(Long id) {
         User currentUser = authorizationUtils.getCurrentUser();
         if (currentUser == null) {
@@ -239,120 +146,5 @@ public class ProjectProgressServiceImpl implements ProjectProgressService {
         
         projectProgressRepository.delete(projectProgress);
         return true;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public boolean existsByDischargeUserAndYear(Long dischargeUserId, Integer year) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return projectProgressRepository.existsByCorporationAndDischargeUserAndYear(corporation, dischargeUserId, year);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProjectProgress> getProjectProgressesOrderByCreatedAtDesc() {
-        return projectProgressRepository.findAllOrderByCreatedAtDesc();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProjectProgress> getProjectProgressesOrderByYearDesc() {
-        return projectProgressRepository.findAllOrderByYearDesc();
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProjectProgress> getMyCorporationProjectProgressesOrderByYearDesc() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return projectProgressRepository.findByCorporationOrderByYearDesc(corporation);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public ProjectProgressStats getMyCorporationProjectProgressStats() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        ProjectProgressStats stats = new ProjectProgressStats();
-        List<ProjectProgress> progresses = projectProgressRepository.findByCorporation(corporation);
-        
-        stats.setTotalProjectProgresses(progresses.size());
-        
-        // Contar usuarios de descarga únicos
-        long uniqueDischargeUsers = progresses.stream()
-                .map(progress -> progress.getDischargeUser().getId())
-                .distinct()
-                .count();
-        stats.setTotalDischargeUsers(uniqueDischargeUsers);
-        
-        // Contar años únicos
-        long uniqueYears = progresses.stream()
-                .map(ProjectProgress::getYear)
-                .distinct()
-                .count();
-        stats.setTotalYears(uniqueYears);
-        
-        // Calcular promedios y valores mínimos/máximos
-        if (!progresses.isEmpty()) {
-            BigDecimal totalCciPercentage = progresses.stream()
-                    .map(ProjectProgress::getCciPercentage)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageCciPercentage(totalCciPercentage.divide(BigDecimal.valueOf(progresses.size()), 2, BigDecimal.ROUND_HALF_UP));
-            
-            BigDecimal totalCevPercentage = progresses.stream()
-                    .map(ProjectProgress::getCevPercentage)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageCevPercentage(totalCevPercentage.divide(BigDecimal.valueOf(progresses.size()), 2, BigDecimal.ROUND_HALF_UP));
-            
-            BigDecimal totalCdsPercentage = progresses.stream()
-                    .map(ProjectProgress::getCdsPercentage)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageCdsPercentage(totalCdsPercentage.divide(BigDecimal.valueOf(progresses.size()), 2, BigDecimal.ROUND_HALF_UP));
-            
-            BigDecimal totalCcsPercentage = progresses.stream()
-                    .map(ProjectProgress::getCcsPercentage)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageCcsPercentage(totalCcsPercentage.divide(BigDecimal.valueOf(progresses.size()), 2, BigDecimal.ROUND_HALF_UP));
-            
-            // Valores mínimos y máximos
-            stats.setMinCciPercentage(progresses.stream().map(ProjectProgress::getCciPercentage).min(BigDecimal::compareTo).orElse(BigDecimal.ZERO));
-            stats.setMaxCciPercentage(progresses.stream().map(ProjectProgress::getCciPercentage).max(BigDecimal::compareTo).orElse(BigDecimal.ZERO));
-            
-            stats.setMinCevPercentage(progresses.stream().map(ProjectProgress::getCevPercentage).min(BigDecimal::compareTo).orElse(BigDecimal.ZERO));
-            stats.setMaxCevPercentage(progresses.stream().map(ProjectProgress::getCevPercentage).max(BigDecimal::compareTo).orElse(BigDecimal.ZERO));
-            
-            stats.setMinCdsPercentage(progresses.stream().map(ProjectProgress::getCdsPercentage).min(BigDecimal::compareTo).orElse(BigDecimal.ZERO));
-            stats.setMaxCdsPercentage(progresses.stream().map(ProjectProgress::getCdsPercentage).max(BigDecimal::compareTo).orElse(BigDecimal.ZERO));
-            
-            stats.setMinCcsPercentage(progresses.stream().map(ProjectProgress::getCcsPercentage).min(BigDecimal::compareTo).orElse(BigDecimal.ZERO));
-            stats.setMaxCcsPercentage(progresses.stream().map(ProjectProgress::getCcsPercentage).max(BigDecimal::compareTo).orElse(BigDecimal.ZERO));
-        }
-        
-        return stats;
     }
 }

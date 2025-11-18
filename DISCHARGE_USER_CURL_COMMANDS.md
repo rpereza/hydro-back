@@ -451,7 +451,144 @@ curl -X GET "http://localhost:8080/api/discharge-users?page=0&size=20&sort=isAct
 
 ---
 
-## 5. Eliminar Usuario de Descarga
+## 5. Buscar Usuarios de Descarga por Nombre de Empresa (Búsqueda Parcial)
+
+**Endpoint:** `GET /api/discharge-users/search`  
+**Rol requerido:** `USER`  
+**Descripción:** Busca usuarios de descarga por nombre de empresa usando búsqueda parcial (case-insensitive) dentro de la corporación del usuario autenticado.
+
+```bash
+curl -X GET "http://localhost:8080/api/discharge-users/search?companyName=empresa" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Parámetros de consulta:**
+- `companyName`: Nombre o parte del nombre de empresa a buscar (requerido, String)
+
+**Ejemplo con nombre parcial:**
+```bash
+curl -X GET "http://localhost:8080/api/discharge-users/search?companyName=ejemplo" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Respuesta exitosa (200 OK):**
+```json
+[
+  {
+    "id": 1,
+    "companyName": "Empresa Ejemplo S.A.",
+    "code": "EMP001",
+    "documentNumber": "900123456-7",
+    "documentType": "NIT",
+    "contactPerson": "Juan Pérez",
+    "email": "contacto@empresa.com",
+    "phone": "3001234567",
+    "alternativeEmail": null,
+    "alternativePhone": null,
+    "address": "Calle 123 #45-67",
+    "fileNumber": "FILE001",
+    "hasPtar": false,
+    "efficiencyPercentage": null,
+    "isPublicServiceCompany": false,
+    "isActive": true,
+    "municipality": {
+      "id": 1,
+      "name": "Bogotá",
+      "code": "001"
+    },
+    "economicActivity": {
+      "id": 1,
+      "name": "Comercio",
+      "code": "1234"
+    },
+    "authorizationType": {
+      "id": 1,
+      "name": "Permiso de Vertimiento"
+    },
+    "createdAt": "2024-01-15T10:30:00",
+    "updatedAt": null
+  }
+]
+```
+
+**Nota:** La búsqueda es parcial y case-insensitive. Por ejemplo, buscar "empresa" encontrará "Empresa Ejemplo S.A.", "Mi Empresa S.A.", etc.
+
+**Errores posibles:**
+- `403 Forbidden`: El usuario no tiene permisos o no pertenece a una corporación
+
+---
+
+## 6. Buscar Usuarios de Descarga por Nombre de Empresa - Empresas de Servicio Público (Búsqueda Parcial)
+
+**Endpoint:** `GET /api/discharge-users/search/public-service`  
+**Rol requerido:** `USER`  
+**Descripción:** Busca usuarios de descarga por nombre de empresa usando búsqueda parcial (case-insensitive) que sean empresas de servicio público (`isPublicServiceCompany = true`) dentro de la corporación del usuario autenticado.
+
+```bash
+curl -X GET "http://localhost:8080/api/discharge-users/search/public-service?companyName=servicio" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Parámetros de consulta:**
+- `companyName`: Nombre o parte del nombre de empresa a buscar (requerido, String)
+
+**Ejemplo con nombre parcial:**
+```bash
+curl -X GET "http://localhost:8080/api/discharge-users/search/public-service?companyName=acueducto" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Respuesta exitosa (200 OK):**
+```json
+[
+  {
+    "id": 3,
+    "companyName": "Acueducto y Alcantarillado de Bogotá",
+    "code": "AAB001",
+    "documentNumber": "860001234-5",
+    "documentType": "NIT",
+    "contactPerson": "Carlos Rodríguez",
+    "email": "contacto@acueducto.com",
+    "phone": "3151234567",
+    "alternativeEmail": null,
+    "alternativePhone": null,
+    "address": "Carrera 60 #57-60",
+    "fileNumber": "AAB001",
+    "hasPtar": true,
+    "efficiencyPercentage": 95.00,
+    "isPublicServiceCompany": true,
+    "isActive": true,
+    "municipality": {
+      "id": 1,
+      "name": "Bogotá",
+      "code": "001"
+    },
+    "economicActivity": {
+      "id": 3,
+      "name": "Servicios Públicos",
+      "code": "9000"
+    },
+    "authorizationType": {
+      "id": 1,
+      "name": "Permiso de Vertimiento"
+    },
+    "createdAt": "2024-01-15T12:00:00",
+    "updatedAt": null
+  }
+]
+```
+
+**Nota:** 
+- La búsqueda es parcial y case-insensitive. Por ejemplo, buscar "servicio" encontrará "Empresa de Servicios Públicos S.A.", "Servicios Municipales", etc.
+- Solo devuelve usuarios de descarga donde `isPublicServiceCompany = true`.
+- Los resultados están limitados a la corporación del usuario autenticado.
+
+**Errores posibles:**
+- `403 Forbidden`: El usuario no tiene permisos o no pertenece a una corporación
+
+---
+
+## 7. Eliminar Usuario de Descarga
 
 **Endpoint:** `DELETE /api/discharge-users/{id}`  
 **Rol requerido:** `USER` o `ADMIN`  
@@ -559,6 +696,20 @@ curl -X POST "http://localhost:8080/api/discharge-users" \
 
 ```bash
 curl -X GET "http://localhost:8080/api/discharge-users?page=0&size=10&sort=companyName,asc" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Buscar usuarios de descarga por nombre de empresa
+
+```bash
+curl -X GET "http://localhost:8080/api/discharge-users/search?companyName=empresa" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Buscar empresas de servicio público por nombre
+
+```bash
+curl -X GET "http://localhost:8080/api/discharge-users/search/public-service?companyName=acueducto" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
