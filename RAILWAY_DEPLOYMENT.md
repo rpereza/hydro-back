@@ -8,6 +8,13 @@ Esta guía te ayudará a desplegar la aplicación Hydro Backend en Railway.
 2. Repositorio Git (GitHub, GitLab, o Bitbucket)
 3. Aplicación compilada correctamente
 
+## Nota Importante sobre Puerto Dinámico
+
+La aplicación está configurada para usar el puerto dinámico que Railway asigna. El Dockerfile incluye:
+- Script de entrada (`docker-entrypoint.sh`) que lee la variable de entorno `PORT` y configura Spring Boot
+- Script de health check (`docker-healthcheck.sh`) que usa el puerto dinámico
+- La aplicación se vinculará automáticamente al puerto asignado por Railway
+
 ## Pasos para Desplegar
 
 ### 1. Preparar el Repositorio

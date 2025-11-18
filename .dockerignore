@@ -1,7 +1,7 @@
 # Maven
 target/
-.mvn/wrapper/maven-wrapper.jar
-.mvn/wrapper/maven-wrapper.properties
+# Note: .mvn/wrapper files are needed for Maven wrapper to work in Docker build
+# Do NOT exclude .mvn/wrapper/maven-wrapper.jar or .mvn/wrapper/maven-wrapper.properties
 
 # IDE
 .idea/
