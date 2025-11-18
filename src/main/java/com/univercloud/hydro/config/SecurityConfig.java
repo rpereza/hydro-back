@@ -32,6 +32,9 @@ public class SecurityConfig {
     @Value("${app.security.password-encoder.strength:8}")
     private int passwordEncoderStrength;
     
+    @Value("${FRONTEND_URL:*}")
+    private String frontendUrl;
+    
     public SecurityConfig(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
@@ -84,11 +87,21 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        
+        // When allowCredentials is true, cannot use "*" - must specify exact origins
+        if (frontendUrl != null && !frontendUrl.equals("*")) {
+            configuration.setAllowedOrigins(Arrays.asList(frontendUrl));
+            configuration.setAllowCredentials(true);
+        } else {
+            // Fallback: allow all origins but disable credentials
+            configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+            configuration.setAllowCredentials(false);
+        }
+        
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token"));
         configuration.setExposedHeaders(Arrays.asList("x-auth-token"));
-        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L); // Cache preflight response for 1 hour
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
