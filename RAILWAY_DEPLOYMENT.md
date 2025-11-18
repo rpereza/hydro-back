@@ -60,7 +60,10 @@ En la configuración de tu servicio backend, ve a la pestaña "Variables" y agre
   openssl rand -base64 64
   ```
 - `JWT_EXPIRATION` - Tiempo de expiración en milisegundos (opcional, default: 86400000 = 24 horas)
-- `FRONTEND_URL` - URL de tu aplicación Angular frontend (ej: `https://tu-frontend.railway.app`)
+- `FRONTEND_URL` - **IMPORTANTE**: URL completa de tu aplicación Angular frontend (ej: `https://hydro-front-production.up.railway.app`)
+  - **CRÍTICO para CORS**: Esta variable debe estar configurada con la URL exacta del frontend
+  - Sin esta variable, las peticiones CORS fallarán con errores de "Access-Control-Allow-Origin"
+  - No incluyas la barra final (`/`) en la URL
 
 #### Ejemplo de Variables de Entorno:
 ```
@@ -118,6 +121,13 @@ Una vez desplegado:
 ### Error: "Flyway migration failed"
 - Verifica que la base de datos esté vacía o que las migraciones sean compatibles
 - Revisa los logs para ver el error específico de Flyway
+
+### Error: "CORS policy: No 'Access-Control-Allow-Origin' header"
+- **Solución**: Configura la variable de entorno `FRONTEND_URL` con la URL exacta de tu frontend
+- Ejemplo: `FRONTEND_URL=https://hydro-front-production.up.railway.app`
+- Asegúrate de que la URL no tenga barra final (`/`)
+- Reinicia el servicio después de agregar/actualizar la variable
+- Verifica que el valor coincida exactamente con la URL desde donde se hacen las peticiones
 
 ### Build falla
 - Verifica que el Dockerfile esté en la raíz del proyecto
