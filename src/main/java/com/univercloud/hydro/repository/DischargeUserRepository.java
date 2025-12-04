@@ -223,7 +223,7 @@ public interface DischargeUserRepository extends JpaRepository<DischargeUser, Lo
      * @param corporation la corporación
      * @return lista de usuarios de descarga activos de la corporación
      */
-    @EntityGraph(attributePaths = {"municipality", "economicActivity", "authorizationType"})
+    @EntityGraph(attributePaths = {"municipality.department", "economicActivity", "authorizationType"})
     List<DischargeUser> findByCorporationAndIsActiveTrue(Corporation corporation);
 
     /**
@@ -232,7 +232,7 @@ public interface DischargeUserRepository extends JpaRepository<DischargeUser, Lo
      * @param pageable parámetros de paginación
      * @return página de usuarios de descarga de la corporación
      */
-    @EntityGraph(attributePaths = {"municipality", "economicActivity", "authorizationType"})
+    @EntityGraph(attributePaths = {"municipality.department", "economicActivity", "authorizationType"})
     Page<DischargeUser> findByCorporation(Corporation corporation, Pageable pageable);
     
     /**
