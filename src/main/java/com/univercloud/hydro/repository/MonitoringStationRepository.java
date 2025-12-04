@@ -69,10 +69,12 @@ public interface MonitoringStationRepository extends JpaRepository<MonitoringSta
     
     /**
      * Busca estaciones por nombre (búsqueda parcial, case-insensitive).
+     * Carga la relación waterBasin para evitar problemas de lazy loading.
      * @param name el nombre o parte del nombre a buscar
      * @return lista de estaciones que coinciden con el nombre
      */
     @Query("SELECT ms FROM MonitoringStation ms WHERE LOWER(ms.name) LIKE LOWER(CONCAT('%', :name, '%'))")
+    @EntityGraph(attributePaths = {"basinSection.waterBasin"})
     List<MonitoringStation> findByNameContainingIgnoreCase(@Param("name") String name);
     
     /**
