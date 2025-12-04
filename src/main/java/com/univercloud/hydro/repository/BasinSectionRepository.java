@@ -5,6 +5,7 @@ import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.WaterBasin;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,24 +30,30 @@ public interface BasinSectionRepository extends JpaRepository<BasinSection, Long
     
     /**
      * Busca secciones activas por cuenca hidrográfica.
+     * Carga la relación waterBasin para evitar problemas de lazy loading.
      * @param waterBasin la cuenca hidrográfica
      * @return lista de secciones activas de la cuenca
      */
+    @EntityGraph(attributePaths = {"waterBasin"})
     List<BasinSection> findByWaterBasinAndIsActiveTrue(WaterBasin waterBasin);
     
     /**
      * Busca secciones por corporación.
+     * Carga la relación waterBasin para evitar problemas de lazy loading.
      * @param corporation la corporación
      * @return lista de secciones de la corporación
      */
+    @EntityGraph(attributePaths = {"waterBasin"})
     List<BasinSection> findByCorporation(Corporation corporation);
 
     /**
      * Busca secciones de la corporación con paginación.
+     * Carga la relación waterBasin para evitar problemas de lazy loading.
      * @param corporation la corporación
      * @param pageable parámetros de paginación
      * @return página de secciones de la corporación
      */
+    @EntityGraph(attributePaths = {"waterBasin"})
     Page<BasinSection> findByCorporation(Corporation corporation, Pageable pageable);
     
     /**
@@ -91,18 +98,22 @@ public interface BasinSectionRepository extends JpaRepository<BasinSection, Long
     
     /**
      * Busca secciones por nombre (búsqueda parcial, case-insensitive).
+     * Carga la relación waterBasin para evitar problemas de lazy loading.
      * @param name el nombre o parte del nombre a buscar
      * @return lista de secciones que coinciden con el nombre
      */
+    @EntityGraph(attributePaths = {"waterBasin"})
     @Query("SELECT bs FROM BasinSection bs WHERE LOWER(bs.name) LIKE LOWER(CONCAT('%', :name, '%'))")
     List<BasinSection> findByNameContainingIgnoreCase(@Param("name") String name);
     
     /**
      * Busca una sección por ID y corporación.
+     * Carga la relación waterBasin para evitar problemas de lazy loading.
      * @param id el ID de la sección
      * @param corporationId el ID de la corporación
      * @return la sección si existe y pertenece a la corporación
      */
+    @EntityGraph(attributePaths = {"waterBasin"})
     @Query("SELECT bs FROM BasinSection bs WHERE bs.id = :id AND bs.corporation.id = :corporationId")
     Optional<BasinSection> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
     
