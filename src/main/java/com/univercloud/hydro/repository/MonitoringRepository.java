@@ -25,19 +25,21 @@ public interface MonitoringRepository extends JpaRepository<Monitoring, Long> {
     
     /**
      * Busca monitoreos por estación de monitoreo.
+     * Carga la relación waterBasin para evitar problemas de lazy loading.
      * @param monitoringStation la estación de monitoreo
      * @return lista de monitoreos de la estación
      */
-    @EntityGraph(attributePaths = {"monitoringStation"})
+    @EntityGraph(attributePaths = {"monitoringStation.basinSection.waterBasin"})
     List<Monitoring> findByMonitoringStation(MonitoringStation monitoringStation);
     
     /**
      * Busca monitoreos por estación de monitoreo con paginación.
+     * Carga la relación waterBasin para evitar problemas de lazy loading.
      * @param monitoringStation la estación de monitoreo
      * @param pageable parámetros de paginación
      * @return página de monitoreos de la estación
      */
-    @EntityGraph(attributePaths = {"monitoringStation"})
+    @EntityGraph(attributePaths = {"monitoringStation.basinSection.waterBasin"})
     Page<Monitoring> findByMonitoringStation(MonitoringStation monitoringStation, Pageable pageable);
     
     /**
@@ -49,11 +51,12 @@ public interface MonitoringRepository extends JpaRepository<Monitoring, Long> {
 
     /**
      * Busca monitoreos por corporación con paginación.
+     * Carga la relación waterBasin para evitar problemas de lazy loading.
      * @param corporation la corporación
      * @param pageable parámetros de paginación
      * @return página de monitoreos de la corporación
      */
-    @EntityGraph(attributePaths = {"monitoringStation"})
+    @EntityGraph(attributePaths = {"monitoringStation.basinSection.waterBasin"})
     Page<Monitoring> findByCorporation(Corporation corporation, Pageable pageable);
     
     /**
