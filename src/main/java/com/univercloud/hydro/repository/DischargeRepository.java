@@ -73,7 +73,7 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
      * @param pageable parámetros de paginación
      * @return página de descargas de la corporación
      */
-    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType"})
+    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType", "basinSection.waterBasin"})
     Page<Discharge> findByCorporation(Corporation corporation, Pageable pageable);
     
     /**
