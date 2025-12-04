@@ -5,6 +5,7 @@ import com.univercloud.hydro.entity.Monitoring;
 import com.univercloud.hydro.entity.MonitoringStation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,6 +28,7 @@ public interface MonitoringRepository extends JpaRepository<Monitoring, Long> {
      * @param monitoringStation la estación de monitoreo
      * @return lista de monitoreos de la estación
      */
+    @EntityGraph(attributePaths = {"monitoringStation"})
     List<Monitoring> findByMonitoringStation(MonitoringStation monitoringStation);
     
     /**
@@ -35,6 +37,7 @@ public interface MonitoringRepository extends JpaRepository<Monitoring, Long> {
      * @param pageable parámetros de paginación
      * @return página de monitoreos de la estación
      */
+    @EntityGraph(attributePaths = {"monitoringStation"})
     Page<Monitoring> findByMonitoringStation(MonitoringStation monitoringStation, Pageable pageable);
     
     /**
@@ -50,6 +53,7 @@ public interface MonitoringRepository extends JpaRepository<Monitoring, Long> {
      * @param pageable parámetros de paginación
      * @return página de monitoreos de la corporación
      */
+    @EntityGraph(attributePaths = {"monitoringStation"})
     Page<Monitoring> findByCorporation(Corporation corporation, Pageable pageable);
     
     /**
