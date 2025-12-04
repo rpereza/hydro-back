@@ -68,12 +68,12 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
     
     /**
      * Busca descargas por corporación con paginación.
-     * Carga la relación dischargeUser con las relaciones municipality.department, economicActivity y authorizationType para evitar problemas de lazy loading.
+     * Carga la relación dischargeUser con las relaciones municipality.department, municipality.category, economicActivity y authorizationType para evitar problemas de lazy loading.
      * @param corporation la corporación
      * @param pageable parámetros de paginación
      * @return página de descargas de la corporación
      */
-    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.economicActivity", "dischargeUser.authorizationType"})
+    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType"})
     Page<Discharge> findByCorporation(Corporation corporation, Pageable pageable);
     
     /**
