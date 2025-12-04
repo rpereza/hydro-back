@@ -22,11 +22,12 @@ public interface ProjectProgressRepository extends JpaRepository<ProjectProgress
     
     /**
      * Busca progresos por corporación con paginación.
+     * Carga la relación dischargeUser con las relaciones municipality.department, municipality.category, economicActivity y authorizationType para evitar problemas de lazy loading.
      * @param corporation la corporación
      * @param pageable parámetros de paginación
      * @return página de progresos de la corporación
      */
-    @EntityGraph(attributePaths = {"dischargeUser"})
+    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType"})
     Page<ProjectProgress> findByCorporation(Corporation corporation, Pageable pageable);
     
     /**
