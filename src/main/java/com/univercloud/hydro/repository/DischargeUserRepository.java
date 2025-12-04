@@ -91,19 +91,23 @@ public interface DischargeUserRepository extends JpaRepository<DischargeUser, Lo
     
     /**
      * Busca usuarios de descarga por corporación y nombre de empresa (búsqueda parcial, case-insensitive).
+     * Carga las relaciones necesarias incluyendo municipality.category para evitar problemas de lazy loading.
      * @param corporation la corporación
      * @param companyName el nombre o parte del nombre de empresa a buscar
      * @return lista de usuarios de descarga de la corporación que coinciden con el nombre
      */
+    @EntityGraph(attributePaths = {"municipality.department", "municipality.category", "economicActivity", "authorizationType"})
     @Query("SELECT du FROM DischargeUser du WHERE du.corporation = :corporation AND LOWER(du.companyName) LIKE LOWER(CONCAT('%', :companyName, '%'))")
     List<DischargeUser> findByCorporationAndCompanyNameContainingIgnoreCase(@Param("corporation") Corporation corporation, @Param("companyName") String companyName);
     
     /**
      * Busca usuarios de descarga por corporación, nombre de empresa (búsqueda parcial, case-insensitive) y que sean empresas de servicio público.
+     * Carga las relaciones necesarias incluyendo municipality.category para evitar problemas de lazy loading.
      * @param corporation la corporación
      * @param companyName el nombre o parte del nombre de empresa a buscar
      * @return lista de usuarios de descarga de la corporación que coinciden con el nombre y son empresas de servicio público
      */
+    @EntityGraph(attributePaths = {"municipality.department", "municipality.category", "economicActivity", "authorizationType"})
     @Query("SELECT du FROM DischargeUser du WHERE du.corporation = :corporation AND LOWER(du.companyName) LIKE LOWER(CONCAT('%', :companyName, '%')) AND du.isPublicServiceCompany = true")
     List<DischargeUser> findByCorporationAndCompanyNameContainingIgnoreCaseAndIsPublicServiceCompanyTrue(@Param("corporation") Corporation corporation, @Param("companyName") String companyName);
     
@@ -220,27 +224,31 @@ public interface DischargeUserRepository extends JpaRepository<DischargeUser, Lo
 
     /**
      * Busca usuarios de descarga activos por corporación.
+     * Carga las relaciones necesarias incluyendo municipality.category para evitar problemas de lazy loading.
      * @param corporation la corporación
      * @return lista de usuarios de descarga activos de la corporación
      */
-    @EntityGraph(attributePaths = {"municipality.department", "economicActivity", "authorizationType"})
+    @EntityGraph(attributePaths = {"municipality.department", "municipality.category", "economicActivity", "authorizationType"})
     List<DischargeUser> findByCorporationAndIsActiveTrue(Corporation corporation);
 
     /**
      * Busca usuarios de descarga por corporación con paginación.
+     * Carga las relaciones necesarias incluyendo municipality.category para evitar problemas de lazy loading.
      * @param corporation la corporación
      * @param pageable parámetros de paginación
      * @return página de usuarios de descarga de la corporación
      */
-    @EntityGraph(attributePaths = {"municipality.department", "economicActivity", "authorizationType"})
+    @EntityGraph(attributePaths = {"municipality.department", "municipality.category", "economicActivity", "authorizationType"})
     Page<DischargeUser> findByCorporation(Corporation corporation, Pageable pageable);
     
     /**
      * Busca un usuario de descarga por ID y corporación.
+     * Carga las relaciones necesarias incluyendo municipality.category para evitar problemas de lazy loading.
      * @param id el ID del usuario de descarga
      * @param corporationId el ID de la corporación
      * @return el usuario de descarga si existe y pertenece a la corporación
      */
+    @EntityGraph(attributePaths = {"municipality.department", "municipality.category", "economicActivity", "authorizationType"})
     @Query("SELECT du FROM DischargeUser du WHERE du.id = :id AND du.corporation.id = :corporationId")
     Optional<DischargeUser> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
     
