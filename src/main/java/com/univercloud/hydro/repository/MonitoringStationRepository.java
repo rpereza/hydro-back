@@ -22,26 +22,30 @@ public interface MonitoringStationRepository extends JpaRepository<MonitoringSta
     
     /**
      * Busca estaciones por corporación.
+     * Carga la relación waterBasin para evitar problemas de lazy loading.
      * @param corporation la corporación
      * @return lista de estaciones de la corporación
      */
-    @EntityGraph(attributePaths = {"basinSection"})
+    @EntityGraph(attributePaths = {"basinSection.waterBasin"})
     List<MonitoringStation> findByCorporation(Corporation corporation);
     
     /**
      * Busca estaciones por corporación con paginación.
+     * Carga la relación waterBasin para evitar problemas de lazy loading.
      * @param corporation la corporación
      * @param pageable parámetros de paginación
      * @return página de estaciones de la corporación
      */
-    @EntityGraph(attributePaths = {"basinSection"})
+    @EntityGraph(attributePaths = {"basinSection.waterBasin"})
     Page<MonitoringStation> findByCorporation(Corporation corporation, Pageable pageable);
     
     /**
      * Busca estaciones activas por corporación.
+     * Carga la relación waterBasin para evitar problemas de lazy loading.
      * @param corporation la corporación
      * @return lista de estaciones activas de la corporación
      */
+    @EntityGraph(attributePaths = {"basinSection.waterBasin"})
     List<MonitoringStation> findByCorporationAndIsActiveTrue(Corporation corporation);
     
     /**
