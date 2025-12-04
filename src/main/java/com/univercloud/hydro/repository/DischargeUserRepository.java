@@ -5,6 +5,7 @@ import com.univercloud.hydro.entity.DischargeUser;
 import com.univercloud.hydro.entity.Municipality;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -222,6 +223,7 @@ public interface DischargeUserRepository extends JpaRepository<DischargeUser, Lo
      * @param corporation la corporación
      * @return lista de usuarios de descarga activos de la corporación
      */
+    @EntityGraph(attributePaths = {"municipality", "economicActivity", "authorizationType"})
     List<DischargeUser> findByCorporationAndIsActiveTrue(Corporation corporation);
 
     /**
@@ -230,6 +232,7 @@ public interface DischargeUserRepository extends JpaRepository<DischargeUser, Lo
      * @param pageable parámetros de paginación
      * @return página de usuarios de descarga de la corporación
      */
+    @EntityGraph(attributePaths = {"municipality", "economicActivity", "authorizationType"})
     Page<DischargeUser> findByCorporation(Corporation corporation, Pageable pageable);
     
     /**
