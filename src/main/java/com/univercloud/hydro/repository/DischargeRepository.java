@@ -26,6 +26,7 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
      * @param dischargeUser el usuario de descarga
      * @return lista de descargas del usuario
      */
+    @EntityGraph(attributePaths = {"dischargeUser"})
     List<Discharge> findByDischargeUser(DischargeUser dischargeUser);
     
     /**
@@ -72,7 +73,7 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
      * @param pageable parámetros de paginación
      * @return página de descargas de la corporación
      */
-    @EntityGraph(attributePaths = {"dischargeUser", "basinSection", "municipality"})
+    @EntityGraph(attributePaths = {"dischargeUser"})
     Page<Discharge> findByCorporation(Corporation corporation, Pageable pageable);
     
     /**
