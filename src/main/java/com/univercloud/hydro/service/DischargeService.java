@@ -1,5 +1,6 @@
 package com.univercloud.hydro.service;
 
+import com.univercloud.hydro.dto.DischargeDto;
 import com.univercloud.hydro.entity.Discharge;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,16 +40,16 @@ public interface DischargeService {
     /**
      * Obtiene todas las descargas de la corporación del usuario autenticado.
      * @param pageable parámetros de paginación
-     * @return página de descargas
+     * @return página de descargas como DTOs
      */
-    Page<Discharge> getMyCorporationDischarges(Pageable pageable);
+    Page<DischargeDto> getMyCorporationDischarges(Pageable pageable);
     
     /**
      * Obtiene descargas por usuario de descarga.
      * @param dischargeUserId el ID del usuario de descarga
-     * @return lista de descargas del usuario
+     * @return lista de descargas del usuario como DTOs
      */
-    List<Discharge> getDischargesByDischargeUser(Long dischargeUserId);
+    List<DischargeDto> getDischargesByDischargeUser(Long dischargeUserId);
     
     /**
      * Obtiene descargas por año.

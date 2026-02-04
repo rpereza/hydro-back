@@ -1,5 +1,6 @@
 package com.univercloud.hydro.service.impl;
 
+import com.univercloud.hydro.dto.DischargeDto;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.Discharge;
 import com.univercloud.hydro.entity.DischargeUser;
@@ -22,6 +23,7 @@ import com.univercloud.hydro.util.AuthorizationUtils;
 import com.univercloud.hydro.util.MonitoringCalculationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Implementación del servicio para la gestión de Descargas.
@@ -391,7 +394,7 @@ public class DischargeServiceImpl implements DischargeService {
     
     @Override
     @Transactional(readOnly = true)
-    public Page<Discharge> getMyCorporationDischarges(Pageable pageable) {
+    public Page<DischargeDto> getMyCorporationDischarges(Pageable pageable) {
         User currentUser = authorizationUtils.getCurrentUser();
         if (currentUser == null) {
             throw new IllegalStateException("User not authenticated");
@@ -402,12 +405,19 @@ public class DischargeServiceImpl implements DischargeService {
             throw new IllegalStateException("User does not belong to a corporation");
         }
         
-        return dischargeRepository.findByCorporation(corporation, pageable);
+        Page<Discharge> discharges = dischargeRepository.findByCorporation(corporation, pageable);
+        
+        // Convertir a DTOs
+        List<DischargeDto> dischargeDtos = discharges.getContent().stream()
+                .map(DischargeDto::new)
+                .collect(Collectors.toList());
+        
+        return new PageImpl<>(dischargeDtos, pageable, discharges.getTotalElements());
     }
     
     @Override
     @Transactional(readOnly = true)
-    public List<Discharge> getDischargesByDischargeUser(Long dischargeUserId) {
+    public List<DischargeDto> getDischargesByDischargeUser(Long dischargeUserId) {
         User currentUser = authorizationUtils.getCurrentUser();
         if (currentUser == null) {
             throw new IllegalStateException("User not authenticated");
@@ -426,7 +436,12 @@ public class DischargeServiceImpl implements DischargeService {
             throw new IllegalStateException("Discharge user does not belong to your corporation");
         }
         
-        return dischargeRepository.findByDischargeUser(dischargeUser);
+        List<Discharge> discharges = dischargeRepository.findByDischargeUser(dischargeUser);
+        
+        // Convertir a DTOs
+        return discharges.stream()
+                .map(DischargeDto::new)
+                .collect(Collectors.toList());
     }
     
     @Override
