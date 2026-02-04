@@ -23,7 +23,7 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
     
     /**
      * Busca descargas por usuario de descarga.
-     * Carga las relaciones necesarias incluyendo dischargeParameters para evitar problemas de lazy loading.
+     * Carga las relaciones necesarias incluyendo dischargeUser para evitar problemas de lazy loading.
      * @param dischargeUser el usuario de descarga
      * @return lista de descargas del usuario
      */
@@ -74,7 +74,7 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
     
     /**
      * Busca descargas por corporación con paginación.
-     * Carga las relaciones necesarias incluyendo dischargeParameters para evitar problemas de lazy loading.
+     * Carga las relaciones necesarias incluyendo dischargeUser para evitar problemas de lazy loading.
      * @param corporation la corporación
      * @param pageable parámetros de paginación
      * @return página de descargas de la corporación
