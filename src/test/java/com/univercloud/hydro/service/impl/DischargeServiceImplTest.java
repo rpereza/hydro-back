@@ -1,8 +1,9 @@
 package com.univercloud.hydro.service.impl;
 
+import com.univercloud.hydro.dto.DischargeDto;
 import com.univercloud.hydro.entity.*;
 import com.univercloud.hydro.repository.DischargeRepository;
-import com.univercloud.hydro.service.DischargeService;
+import com.univercloud.hydro.repository.DischargeUserRepository;
 import com.univercloud.hydro.util.AuthorizationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,9 @@ class DischargeServiceImplTest {
     
     @Mock
     private DischargeRepository dischargeRepository;
+    
+    @Mock
+    private DischargeUserRepository dischargeUserRepository;
     
     @Mock
     private AuthorizationUtils authorizationUtils;
@@ -69,12 +73,14 @@ class DischargeServiceImplTest {
         testDischargeUser = new DischargeUser();
         testDischargeUser.setId(1L);
         testDischargeUser.setCompanyName("Test Company");
+        testDischargeUser.setCorporation(testCorporation);
         
         testDischarge = new Discharge();
         testDischarge.setId(1L);
         testDischarge.setName("Test Discharge");
         testDischarge.setNumber(1);
         testDischarge.setYear(2024);
+        testDischarge.setDischargePoint("Test Discharge Point");
         testDischarge.setDischargeType(Discharge.DischargeType.ARD);
         testDischarge.setWaterResourceType(Discharge.WaterResourceType.RIVER);
         testDischarge.setMunicipality(testMunicipality);
@@ -179,7 +185,7 @@ class DischargeServiceImplTest {
     }
     
     @Test
-    void getMyCorporationDischarges_ShouldReturnPageOfDischarges_WhenUserAuthenticated() {
+    void getMyCorporationDischarges_ShouldReturnPageOfDischargeDtos_WhenUserAuthenticated() {
         // Given
         Pageable pageable = Pageable.ofSize(10);
         Page<Discharge> expectedPage = new PageImpl<>(Arrays.asList(testDischarge));
@@ -188,12 +194,20 @@ class DischargeServiceImplTest {
         when(dischargeRepository.findByCorporation(testCorporation, pageable)).thenReturn(expectedPage);
         
         // When
-        Page<Discharge> result = dischargeService.getMyCorporationDischarges(pageable);
+        Page<DischargeDto> result = dischargeService.getMyCorporationDischarges(pageable);
         
         // Then
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
-        assertEquals(testDischarge.getId(), result.getContent().get(0).getId());
+        DischargeDto dto = result.getContent().get(0);
+        assertEquals(testDischarge.getId(), dto.getId());
+        assertEquals(testDischarge.getName(), dto.getName());
+        assertEquals(testDischarge.getNumber(), dto.getNumber());
+        assertEquals(testDischarge.getYear(), dto.getYear());
+        assertEquals(testDischarge.getDischargePoint(), dto.getDischargePoint());
+        assertEquals(testDischarge.getCcDboTotal(), dto.getCcDboTotal());
+        assertEquals(testDischarge.getCcSstTotal(), dto.getCcSstTotal());
+        assertEquals(testDischarge.getDischargeUser().getCompanyName(), dto.getCompanyName());
     }
     
     @Test
@@ -205,6 +219,66 @@ class DischargeServiceImplTest {
         // When & Then
         assertThrows(IllegalStateException.class, () -> {
             dischargeService.getMyCorporationDischarges(pageable);
+        });
+    }
+    
+    @Test
+    void getDischargesByDischargeUser_ShouldReturnListOfDischargeDtos_WhenUserAuthenticated() {
+        // Given
+        Long dischargeUserId = 1L;
+        List<Discharge> expectedDischarges = Arrays.asList(testDischarge);
+        
+        when(authorizationUtils.getCurrentUser()).thenReturn(testUser);
+        when(dischargeUserRepository.findById(dischargeUserId)).thenReturn(Optional.of(testDischargeUser));
+        when(dischargeRepository.findByDischargeUser(testDischargeUser)).thenReturn(expectedDischarges);
+        
+        // When
+        List<DischargeDto> result = dischargeService.getDischargesByDischargeUser(dischargeUserId);
+        
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        DischargeDto dto = result.get(0);
+        assertEquals(testDischarge.getId(), dto.getId());
+        assertEquals(testDischarge.getName(), dto.getName());
+        assertEquals(testDischarge.getNumber(), dto.getNumber());
+        assertEquals(testDischarge.getYear(), dto.getYear());
+        assertEquals(testDischarge.getDischargePoint(), dto.getDischargePoint());
+        assertEquals(testDischarge.getCcDboTotal(), dto.getCcDboTotal());
+        assertEquals(testDischarge.getCcSstTotal(), dto.getCcSstTotal());
+        assertEquals(testDischarge.getDischargeUser().getCompanyName(), dto.getCompanyName());
+    }
+    
+    @Test
+    void getDischargesByDischargeUser_ShouldThrowIllegalArgumentException_WhenDischargeUserNotFound() {
+        // Given
+        Long dischargeUserId = 999L;
+        
+        when(authorizationUtils.getCurrentUser()).thenReturn(testUser);
+        when(dischargeUserRepository.findById(dischargeUserId)).thenReturn(Optional.empty());
+        
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> {
+            dischargeService.getDischargesByDischargeUser(dischargeUserId);
+        });
+    }
+    
+    @Test
+    void getDischargesByDischargeUser_ShouldThrowIllegalStateException_WhenDischargeUserNotBelongsToCorporation() {
+        // Given
+        Long dischargeUserId = 1L;
+        DischargeUser otherCorporationUser = new DischargeUser();
+        otherCorporationUser.setId(dischargeUserId);
+        Corporation otherCorporation = new Corporation();
+        otherCorporation.setId(999L);
+        otherCorporationUser.setCorporation(otherCorporation);
+        
+        when(authorizationUtils.getCurrentUser()).thenReturn(testUser);
+        when(dischargeUserRepository.findById(dischargeUserId)).thenReturn(Optional.of(otherCorporationUser));
+        
+        // When & Then
+        assertThrows(IllegalStateException.class, () -> {
+            dischargeService.getDischargesByDischargeUser(dischargeUserId);
         });
     }
         

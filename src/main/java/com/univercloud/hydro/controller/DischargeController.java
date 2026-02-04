@@ -1,5 +1,6 @@
 package com.univercloud.hydro.controller;
 
+import com.univercloud.hydro.dto.DischargeDto;
 import com.univercloud.hydro.entity.Discharge;
 import com.univercloud.hydro.service.DischargeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,13 +85,13 @@ public class DischargeController {
      * Obtiene todas las descargas de la corporación del usuario autenticado con paginación.
      * 
      * @param pageable parámetros de paginación
-     * @return página de descargas
+     * @return página de descargas como DTOs
      */
     @GetMapping
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Page<Discharge>> getMyCorporationDischarges(Pageable pageable) {
+    public ResponseEntity<Page<DischargeDto>> getMyCorporationDischarges(Pageable pageable) {
         try {
-            Page<Discharge> discharges = dischargeService.getMyCorporationDischarges(pageable);
+            Page<DischargeDto> discharges = dischargeService.getMyCorporationDischarges(pageable);
             return ResponseEntity.ok(discharges);
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -101,13 +102,13 @@ public class DischargeController {
      * Obtiene descargas por usuario de descarga.
      * 
      * @param dischargeUserId el ID del usuario de descarga
-     * @return lista de descargas del usuario
+     * @return lista de descargas del usuario como DTOs
      */
     @GetMapping("/by-discharge-user/{dischargeUserId}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<Discharge>> getDischargesByDischargeUser(@PathVariable Long dischargeUserId) {
+    public ResponseEntity<List<DischargeDto>> getDischargesByDischargeUser(@PathVariable Long dischargeUserId) {
         try {
-            List<Discharge> discharges = dischargeService.getDischargesByDischargeUser(dischargeUserId);
+            List<DischargeDto> discharges = dischargeService.getDischargesByDischargeUser(dischargeUserId);
             return ResponseEntity.ok(discharges);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
