@@ -21,6 +21,7 @@ import com.univercloud.hydro.repository.BasinSectionRepository;
 import com.univercloud.hydro.service.DischargeService;
 import com.univercloud.hydro.util.AuthorizationUtils;
 import com.univercloud.hydro.util.MonitoringCalculationUtils;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -389,7 +390,17 @@ public class DischargeServiceImpl implements DischargeService {
         }
         
         // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
-        return dischargeRepository.findByIdAndCorporationId(id, corporation.getId());
+        Optional<Discharge> dischargeOpt = dischargeRepository.findByIdAndCorporationId(id, corporation.getId());
+        
+        // Inicializar dischargeMonitorings manualmente para evitar MultipleBagFetchException
+        // dischargeParameters ya se carga en el EntityGraph
+        if (dischargeOpt.isPresent()) {
+            Discharge discharge = dischargeOpt.get();
+            // Forzar la inicialización de dischargeMonitorings dentro de la transacción
+            Hibernate.initialize(discharge.getDischargeMonitorings());
+        }
+        
+        return dischargeOpt;
     }
     
     @Override
@@ -446,7 +457,7 @@ public class DischargeServiceImpl implements DischargeService {
     
     @Override
     @Transactional(readOnly = true)
-    public List<Discharge> getDischargesByYear(Integer year) {
+    public List<DischargeDto> searchDischargesByName(String name) {
         User currentUser = authorizationUtils.getCurrentUser();
         if (currentUser == null) {
             throw new IllegalStateException("User not authenticated");
@@ -457,29 +468,12 @@ public class DischargeServiceImpl implements DischargeService {
             throw new IllegalStateException("User does not belong to a corporation");
         }
         
-        return dischargeRepository.findByCorporationAndYear(corporation, year);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<Discharge> getDischargeByNumberAndYear(Integer number, Integer year) {
-        return dischargeRepository.findByNumberAndYear(number, year);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Discharge> searchDischargesByName(String name) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
+        List<Discharge> discharges = dischargeRepository.findByCorporationAndNameContainingIgnoreCase(corporation, name);
         
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        return dischargeRepository.findByCorporationAndNameContainingIgnoreCase(corporation, name);
+        // Convertir a DTOs
+        return discharges.stream()
+                .map(DischargeDto::new)
+                .collect(Collectors.toList());
     }
     
     @Override

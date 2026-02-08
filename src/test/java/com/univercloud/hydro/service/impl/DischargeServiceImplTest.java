@@ -281,24 +281,6 @@ class DischargeServiceImplTest {
             dischargeService.getDischargesByDischargeUser(dischargeUserId);
         });
     }
-        
-    @Test
-    void getDischargesByYear_ShouldReturnListOfDischarges_WhenUserAuthenticated() {
-        // Given
-        Integer year = 2024;
-        List<Discharge> expectedDischarges = Arrays.asList(testDischarge);
-        
-        when(authorizationUtils.getCurrentUser()).thenReturn(testUser);
-        when(dischargeRepository.findByCorporationAndYear(testCorporation, year)).thenReturn(expectedDischarges);
-        
-        // When
-        List<Discharge> result = dischargeService.getDischargesByYear(year);
-        
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(testDischarge.getId(), result.get(0).getId());
-    }
     
     @Test
     void deleteDischarge_ShouldReturnTrue_WhenDischargeExistsAndBelongsToUserCorporation() {

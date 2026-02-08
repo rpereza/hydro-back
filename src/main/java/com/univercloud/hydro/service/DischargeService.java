@@ -52,26 +52,11 @@ public interface DischargeService {
     List<DischargeDto> getDischargesByDischargeUser(Long dischargeUserId);
     
     /**
-     * Obtiene descargas por año.
-     * @param year el año
-     * @return lista de descargas del año
-     */
-    List<Discharge> getDischargesByYear(Integer year);
-    
-    /**
-     * Busca una descarga por número y año.
-     * @param number el número de descarga
-     * @param year el año
-     * @return la descarga si existe
-     */
-    Optional<Discharge> getDischargeByNumberAndYear(Integer number, Integer year);
-    
-    /**
      * Busca descargas por nombre (búsqueda parcial).
      * @param name el nombre o parte del nombre a buscar
-     * @return lista de descargas que coinciden
+     * @return lista de descargas que coinciden como DTOs
      */
-    List<Discharge> searchDischargesByName(String name);
+    List<DischargeDto> searchDischargesByName(String name);
     
     /**
      * Elimina una descarga.
