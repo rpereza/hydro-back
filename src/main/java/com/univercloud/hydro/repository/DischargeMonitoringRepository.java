@@ -194,13 +194,4 @@ public interface DischargeMonitoringRepository extends JpaRepository<DischargeMo
     @Query("SELECT dm FROM DischargeMonitoring dm WHERE dm.id = :id AND dm.corporation.id = :corporationId")
     Optional<DischargeMonitoring> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
     
-    /**
-     * Busca monitoreos por múltiples IDs de descarga en una sola consulta.
-     * Este método se usa para evitar el problema N+1 al cargar monitorings para múltiples descargas.
-     * @param dischargeIds lista de IDs de descarga
-     * @return lista de monitoreos agrupados por descarga
-     */
-    @Query("SELECT dm FROM DischargeMonitoring dm WHERE dm.discharge.id IN :dischargeIds")
-    List<DischargeMonitoring> findByDischargeIdIn(@Param("dischargeIds") List<Long> dischargeIds);
-    
 }

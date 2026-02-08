@@ -32,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -458,45 +457,7 @@ public class DischargeServiceImpl implements DischargeService {
     
     @Override
     @Transactional(readOnly = true)
-    public List<Discharge> getDischargesByYear(Integer year) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        
-        Corporation corporation = currentUser.getCorporation();
-        if (corporation == null) {
-            throw new IllegalStateException("User does not belong to a corporation");
-        }
-        
-        List<Discharge> discharges = dischargeRepository.findByCorporationAndYear(corporation, year);
-        
-        // Inicializar dischargeMonitorings usando batch fetching para evitar N+1 queries
-        // dischargeParameters ya se carga en el EntityGraph
-        initializeDischargeMonitoringsBatch(discharges);
-        
-        return discharges;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<Discharge> getDischargeByNumberAndYear(Integer number, Integer year) {
-        Optional<Discharge> dischargeOpt = dischargeRepository.findByNumberAndYear(number, year);
-        
-        // Inicializar dischargeMonitorings manualmente para evitar LazyInitializationException
-        // dischargeParameters ya se carga en el EntityGraph
-        if (dischargeOpt.isPresent()) {
-            Discharge discharge = dischargeOpt.get();
-            // Forzar la inicialización de dischargeMonitorings dentro de la transacción
-            Hibernate.initialize(discharge.getDischargeMonitorings());
-        }
-        
-        return dischargeOpt;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Discharge> searchDischargesByName(String name) {
+    public List<DischargeDto> searchDischargesByName(String name) {
         User currentUser = authorizationUtils.getCurrentUser();
         if (currentUser == null) {
             throw new IllegalStateException("User not authenticated");
@@ -509,11 +470,10 @@ public class DischargeServiceImpl implements DischargeService {
         
         List<Discharge> discharges = dischargeRepository.findByCorporationAndNameContainingIgnoreCase(corporation, name);
         
-        // Inicializar dischargeMonitorings usando batch fetching para evitar N+1 queries
-        // dischargeParameters ya se carga en el EntityGraph
-        initializeDischargeMonitoringsBatch(discharges);
-        
-        return discharges;
+        // Convertir a DTOs
+        return discharges.stream()
+                .map(DischargeDto::new)
+                .collect(Collectors.toList());
     }
     
     @Override
@@ -684,45 +644,6 @@ public class DischargeServiceImpl implements DischargeService {
         
         // Retornar 0 si la suma es null (aunque en este caso nunca será null, pero por seguridad)
         return suma != null ? suma : BigDecimal.ZERO;
-    }
-    
-    /**
-     * Inicializa dischargeMonitorings para una lista de descargas usando batch fetching
-     * para evitar el problema N+1. Este método carga todos los monitorings en una sola consulta
-     * y los asigna a cada descarga correspondiente.
-     * 
-     * @param discharges lista de descargas para las cuales inicializar los monitorings
-     */
-    private void initializeDischargeMonitoringsBatch(List<Discharge> discharges) {
-        if (discharges == null || discharges.isEmpty()) {
-            return;
-        }
-        
-        // Extraer los IDs de las descargas
-        List<Long> dischargeIds = discharges.stream()
-                .map(Discharge::getId)
-                .filter(id -> id != null)
-                .collect(Collectors.toList());
-        
-        if (dischargeIds.isEmpty()) {
-            return;
-        }
-        
-        // Cargar todos los monitorings en una sola consulta batch
-        List<DischargeMonitoring> allMonitorings = dischargeMonitoringRepository.findByDischargeIdIn(dischargeIds);
-        
-        // Agrupar monitorings por discharge ID para asignación eficiente
-        Map<Long, List<DischargeMonitoring>> monitoringsByDischargeId = allMonitorings.stream()
-                .collect(Collectors.groupingBy(monitoring -> monitoring.getDischarge().getId()));
-        
-        // Asignar los monitorings a cada descarga correspondiente
-        for (Discharge discharge : discharges) {
-            Long dischargeId = discharge.getId();
-            if (dischargeId != null) {
-                List<DischargeMonitoring> monitorings = monitoringsByDischargeId.getOrDefault(dischargeId, new java.util.ArrayList<>());
-                discharge.setDischargeMonitorings(monitorings);
-            }
-        }
     }
     
 }

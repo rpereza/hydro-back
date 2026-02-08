@@ -118,48 +118,16 @@ public class DischargeController {
     }
     
     /**
-     * Obtiene descargas por año.
-     * 
-     * @param year el año
-     * @return lista de descargas del año
-     */
-    @GetMapping("/by-year/{year}")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<Discharge>> getDischargesByYear(@PathVariable Integer year) {
-        try {
-            List<Discharge> discharges = dischargeService.getDischargesByYear(year);
-            return ResponseEntity.ok(discharges);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-    }
-        
-    /**
-     * Busca una descarga por número y año.
-     * 
-     * @param number el número de descarga
-     * @param year el año
-     * @return la descarga si existe
-     */
-    @GetMapping("/by-number-year")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Discharge> getDischargeByNumberAndYear(@RequestParam Integer number, @RequestParam Integer year) {
-        Optional<Discharge> discharge = dischargeService.getDischargeByNumberAndYear(number, year);
-        return discharge.map(ResponseEntity::ok)
-                      .orElse(ResponseEntity.notFound().build());
-    }
-    
-    /**
      * Busca descargas por nombre (búsqueda parcial).
      * 
      * @param name el nombre o parte del nombre a buscar
-     * @return lista de descargas que coinciden
+     * @return lista de descargas que coinciden como DTOs
      */
     @GetMapping("/search")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<Discharge>> searchDischargesByName(@RequestParam String name) {
+    public ResponseEntity<List<DischargeDto>> searchDischargesByName(@RequestParam String name) {
         try {
-            List<Discharge> discharges = dischargeService.searchDischargesByName(name);
+            List<DischargeDto> discharges = dischargeService.searchDischargesByName(name);
             return ResponseEntity.ok(discharges);
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

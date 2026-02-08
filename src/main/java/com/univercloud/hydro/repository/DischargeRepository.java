@@ -31,16 +31,6 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
     List<Discharge> findByDischargeUser(DischargeUser dischargeUser);
     
     /**
-     * Busca una descarga por número y año.
-     * Carga las relaciones necesarias. Solo carga dischargeParameters para evitar MultipleBagFetchException.
-     * @param number el número de descarga
-     * @param year el año
-     * @return la descarga si existe
-     */
-    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType", "basinSection.waterBasin", "dischargeParameters"})
-    Optional<Discharge> findByNumberAndYear(Integer number, Integer year);
-    
-    /**
      * Verifica si existe una descarga con el número y año especificados en la corporación.
      * @param corporation la corporación
      * @param number el número de descarga
@@ -81,16 +71,6 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
      */
     @EntityGraph(attributePaths = {"dischargeUser"})
     Page<Discharge> findByCorporation(Corporation corporation, Pageable pageable);
-    
-    /**
-     * Busca descargas por corporación y año.
-     * Carga las relaciones necesarias. Solo carga dischargeParameters para evitar MultipleBagFetchException.
-     * @param corporation la corporación
-     * @param year el año
-     * @return lista de descargas de la corporación y año
-     */
-    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType", "basinSection.waterBasin", "dischargeParameters"})
-    List<Discharge> findByCorporationAndYear(Corporation corporation, Integer year);
     
     /**
      * Busca una descarga por ID y corporación.
