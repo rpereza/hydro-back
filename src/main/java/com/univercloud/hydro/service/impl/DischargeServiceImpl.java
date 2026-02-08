@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -470,11 +471,9 @@ public class DischargeServiceImpl implements DischargeService {
         
         List<Discharge> discharges = dischargeRepository.findByCorporationAndYear(corporation, year);
         
-        // Inicializar dischargeMonitorings manualmente para evitar LazyInitializationException
+        // Inicializar dischargeMonitorings usando batch fetching para evitar N+1 queries
         // dischargeParameters ya se carga en el EntityGraph
-        for (Discharge discharge : discharges) {
-            Hibernate.initialize(discharge.getDischargeMonitorings());
-        }
+        initializeDischargeMonitoringsBatch(discharges);
         
         return discharges;
     }
@@ -510,11 +509,9 @@ public class DischargeServiceImpl implements DischargeService {
         
         List<Discharge> discharges = dischargeRepository.findByCorporationAndNameContainingIgnoreCase(corporation, name);
         
-        // Inicializar dischargeMonitorings manualmente para evitar LazyInitializationException
+        // Inicializar dischargeMonitorings usando batch fetching para evitar N+1 queries
         // dischargeParameters ya se carga en el EntityGraph
-        for (Discharge discharge : discharges) {
-            Hibernate.initialize(discharge.getDischargeMonitorings());
-        }
+        initializeDischargeMonitoringsBatch(discharges);
         
         return discharges;
     }
@@ -687,6 +684,45 @@ public class DischargeServiceImpl implements DischargeService {
         
         // Retornar 0 si la suma es null (aunque en este caso nunca será null, pero por seguridad)
         return suma != null ? suma : BigDecimal.ZERO;
+    }
+    
+    /**
+     * Inicializa dischargeMonitorings para una lista de descargas usando batch fetching
+     * para evitar el problema N+1. Este método carga todos los monitorings en una sola consulta
+     * y los asigna a cada descarga correspondiente.
+     * 
+     * @param discharges lista de descargas para las cuales inicializar los monitorings
+     */
+    private void initializeDischargeMonitoringsBatch(List<Discharge> discharges) {
+        if (discharges == null || discharges.isEmpty()) {
+            return;
+        }
+        
+        // Extraer los IDs de las descargas
+        List<Long> dischargeIds = discharges.stream()
+                .map(Discharge::getId)
+                .filter(id -> id != null)
+                .collect(Collectors.toList());
+        
+        if (dischargeIds.isEmpty()) {
+            return;
+        }
+        
+        // Cargar todos los monitorings en una sola consulta batch
+        List<DischargeMonitoring> allMonitorings = dischargeMonitoringRepository.findByDischargeIdIn(dischargeIds);
+        
+        // Agrupar monitorings por discharge ID para asignación eficiente
+        Map<Long, List<DischargeMonitoring>> monitoringsByDischargeId = allMonitorings.stream()
+                .collect(Collectors.groupingBy(monitoring -> monitoring.getDischarge().getId()));
+        
+        // Asignar los monitorings a cada descarga correspondiente
+        for (Discharge discharge : discharges) {
+            Long dischargeId = discharge.getId();
+            if (dischargeId != null) {
+                List<DischargeMonitoring> monitorings = monitoringsByDischargeId.getOrDefault(dischargeId, new java.util.ArrayList<>());
+                discharge.setDischargeMonitorings(monitorings);
+            }
+        }
     }
     
 }
