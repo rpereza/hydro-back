@@ -468,13 +468,31 @@ public class DischargeServiceImpl implements DischargeService {
             throw new IllegalStateException("User does not belong to a corporation");
         }
         
-        return dischargeRepository.findByCorporationAndYear(corporation, year);
+        List<Discharge> discharges = dischargeRepository.findByCorporationAndYear(corporation, year);
+        
+        // Inicializar dischargeMonitorings manualmente para evitar LazyInitializationException
+        // dischargeParameters ya se carga en el EntityGraph
+        for (Discharge discharge : discharges) {
+            Hibernate.initialize(discharge.getDischargeMonitorings());
+        }
+        
+        return discharges;
     }
     
     @Override
     @Transactional(readOnly = true)
     public Optional<Discharge> getDischargeByNumberAndYear(Integer number, Integer year) {
-        return dischargeRepository.findByNumberAndYear(number, year);
+        Optional<Discharge> dischargeOpt = dischargeRepository.findByNumberAndYear(number, year);
+        
+        // Inicializar dischargeMonitorings manualmente para evitar LazyInitializationException
+        // dischargeParameters ya se carga en el EntityGraph
+        if (dischargeOpt.isPresent()) {
+            Discharge discharge = dischargeOpt.get();
+            // Forzar la inicialización de dischargeMonitorings dentro de la transacción
+            Hibernate.initialize(discharge.getDischargeMonitorings());
+        }
+        
+        return dischargeOpt;
     }
     
     @Override
@@ -490,7 +508,15 @@ public class DischargeServiceImpl implements DischargeService {
             throw new IllegalStateException("User does not belong to a corporation");
         }
         
-        return dischargeRepository.findByCorporationAndNameContainingIgnoreCase(corporation, name);
+        List<Discharge> discharges = dischargeRepository.findByCorporationAndNameContainingIgnoreCase(corporation, name);
+        
+        // Inicializar dischargeMonitorings manualmente para evitar LazyInitializationException
+        // dischargeParameters ya se carga en el EntityGraph
+        for (Discharge discharge : discharges) {
+            Hibernate.initialize(discharge.getDischargeMonitorings());
+        }
+        
+        return discharges;
     }
     
     @Override
