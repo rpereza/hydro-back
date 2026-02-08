@@ -21,6 +21,7 @@ import com.univercloud.hydro.repository.BasinSectionRepository;
 import com.univercloud.hydro.service.DischargeService;
 import com.univercloud.hydro.util.AuthorizationUtils;
 import com.univercloud.hydro.util.MonitoringCalculationUtils;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -389,7 +390,17 @@ public class DischargeServiceImpl implements DischargeService {
         }
         
         // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
-        return dischargeRepository.findByIdAndCorporationId(id, corporation.getId());
+        Optional<Discharge> dischargeOpt = dischargeRepository.findByIdAndCorporationId(id, corporation.getId());
+        
+        // Inicializar dischargeMonitorings manualmente para evitar MultipleBagFetchException
+        // dischargeParameters ya se carga en el EntityGraph
+        if (dischargeOpt.isPresent()) {
+            Discharge discharge = dischargeOpt.get();
+            // Forzar la inicialización de dischargeMonitorings dentro de la transacción
+            Hibernate.initialize(discharge.getDischargeMonitorings());
+        }
+        
+        return dischargeOpt;
     }
     
     @Override

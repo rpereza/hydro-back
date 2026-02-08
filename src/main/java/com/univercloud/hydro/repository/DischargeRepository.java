@@ -32,12 +32,12 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
     
     /**
      * Busca una descarga por número y año.
-     * Carga las relaciones necesarias incluyendo dischargeParameters para evitar problemas de lazy loading.
+     * Carga las relaciones necesarias. Solo carga dischargeParameters para evitar MultipleBagFetchException.
      * @param number el número de descarga
      * @param year el año
      * @return la descarga si existe
      */
-    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType", "basinSection.waterBasin", "dischargeParameters", "dischargeMonitorings"})
+    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType", "basinSection.waterBasin", "dischargeParameters"})
     Optional<Discharge> findByNumberAndYear(Integer number, Integer year);
     
     /**
@@ -63,12 +63,12 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
     
     /**
      * Busca descargas por corporación y nombre (búsqueda parcial, case-insensitive).
-     * Carga las relaciones necesarias incluyendo dischargeParameters para evitar problemas de lazy loading.
+     * Carga las relaciones necesarias. Solo carga dischargeParameters para evitar MultipleBagFetchException.
      * @param corporation la corporación
      * @param name el nombre o parte del nombre a buscar
      * @return lista de descargas de la corporación que coinciden con el nombre
      */
-    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType", "basinSection.waterBasin", "dischargeParameters", "dischargeMonitorings"})
+    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType", "basinSection.waterBasin", "dischargeParameters"})
     @Query("SELECT d FROM Discharge d WHERE d.corporation = :corporation AND LOWER(d.name) LIKE LOWER(CONCAT('%', :name, '%'))")
     List<Discharge> findByCorporationAndNameContainingIgnoreCase(@Param("corporation") Corporation corporation, @Param("name") String name);
     
@@ -84,22 +84,23 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
     
     /**
      * Busca descargas por corporación y año.
-     * Carga las relaciones necesarias incluyendo dischargeParameters para evitar problemas de lazy loading.
+     * Carga las relaciones necesarias. Solo carga dischargeParameters para evitar MultipleBagFetchException.
      * @param corporation la corporación
      * @param year el año
      * @return lista de descargas de la corporación y año
      */
-    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType", "basinSection.waterBasin", "dischargeParameters", "dischargeMonitorings"})
+    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType", "basinSection.waterBasin", "dischargeParameters"})
     List<Discharge> findByCorporationAndYear(Corporation corporation, Integer year);
     
     /**
      * Busca una descarga por ID y corporación.
-     * Carga las relaciones necesarias incluyendo dischargeParameters para evitar problemas de lazy loading.
+     * Carga las relaciones necesarias. Solo carga dischargeParameters para evitar MultipleBagFetchException.
+     * dischargeMonitorings se carga manualmente en el servicio si es necesario.
      * @param id el ID de la descarga
      * @param corporationId el ID de la corporación
      * @return la descarga si existe y pertenece a la corporación
      */
-    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType", "basinSection.waterBasin", "dischargeParameters", "dischargeMonitorings"})
+    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType", "basinSection.waterBasin", "dischargeParameters"})
     @Query("SELECT d FROM Discharge d WHERE d.id = :id AND d.corporation.id = :corporationId")
     Optional<Discharge> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
 }
