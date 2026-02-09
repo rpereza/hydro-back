@@ -7,6 +7,7 @@ import com.univercloud.hydro.entity.DischargeUser;
 import com.univercloud.hydro.entity.DischargeParameter;
 import com.univercloud.hydro.entity.DischargeMonitoring;
 import com.univercloud.hydro.entity.BasinSection;
+import com.univercloud.hydro.entity.SequenceType;
 import com.univercloud.hydro.entity.User;
 import com.univercloud.hydro.exception.DuplicateResourceException;
 import com.univercloud.hydro.exception.ResourceInUseException;
@@ -18,6 +19,7 @@ import com.univercloud.hydro.repository.DischargeMonitoringRepository;
 import com.univercloud.hydro.repository.InvoiceRepository;
 import com.univercloud.hydro.repository.MunicipalityRepository;
 import com.univercloud.hydro.repository.BasinSectionRepository;
+import com.univercloud.hydro.service.ConsecutiveSequenceService;
 import com.univercloud.hydro.service.DischargeService;
 import com.univercloud.hydro.util.AuthorizationUtils;
 import com.univercloud.hydro.util.MonitoringCalculationUtils;
@@ -62,6 +64,9 @@ public class DischargeServiceImpl implements DischargeService {
     
     @Autowired
     private BasinSectionRepository basinSectionRepository;
+
+    @Autowired
+    private ConsecutiveSequenceService consecutiveSequenceService;
     
     @Autowired
     private AuthorizationUtils authorizationUtils;
@@ -106,13 +111,12 @@ public class DischargeServiceImpl implements DischargeService {
             }
         }
         
-        // Verificar que no existe una descarga con el mismo número y año en la corporación
-        if (discharge.getNumber() != null && discharge.getYear() != null) {
-            if (dischargeRepository.existsByCorporationAndNumberAndYear(corporation, discharge.getNumber(), discharge.getYear())) {
-                throw new DuplicateResourceException("Discharge", "number and year", discharge.getNumber() + "/" + discharge.getYear());
-            }
-        }
-        
+        // Asignar número y año desde la secuencia de consecutivos (precedencia sobre valor del frontend)
+        int year = discharge.getYear() != null ? discharge.getYear() : LocalDateTime.now().getYear();
+        int nextNumber = consecutiveSequenceService.getNextConsecutive(corporation.getId(), year, SequenceType.DISCHARGE);
+        discharge.setNumber(nextNumber);
+        discharge.setYear(year);
+
         // Asignar corporación y usuario creador
         discharge.setCorporation(corporation);
         discharge.setCreatedBy(currentUser);
@@ -392,12 +396,11 @@ public class DischargeServiceImpl implements DischargeService {
         // Buscar directamente por ID y corporationId para evitar problemas con lazy loading
         Optional<Discharge> dischargeOpt = dischargeRepository.findByIdAndCorporationId(id, corporation.getId());
         
-        // Inicializar dischargeMonitorings manualmente para evitar MultipleBagFetchException
-        // dischargeParameters ya se carga en el EntityGraph
+        // Inicializar dischargeParameters manualmente para evitar MultipleBagFetchException
+        // dischargeMonitorings y dischargeMonitorings.monitoringStation ya se cargan en el EntityGraph
         if (dischargeOpt.isPresent()) {
             Discharge discharge = dischargeOpt.get();
-            // Forzar la inicialización de dischargeMonitorings dentro de la transacción
-            Hibernate.initialize(discharge.getDischargeMonitorings());
+            Hibernate.initialize(discharge.getDischargeParameters());
         }
         
         return dischargeOpt;

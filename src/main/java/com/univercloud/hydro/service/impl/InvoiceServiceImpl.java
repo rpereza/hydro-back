@@ -4,10 +4,12 @@ import com.univercloud.hydro.entity.Invoice;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.User;
 import com.univercloud.hydro.entity.Discharge;
+import com.univercloud.hydro.entity.SequenceType;
 import com.univercloud.hydro.exception.DuplicateResourceException;
 import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.repository.InvoiceRepository;
 import com.univercloud.hydro.repository.DischargeRepository;
+import com.univercloud.hydro.service.ConsecutiveSequenceService;
 import com.univercloud.hydro.service.InvoiceService;
 import com.univercloud.hydro.util.AuthorizationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,9 @@ public class InvoiceServiceImpl implements InvoiceService {
     
     @Autowired
     private AuthorizationUtils authorizationUtils;
+
+    @Autowired
+    private ConsecutiveSequenceService consecutiveSequenceService;
     
     @Override
     @Transactional
@@ -47,12 +52,13 @@ public class InvoiceServiceImpl implements InvoiceService {
         if (corporation == null) {
             throw new IllegalStateException("User must belong to a corporation");
         }
-        
-        // Verificar que el número de factura no exista
-        if (existsByNumber(invoice.getNumber())) {
-            throw new DuplicateResourceException("Invoice", "number", invoice.getNumber());
-        }
-        
+
+        // Asignar número y año desde la secuencia de consecutivos (precedencia sobre valor del frontend)
+        int year = invoice.getYear() != null ? invoice.getYear() : LocalDateTime.now().getYear();
+        int nextNumber = consecutiveSequenceService.getNextConsecutive(corporation.getId(), year, SequenceType.INVOICE);
+        invoice.setNumber(nextNumber);
+        invoice.setYear(year);
+
         // Verificar que la descarga pertenezca a la corporación
         if (invoice.getDischarge() != null) {
             Optional<Discharge> dischargeOpt = dischargeRepository.findById(invoice.getDischarge().getId());
