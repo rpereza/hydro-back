@@ -323,6 +323,7 @@ public class Discharge implements Auditable {
         this.dischargeMonitorings = dischargeMonitorings;
     }
     
+    @JsonIgnore
     public List<Invoice> getInvoices() {
         return invoices;
     }
