@@ -74,13 +74,13 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
     
     /**
      * Busca una descarga por ID y corporación.
-     * Carga las relaciones necesarias. Solo carga dischargeParameters para evitar MultipleBagFetchException.
-     * dischargeMonitorings se carga manualmente en el servicio si es necesario.
+     * Carga dischargeMonitorings y monitoringStation de cada uno en el EntityGraph.
+     * dischargeParameters se carga manualmente en el servicio para evitar MultipleBagFetchException.
      * @param id el ID de la descarga
      * @param corporationId el ID de la corporación
      * @return la descarga si existe y pertenece a la corporación
      */
-    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType", "basinSection.waterBasin", "dischargeParameters"})
+    @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType", "basinSection.waterBasin", "dischargeMonitorings", "dischargeMonitorings.monitoringStation"})
     @Query("SELECT d FROM Discharge d WHERE d.id = :id AND d.corporation.id = :corporationId")
     Optional<Discharge> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
 }

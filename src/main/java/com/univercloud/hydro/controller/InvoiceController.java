@@ -1,6 +1,7 @@
 package com.univercloud.hydro.controller;
 
 import com.univercloud.hydro.entity.Invoice;
+import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.service.InvoiceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -111,6 +112,32 @@ public class InvoiceController {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+    
+    /**
+     * Genera una factura a partir de una descarga.
+     * Calcula todos los atributos de la factura basándose en los datos de la descarga,
+     * tarifa mínima y progreso del proyecto (si aplica).
+     * 
+     * @param dischargeId el ID de la descarga
+     * @return respuesta HTTP con la factura generada
+     */
+    @PostMapping("/generate-from-discharge/{dischargeId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> generateInvoiceFromDischarge(@PathVariable Long dischargeId) {
+        try {
+            Invoice invoice = invoiceService.generateInvoiceFromDischarge(dischargeId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(invoice);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage() != null ? e.getMessage() : "Error interno al generar la factura");
         }
     }
     

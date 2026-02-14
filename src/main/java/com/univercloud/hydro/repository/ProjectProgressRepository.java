@@ -55,4 +55,14 @@ public interface ProjectProgressRepository extends JpaRepository<ProjectProgress
      */
     @Query("SELECT pp FROM ProjectProgress pp WHERE pp.id = :id AND pp.corporation.id = :corporationId")
     Optional<ProjectProgress> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
+    
+    /**
+     * Busca un progreso por corporación, año y usuario de descarga.
+     * @param corporationId el ID de la corporación
+     * @param year el año
+     * @param dischargeUserId el ID del usuario de descarga
+     * @return el progreso si existe
+     */
+    @Query("SELECT pp FROM ProjectProgress pp WHERE pp.corporation.id = :corporationId AND pp.year = :year AND pp.dischargeUser.id = :dischargeUserId")
+    Optional<ProjectProgress> findByCorporationIdAndYearAndDischargeUserId(@Param("corporationId") Long corporationId, @Param("year") Integer year, @Param("dischargeUserId") Long dischargeUserId);
 }

@@ -146,4 +146,13 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
      */
     @Query("SELECT i FROM Invoice i WHERE i.id = :id AND i.corporation.id = :corporationId")
     Optional<Invoice> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
+
+    /**
+     * Busca la factura activa por descarga.
+     * Debe haber una sola factura activa por cada dischargeId.
+     * @param dischargeId el ID de la descarga
+     * @return la factura activa si existe
+     */
+    @Query("SELECT i FROM Invoice i WHERE i.discharge.id = :dischargeId AND i.isActive = true")
+    Optional<Invoice> findActiveByDischargeId(@Param("dischargeId") Long dischargeId);
 }
