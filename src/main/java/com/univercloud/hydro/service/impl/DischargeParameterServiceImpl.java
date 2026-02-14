@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -307,37 +308,37 @@ public class DischargeParameterServiceImpl implements DischargeParameterService 
             BigDecimal totalCaudalVolumen = parameters.stream()
                     .map(DischargeParameter::getCaudalVolumen)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageCaudalVolumen(totalCaudalVolumen.divide(BigDecimal.valueOf(parameters.size()), 2, BigDecimal.ROUND_HALF_UP));
+            stats.setAverageCaudalVolumen(totalCaudalVolumen.divide(BigDecimal.valueOf(parameters.size()), 2, RoundingMode.HALF_UP));
             
             BigDecimal totalFrequency = parameters.stream()
                     .map(parameter -> BigDecimal.valueOf(parameter.getFrequency()))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageFrequency(totalFrequency.divide(BigDecimal.valueOf(parameters.size()), 2, BigDecimal.ROUND_HALF_UP));
+            stats.setAverageFrequency(totalFrequency.divide(BigDecimal.valueOf(parameters.size()), 2, RoundingMode.HALF_UP));
             
             BigDecimal totalDuration = parameters.stream()
                     .map(parameter -> BigDecimal.valueOf(parameter.getDuration()))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageDuration(totalDuration.divide(BigDecimal.valueOf(parameters.size()), 2, BigDecimal.ROUND_HALF_UP));
+            stats.setAverageDuration(totalDuration.divide(BigDecimal.valueOf(parameters.size()), 2, RoundingMode.HALF_UP));
             
             BigDecimal totalConcDbo = parameters.stream()
                     .map(DischargeParameter::getConcDbo)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageConcDbo(totalConcDbo.divide(BigDecimal.valueOf(parameters.size()), 2, BigDecimal.ROUND_HALF_UP));
+            stats.setAverageConcDbo(totalConcDbo.divide(BigDecimal.valueOf(parameters.size()), 2, RoundingMode.HALF_UP));
             
             BigDecimal totalConcSst = parameters.stream()
                     .map(DischargeParameter::getConcSst)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageConcSst(totalConcSst.divide(BigDecimal.valueOf(parameters.size()), 2, BigDecimal.ROUND_HALF_UP));
+            stats.setAverageConcSst(totalConcSst.divide(BigDecimal.valueOf(parameters.size()), 2, RoundingMode.HALF_UP));
             
             BigDecimal totalCcDbo = parameters.stream()
                     .map(DischargeParameter::getCcDbo)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageCcDbo(totalCcDbo.divide(BigDecimal.valueOf(parameters.size()), 2, BigDecimal.ROUND_HALF_UP));
+            stats.setAverageCcDbo(totalCcDbo.divide(BigDecimal.valueOf(parameters.size()), 2, RoundingMode.HALF_UP));
             
             BigDecimal totalCcSst = parameters.stream()
                     .map(DischargeParameter::getCcSst)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageCcSst(totalCcSst.divide(BigDecimal.valueOf(parameters.size()), 2, BigDecimal.ROUND_HALF_UP));
+            stats.setAverageCcSst(totalCcSst.divide(BigDecimal.valueOf(parameters.size()), 2, RoundingMode.HALF_UP));
         }
         
         return stats;

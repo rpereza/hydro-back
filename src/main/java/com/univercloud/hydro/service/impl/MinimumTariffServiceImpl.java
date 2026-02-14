@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -446,17 +447,17 @@ public class MinimumTariffServiceImpl implements MinimumTariffService {
             BigDecimal totalDboValue = tariffs.stream()
                     .map(MinimumTariff::getDboValue)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageDboValue(totalDboValue.divide(BigDecimal.valueOf(tariffs.size()), 2, BigDecimal.ROUND_HALF_UP));
+            stats.setAverageDboValue(totalDboValue.divide(BigDecimal.valueOf(tariffs.size()), 2, RoundingMode.HALF_UP));
             
             BigDecimal totalSstValue = tariffs.stream()
                     .map(MinimumTariff::getSstValue)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageSstValue(totalSstValue.divide(BigDecimal.valueOf(tariffs.size()), 2, BigDecimal.ROUND_HALF_UP));
+            stats.setAverageSstValue(totalSstValue.divide(BigDecimal.valueOf(tariffs.size()), 2, RoundingMode.HALF_UP));
             
             BigDecimal totalIpcValue = tariffs.stream()
                     .map(MinimumTariff::getIpcValue)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageIpcValue(totalIpcValue.divide(BigDecimal.valueOf(tariffs.size()), 2, BigDecimal.ROUND_HALF_UP));
+            stats.setAverageIpcValue(totalIpcValue.divide(BigDecimal.valueOf(tariffs.size()), 2, RoundingMode.HALF_UP));
             
             // Valores mínimos y máximos
             stats.setMinDboValue(tariffs.stream().map(MinimumTariff::getDboValue).min(BigDecimal::compareTo).orElse(BigDecimal.ZERO));

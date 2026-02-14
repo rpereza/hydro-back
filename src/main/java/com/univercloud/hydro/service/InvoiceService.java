@@ -189,4 +189,15 @@ public interface InvoiceService {
         public long getDischargesWithoutInvoices() { return dischargesWithoutInvoices; }
         public void setDischargesWithoutInvoices(long dischargesWithoutInvoices) { this.dischargesWithoutInvoices = dischargesWithoutInvoices; }
     }
+    
+    /**
+     * Genera una factura a partir de una descarga.
+     * Calcula todos los atributos de la factura basándose en los datos de la descarga,
+     * tarifa mínima y progreso del proyecto (si aplica).
+     * @param dischargeId el ID de la descarga
+     * @return la factura generada
+     * @throws ResourceNotFoundException si la descarga no existe o no pertenece a la corporación
+     * @throws IllegalArgumentException si faltan datos requeridos (tarifa mínima, monitoreos, etc.)
+     */
+    Invoice generateInvoiceFromDischarge(Long dischargeId);
 }

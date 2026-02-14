@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -292,27 +293,27 @@ public class DischargeMonitoringServiceImpl implements DischargeMonitoringServic
             BigDecimal totalOd = monitorings.stream()
                     .map(DischargeMonitoring::getOd)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageOd(totalOd.divide(BigDecimal.valueOf(monitorings.size()), 3, BigDecimal.ROUND_HALF_UP));
+            stats.setAverageOd(totalOd.divide(BigDecimal.valueOf(monitorings.size()), 3, RoundingMode.HALF_UP));
             
             BigDecimal totalSst = monitorings.stream()
                     .map(DischargeMonitoring::getSst)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageSst(totalSst.divide(BigDecimal.valueOf(monitorings.size()), 3, BigDecimal.ROUND_HALF_UP));
+            stats.setAverageSst(totalSst.divide(BigDecimal.valueOf(monitorings.size()), 3, RoundingMode.HALF_UP));
             
             BigDecimal totalDqo = monitorings.stream()
                     .map(DischargeMonitoring::getDqo)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageDqo(totalDqo.divide(BigDecimal.valueOf(monitorings.size()), 3, BigDecimal.ROUND_HALF_UP));
+            stats.setAverageDqo(totalDqo.divide(BigDecimal.valueOf(monitorings.size()), 3, RoundingMode.HALF_UP));
             
             BigDecimal totalPh = monitorings.stream()
                     .map(DischargeMonitoring::getPh)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAveragePh(totalPh.divide(BigDecimal.valueOf(monitorings.size()), 3, BigDecimal.ROUND_HALF_UP));
+            stats.setAveragePh(totalPh.divide(BigDecimal.valueOf(monitorings.size()), 3, RoundingMode.HALF_UP));
             
             BigDecimal totalCaudalVolumen = monitorings.stream()
                     .map(DischargeMonitoring::getCaudalVolumen)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            stats.setAverageCaudalVolumen(totalCaudalVolumen.divide(BigDecimal.valueOf(monitorings.size()), 2, BigDecimal.ROUND_HALF_UP));
+            stats.setAverageCaudalVolumen(totalCaudalVolumen.divide(BigDecimal.valueOf(monitorings.size()), 2, RoundingMode.HALF_UP));
         }
         
         return stats;
