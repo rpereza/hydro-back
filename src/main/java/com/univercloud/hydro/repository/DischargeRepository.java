@@ -60,7 +60,7 @@ public interface DischargeRepository extends JpaRepository<Discharge, Long> {
      * @return la descarga si existe y pertenece a la corporación
      */
     @EntityGraph(attributePaths = {"dischargeUser.municipality.department", "dischargeUser.municipality.category", "dischargeUser.economicActivity", "dischargeUser.authorizationType", 
-    "basinSection.waterBasin", "dischargeMonitorings", "dischargeMonitorings.monitoringStation", "municipality.department"})
+    "basinSection.waterBasin", "dischargeMonitorings", "dischargeMonitorings.monitoringStation", "municipality.department", "municipality.category"})
     @Query("SELECT d FROM Discharge d WHERE d.id = :id AND d.corporation.id = :corporationId")
     Optional<Discharge> findByIdAndCorporationId(@Param("id") Long id, @Param("corporationId") Long corporationId);
 }
