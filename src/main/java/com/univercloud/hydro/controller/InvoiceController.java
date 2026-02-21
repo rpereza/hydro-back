@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
+
 /**
  * Controlador REST para la gestión de Facturas.
  * Proporciona endpoints para operaciones CRUD y consultas de facturas.
@@ -73,19 +74,16 @@ public class InvoiceController {
      */
     @PostMapping("/generate-from-discharge/{dischargeId}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> generateInvoiceFromDischarge(@PathVariable Long dischargeId) {
+    public ResponseEntity<InvoiceResponse> generateInvoiceFromDischarge(@PathVariable Long dischargeId) {
         try {
-            Invoice invoice = invoiceService.generateInvoiceFromDischarge(dischargeId);
+            InvoiceResponse invoice = invoiceService.generateInvoiceFromDischarge(dischargeId);
             return ResponseEntity.status(HttpStatus.CREATED).body(invoice);
         } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IllegalArgumentException | IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(e.getMessage() != null ? e.getMessage() : "Error interno al generar la factura");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     

@@ -204,24 +204,19 @@ public class DischargeServiceImpl implements DischargeService {
             throw new IllegalStateException("Access denied: Discharge does not belong to your corporation");
         }
         
-        // Validar cambios en número y año
-        if (discharge.getNumber() != null && discharge.getYear() != null) {
-            if (!discharge.getNumber().equals(existingDischarge.getNumber()) || 
-                !discharge.getYear().equals(existingDischarge.getYear())) {
-                
-                if (dischargeRepository.existsByCorporationAndNumberAndYearExcludingId(corporation, discharge.getNumber(), discharge.getYear(), existingDischarge.getId())) {
-                    throw new IllegalArgumentException("A discharge with number " + discharge.getNumber() + 
-                            " and year " + discharge.getYear() + " already exists in your corporation");
-                }
-            }
+        // Si el año cambia, se consume un nuevo consecutivo para el nuevo año
+        if (discharge.getYear() != null && !discharge.getYear().equals(existingDischarge.getYear())) {
+            int nextNumber = consecutiveSequenceService.getNextConsecutive(
+                    corporation.getId(), discharge.getYear(), SequenceType.DISCHARGE);
+            existingDischarge.setNumber(nextNumber);
         }
-        
+        // Si el año no cambia, number permanece intacto (asignado por secuencia en creación)
+
         // Actualizar campos
         existingDischarge.setDischargeUser(discharge.getDischargeUser());
         existingDischarge.setBasinSection(discharge.getBasinSection());
         existingDischarge.setMunicipality(discharge.getMunicipality());
         existingDischarge.setDischargeType(discharge.getDischargeType());
-        existingDischarge.setNumber(discharge.getNumber());
         existingDischarge.setYear(discharge.getYear());
         existingDischarge.setName(discharge.getName());
         existingDischarge.setDischargePoint(discharge.getDischargePoint());

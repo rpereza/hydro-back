@@ -300,7 +300,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     
     @Override
     @Transactional
-    public Invoice generateInvoiceFromDischarge(Long dischargeId) {
+    public InvoiceResponse generateInvoiceFromDischarge(Long dischargeId) {
         // 1. Validar usuario y corporación
         User currentUser = authorizationUtils.getCurrentUser();
         Corporation corporation = currentUser.getCorporation();
@@ -392,7 +392,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         
         // Si la factura activa existe y su totalAmountToPay es igual al nuevo valor, retornarla sin persistir
         if (activeInvoiceOpt.isPresent() && activeInvoiceOpt.get().getTotalAmountToPay().compareTo(totalAmountToPay) == 0) {
-            return activeInvoiceOpt.get();
+            return new InvoiceResponse(activeInvoiceOpt.get());
         }
         
         // 8. En caso contrario (no existe o monto difiere): marcar la anterior como inactiva si existe, consumir consecutivo y persistir nueva
@@ -439,10 +439,10 @@ public class InvoiceServiceImpl implements InvoiceService {
             SequenceType.INVOICE
         );
         invoice.setNumber(nextNumber);
-        
-        return invoiceRepository.save(invoice);
+
+        return new InvoiceResponse(invoiceRepository.save(invoice));
     }
-    
+
     // Métodos privados para cargar DTOs
     
     private DischargeInvoiceDto loadDischargeInvoiceDto(Long dischargeId, Long corporationId) {

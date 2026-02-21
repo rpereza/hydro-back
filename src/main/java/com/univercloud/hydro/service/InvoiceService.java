@@ -176,9 +176,9 @@ public interface InvoiceService {
      * Calcula todos los atributos de la factura basándose en los datos de la descarga,
      * tarifa mínima y progreso del proyecto (si aplica).
      * @param dischargeId el ID de la descarga
-     * @return la factura generada
+     * @return DTO con los datos de la factura generada
      * @throws ResourceNotFoundException si la descarga no existe o no pertenece a la corporación
      * @throws IllegalArgumentException si faltan datos requeridos (tarifa mínima, monitoreos, etc.)
      */
-    Invoice generateInvoiceFromDischarge(Long dischargeId);
+    InvoiceResponse generateInvoiceFromDischarge(Long dischargeId);
 }
