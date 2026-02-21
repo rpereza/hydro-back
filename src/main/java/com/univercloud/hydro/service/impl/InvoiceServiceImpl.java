@@ -1,5 +1,6 @@
 package com.univercloud.hydro.service.impl;
 
+import com.univercloud.hydro.dto.InvoiceResponse;
 import com.univercloud.hydro.entity.Invoice;
 import com.univercloud.hydro.entity.Corporation;
 import com.univercloud.hydro.entity.User;
@@ -14,7 +15,6 @@ import com.univercloud.hydro.dto.DischargeParameterInvoiceDto;
 import com.univercloud.hydro.dto.DischargeMonitoringInvoiceDto;
 import com.univercloud.hydro.dto.MinimumTariffDto;
 import com.univercloud.hydro.dto.ProjectProgressDto;
-import com.univercloud.hydro.exception.DuplicateResourceException;
 import com.univercloud.hydro.exception.ResourceNotFoundException;
 import com.univercloud.hydro.repository.InvoiceRepository;
 import com.univercloud.hydro.repository.DischargeRepository;
@@ -67,103 +67,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     private static final MathContext MATH_CONTEXT = new MathContext(10, RoundingMode.HALF_UP);
     
     @Override
-    @Transactional
-    public Invoice createInvoice(Invoice invoice) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        Corporation corporation = currentUser.getCorporation();
-        
-        if (corporation == null) {
-            throw new IllegalStateException("User must belong to a corporation");
-        }
-
-        // Asignar número y año desde la secuencia de consecutivos (precedencia sobre valor del frontend)
-        int year = invoice.getYear() != null ? invoice.getYear() : LocalDateTime.now().getYear();
-        int nextNumber = consecutiveSequenceService.getNextConsecutive(corporation.getId(), year, SequenceType.INVOICE);
-        invoice.setNumber(nextNumber);
-        invoice.setYear(year);
-
-        // Verificar que la descarga pertenezca a la corporación
-        if (invoice.getDischarge() != null) {
-            Optional<Discharge> dischargeOpt = dischargeRepository.findById(invoice.getDischarge().getId());
-            // Comparar por ID para evitar problemas con proxies de Hibernate
-            if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
-                throw new IllegalStateException("Discharge does not belong to your corporation");
-            }
-        }
-        
-        invoice.setCorporation(corporation);
-        invoice.setCreatedBy(currentUser);
-        invoice.setUpdatedBy(currentUser);
-        invoice.setCreatedAt(LocalDateTime.now());
-        invoice.setUpdatedAt(LocalDateTime.now());
-        
-        return invoiceRepository.save(invoice);
-    }
-    
-    @Override
-    @Transactional
-    public Invoice updateInvoice(Invoice invoice) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        Corporation corporation = currentUser.getCorporation();
-        
-        if (corporation == null) {
-            throw new IllegalStateException("User must belong to a corporation");
-        }
-        
-        Optional<Invoice> existingOpt = invoiceRepository.findById(invoice.getId());
-        if (existingOpt.isEmpty()) {
-            throw new ResourceNotFoundException("Invoice", "id", invoice.getId());
-        }
-        
-        Invoice existing = existingOpt.get();
-        
-        // Verificar que pertenezca a la corporación del usuario
-        // Comparar por ID para evitar problemas con proxies de Hibernate
-        if (existing.getCorporation() == null || !existing.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalStateException("You do not have permission to update this invoice");
-        }
-        
-        // Verificar que el número de factura no exista (si cambió)
-        if (!existing.getNumber().equals(invoice.getNumber()) && existsByNumber(invoice.getNumber())) {
-            throw new DuplicateResourceException("Invoice", "number", invoice.getNumber());
-        }
-        
-        // Verificar que la descarga pertenezca a la corporación
-        if (invoice.getDischarge() != null) {
-            Optional<Discharge> dischargeOpt = dischargeRepository.findById(invoice.getDischarge().getId());
-            // Comparar por ID para evitar problemas con proxies de Hibernate
-            if (dischargeOpt.isEmpty() || dischargeOpt.get().getCorporation() == null || !dischargeOpt.get().getCorporation().getId().equals(corporation.getId())) {
-                throw new IllegalStateException("Discharge does not belong to your corporation");
-            }
-        }
-        
-        existing.setNumber(invoice.getNumber());
-        existing.setTotalAmountToPay(invoice.getTotalAmountToPay());
-        existing.setDischarge(invoice.getDischarge());
-        existing.setYear(invoice.getYear());
-        existing.setEnvironmentalVariable(invoice.getEnvironmentalVariable());
-        existing.setSocioeconomicVariable(invoice.getSocioeconomicVariable());
-        existing.setEconomicVariable(invoice.getEconomicVariable());
-        existing.setRegionalFactor(invoice.getRegionalFactor());
-        existing.setCcDbo(invoice.getCcDbo());
-        existing.setCcSst(invoice.getCcSst());
-        existing.setMinimumTariffDbo(invoice.getMinimumTariffDbo());
-        existing.setMinimumTariffSst(invoice.getMinimumTariffSst());
-        existing.setAmountToPayDbo(invoice.getAmountToPayDbo());
-        existing.setAmountToPaySst(invoice.getAmountToPaySst());
-        existing.setTotalAmountToPay(invoice.getTotalAmountToPay());
-        existing.setNumberIcaVariables(invoice.getNumberIcaVariables());
-        existing.setIcaCoefficient(invoice.getIcaCoefficient());
-        existing.setrCoefficient(invoice.getrCoefficient());
-        existing.setbCoefficient(invoice.getbCoefficient());
-        existing.setActive(invoice.isActive());
-        existing.setUpdatedBy(currentUser);
-        existing.setUpdatedAt(LocalDateTime.now());
-        
-        return invoiceRepository.save(existing);
-    }
-    
-    @Override
     @Transactional(readOnly = true)
     public Optional<Invoice> getInvoiceById(Long id) {
         User currentUser = authorizationUtils.getCurrentUser();
@@ -188,19 +91,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
         
         return invoiceRepository.findByCorporation(corporation, pageable);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<Invoice> getAllMyCorporationInvoices() {
-        User currentUser = authorizationUtils.getCurrentUser();
-        Corporation corporation = currentUser.getCorporation();
-        
-        if (corporation == null) {
-            throw new IllegalStateException("User must belong to a corporation");
-        }
-        
-        return invoiceRepository.findByCorporation(corporation);
     }
     
     @Override
@@ -273,31 +163,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
         
     @Override
-    @Transactional
-    public boolean deleteInvoice(Long id) {
-        User currentUser = authorizationUtils.getCurrentUser();
-        Corporation corporation = currentUser.getCorporation();
-        
-        if (corporation == null) {
-            throw new IllegalStateException("User must belong to a corporation");
-        }
-        
-        Optional<Invoice> invoiceOpt = invoiceRepository.findById(id);
-        if (invoiceOpt.isEmpty()) {
-            throw new ResourceNotFoundException("Invoice", "id", id);
-        }
-        
-        Invoice invoice = invoiceOpt.get();
-        // Comparar por ID para evitar problemas con proxies de Hibernate
-        if (invoice.getCorporation() == null || !invoice.getCorporation().getId().equals(corporation.getId())) {
-            throw new IllegalStateException("You do not have permission to delete this invoice");
-        }
-        
-        invoiceRepository.delete(invoice);
-        return true;
-    }
-    
-    @Override
     @Transactional(readOnly = true)
     public boolean existsByNumber(int number) {
         if (number < 1 || number > 999999999) {
@@ -356,6 +221,23 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceRepository.findByDischargeAndYear(dischargeOpt.get(), year);
     }
     
+    @Override
+    @Transactional(readOnly = true)
+    public Page<InvoiceResponse> getActiveInvoicesByYear(int year, Long dischargeUserId, Pageable pageable) {
+        User currentUser = authorizationUtils.getCurrentUser();
+        Corporation corporation = currentUser.getCorporation();
+
+        if (corporation == null) {
+            throw new IllegalStateException("User must belong to a corporation");
+        }
+
+        Page<Invoice> invoices = dischargeUserId != null
+                ? invoiceRepository.findActiveByYearAndCorporationIdAndDischargeUserId(year, corporation.getId(), dischargeUserId, pageable)
+                : invoiceRepository.findActiveByYearAndCorporationId(year, corporation.getId(), pageable);
+
+        return invoices.map(InvoiceResponse::new);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public InvoiceStats getMyCorporationInvoiceStats() {

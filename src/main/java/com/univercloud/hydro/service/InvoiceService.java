@@ -1,5 +1,6 @@
 package com.univercloud.hydro.service;
 
+import com.univercloud.hydro.dto.InvoiceResponse;
 import com.univercloud.hydro.entity.Invoice;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,22 +17,6 @@ import java.util.Optional;
 public interface InvoiceService {
     
     /**
-     * Crea una nueva factura.
-     * @param invoice la factura a crear
-     * @return la factura creada
-     * @throws IllegalArgumentException si los datos son inválidos
-     */
-    Invoice createInvoice(Invoice invoice);
-    
-    /**
-     * Actualiza una factura existente.
-     * @param invoice la factura a actualizar
-     * @return la factura actualizada
-     * @throws IllegalArgumentException si la factura no existe
-     */
-    Invoice updateInvoice(Invoice invoice);
-    
-    /**
      * Obtiene una factura por su ID.
      * @param id el ID de la factura
      * @return la factura, si existe
@@ -44,12 +29,6 @@ public interface InvoiceService {
      * @return página de facturas
      */
     Page<Invoice> getMyCorporationInvoices(Pageable pageable);
-    
-    /**
-     * Obtiene todas las facturas de la corporación del usuario autenticado.
-     * @return lista de facturas
-     */
-    List<Invoice> getAllMyCorporationInvoices();
     
     /**
      * Obtiene facturas por descarga.
@@ -94,14 +73,6 @@ public interface InvoiceService {
      * @return número de facturas
      */
     long countMyCorporationInvoices();
-    
-    /**
-     * Elimina una factura.
-     * @param id el ID de la factura a eliminar
-     * @return true si se eliminó correctamente
-     * @throws IllegalArgumentException si la factura no existe
-     */
-    boolean deleteInvoice(Long id);
     
     /**
      * Verifica si existe una factura con el número especificado.
@@ -190,6 +161,16 @@ public interface InvoiceService {
         public void setDischargesWithoutInvoices(long dischargesWithoutInvoices) { this.dischargesWithoutInvoices = dischargesWithoutInvoices; }
     }
     
+    /**
+     * Obtiene las facturas activas de la corporación del usuario autenticado para un año dado,
+     * con filtro opcional por dischargeUserId y soporte de paginación.
+     * @param year el año de las facturas
+     * @param dischargeUserId ID del dischargeUser (opcional)
+     * @param pageable parámetros de paginación
+     * @return página de InvoiceResponse
+     */
+    Page<InvoiceResponse> getActiveInvoicesByYear(int year, Long dischargeUserId, Pageable pageable);
+
     /**
      * Genera una factura a partir de una descarga.
      * Calcula todos los atributos de la factura basándose en los datos de la descarga,

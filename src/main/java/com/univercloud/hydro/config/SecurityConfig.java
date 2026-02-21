@@ -1,5 +1,6 @@
 package com.univercloud.hydro.config;
 
+import com.univercloud.hydro.security.JwtAuthenticationEntryPoint;
 import com.univercloud.hydro.security.JwtAuthenticationFilter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,15 +29,18 @@ import java.util.Arrays;
 public class SecurityConfig {
     
     private final UserDetailsService userDetailsService;
-    
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
     @Value("${app.security.password-encoder.strength:8}")
     private int passwordEncoderStrength;
     
     @Value("${FRONTEND_URL:*}")
     private String frontendUrl;
     
-    public SecurityConfig(UserDetailsService userDetailsService) {
+    public SecurityConfig(UserDetailsService userDetailsService,
+                          JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
         this.userDetailsService = userDetailsService;
+        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
     }
     
     @Bean
@@ -74,6 +78,9 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .anyRequest().authenticated()
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
             )
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
