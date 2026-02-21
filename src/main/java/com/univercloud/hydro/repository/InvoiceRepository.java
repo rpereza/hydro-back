@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+
 /**
  * Repository para la entidad Invoice.
  * Proporciona métodos de consulta para gestionar facturas.
@@ -155,4 +156,33 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
      */
     @Query("SELECT i FROM Invoice i WHERE i.discharge.id = :dischargeId AND i.isActive = true")
     Optional<Invoice> findActiveByDischargeId(@Param("dischargeId") Long dischargeId);
+
+    /**
+     * Busca facturas activas por año y corporación con paginación.
+     * @param year el año
+     * @param corporationId el ID de la corporación
+     * @param pageable parámetros de paginación
+     * @return página de facturas activas del año para la corporación
+     */
+    @Query("SELECT i FROM Invoice i WHERE i.year = :year AND i.corporation.id = :corporationId AND i.isActive = true")
+    Page<Invoice> findActiveByYearAndCorporationId(
+            @Param("year") int year,
+            @Param("corporationId") Long corporationId,
+            Pageable pageable);
+
+    /**
+     * Busca facturas activas por año, corporación y dischargeUser con paginación.
+     * @param year el año
+     * @param corporationId el ID de la corporación
+     * @param dischargeUserId el ID del dischargeUser
+     * @param pageable parámetros de paginación
+     * @return página de facturas activas filtradas por año, corporación y dischargeUser
+     */
+    @Query("SELECT i FROM Invoice i WHERE i.year = :year AND i.corporation.id = :corporationId " +
+           "AND i.isActive = true AND i.discharge.dischargeUser.id = :dischargeUserId")
+    Page<Invoice> findActiveByYearAndCorporationIdAndDischargeUserId(
+            @Param("year") int year,
+            @Param("corporationId") Long corporationId,
+            @Param("dischargeUserId") Long dischargeUserId,
+            Pageable pageable);
 }

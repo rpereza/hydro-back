@@ -8,135 +8,11 @@ Este documento contiene ejemplos de comandos cURL para todos los endpoints del `
 
 ---
 
-## 1. Crear Factura
-
-**Endpoint:** `POST /api/invoices`  
-**Rol requerido:** `USER` o `ADMIN`  
-**Descripción:** Crea una nueva factura. El número y año se asignan automáticamente desde la secuencia de consecutivos de la corporación.
-
-```bash
-curl -X POST "http://localhost:8080/api/invoices" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{
-    "discharge": { "id": 1 },
-    "year": 2024,
-    "environmentalVariable": 2.50,
-    "socioeconomicVariable": 1.20,
-    "economicVariable": 0.75,
-    "regionalFactor": 2.95,
-    "ccDbo": 150.00,
-    "ccSst": 120.00,
-    "minimumTariffDbo": 250.50,
-    "minimumTariffSst": 180.75,
-    "amountToPayDbo": 110250.00,
-    "amountToPaySst": 63870.00,
-    "totalAmountToPay": 174120.00,
-    "numberIcaVariables": 5,
-    "icaCoefficient": 1.00,
-    "rCoefficient": 1.00,
-    "bCoefficient": 1.00,
-    "isActive": true
-  }'
-```
-
-**Campos del request:**
-- `discharge`: Objeto con `id` de la descarga (requerido)
-- `year`: Año de la factura (requerido, Integer)
-- `environmentalVariable`, `socioeconomicVariable`, `economicVariable`, `regionalFactor`: Variables de cálculo (BigDecimal)
-- `ccDbo`, `ccSst`: Cargas contaminantes (BigDecimal)
-- `minimumTariffDbo`, `minimumTariffSst`: Tarifas mínimas (BigDecimal)
-- `amountToPayDbo`, `amountToPaySst`, `totalAmountToPay`: Montos a pagar (BigDecimal)
-- `numberIcaVariables`: Número de variables ICA (Integer)
-- `icaCoefficient`, `rCoefficient`, `bCoefficient`: Coeficientes (BigDecimal)
-- `isActive`: Estado activo/inactivo (opcional, Boolean, default: true)
-
-**Nota:** El campo `number` se asigna automáticamente por el backend desde la secuencia de consecutivos.
-
-**Respuesta exitosa (201 Created):**
-```json
-{
-  "id": 1,
-  "discharge": { "id": 1 },
-  "number": 1001,
-  "year": 2024,
-  "environmentalVariable": 2.50,
-  "socioeconomicVariable": 1.20,
-  "economicVariable": 0.75,
-  "regionalFactor": 2.95,
-  "ccDbo": 150.00,
-  "ccSst": 120.00,
-  "minimumTariffDbo": 250.50,
-  "minimumTariffSst": 180.75,
-  "amountToPayDbo": 110250.00,
-  "amountToPaySst": 63870.00,
-  "totalAmountToPay": 174120.00,
-  "numberIcaVariables": 5,
-  "icaCoefficient": 1.00,
-  "rCoefficient": 1.00,
-  "bCoefficient": 1.00,
-  "isActive": true,
-  "createdAt": "2024-01-15T10:30:00",
-  "updatedAt": null
-}
-```
-
-**Errores posibles:**
-- `400 Bad Request`: Datos inválidos o validación fallida
-- `403 Forbidden`: El usuario no tiene permisos o la descarga no pertenece a la corporación
-
----
-
-## 2. Actualizar Factura
-
-**Endpoint:** `PUT /api/invoices/{id}`  
-**Rol requerido:** `USER` o `ADMIN`  
-**Descripción:** Actualiza una factura existente.
-
-```bash
-curl -X PUT "http://localhost:8080/api/invoices/1" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{
-    "discharge": { "id": 1 },
-    "number": 1001,
-    "year": 2024,
-    "environmentalVariable": 2.55,
-    "socioeconomicVariable": 1.20,
-    "economicVariable": 0.75,
-    "regionalFactor": 3.00,
-    "ccDbo": 155.00,
-    "ccSst": 125.00,
-    "minimumTariffDbo": 250.50,
-    "minimumTariffSst": 180.75,
-    "amountToPayDbo": 116250.00,
-    "amountToPaySst": 67500.00,
-    "totalAmountToPay": 183750.00,
-    "numberIcaVariables": 5,
-    "icaCoefficient": 1.00,
-    "rCoefficient": 1.00,
-    "bCoefficient": 1.00,
-    "isActive": true
-  }'
-```
-
-**Parámetros de URL:**
-- `id`: ID de la factura a actualizar (Long)
-
-**Respuesta exitosa (200 OK):** Devuelve la factura actualizada.
-
-**Errores posibles:**
-- `404 Not Found`: Factura no encontrada
-- `400 Bad Request`: Datos inválidos
-- `403 Forbidden`: Sin permisos para actualizar
-
----
-
-## 3. Obtener Factura por ID
+## 1. Obtener Factura por ID
 
 **Endpoint:** `GET /api/invoices/{id}`  
 **Rol requerido:** `USER` o `ADMIN`  
-**Descripción:** Obtiene una factura por su ID.
+**Descripción:** Obtiene una factura por su ID. Solo retorna facturas que pertenezcan a la corporación del usuario autenticado.
 
 ```bash
 curl -X GET "http://localhost:8080/api/invoices/1" \
@@ -153,9 +29,24 @@ curl -X GET "http://localhost:8080/api/invoices/1" \
   "discharge": { "id": 1 },
   "number": 1001,
   "year": 2024,
-  "totalAmountToPay": 174120.00,
+  "environmentalVariable": 2.50,
+  "socioeconomicVariable": 1.20,
+  "economicVariable": 0.75,
+  "regionalFactor": 2.95,
+  "ccDbo": 150.00,
+  "ccSst": 120.00,
+  "minimumTariffDbo": 250.50,
+  "minimumTariffSst": 180.75,
+  "amountToPayDbo": 110250,
+  "amountToPaySst": 63870,
+  "totalAmountToPay": 174120,
+  "numberIcaVariables": 5,
+  "icaCoefficient": 1.00,
+  "rCoefficient": 1.00,
+  "bCoefficient": 1.00,
   "isActive": true,
-  ...
+  "createdAt": "2024-01-15T10:30:00",
+  "updatedAt": null
 }
 ```
 
@@ -165,31 +56,77 @@ curl -X GET "http://localhost:8080/api/invoices/1" \
 
 ---
 
-## 4. Obtener Todas las Facturas de la Corporación
+## 2. Listar Facturas Activas por Año
 
 **Endpoint:** `GET /api/invoices`  
 **Rol requerido:** `USER` o `ADMIN`  
-**Descripción:** Obtiene todas las facturas de la corporación del usuario autenticado.
+**Descripción:** Obtiene las facturas activas de la corporación del usuario autenticado para un año dado, con filtro opcional por `dischargeUserId` y soporte de paginación.
+
+### 2.1 Solo por año (sin filtro de usuario)
 
 ```bash
-curl -X GET "http://localhost:8080/api/invoices" \
+curl -X GET "http://localhost:8080/api/invoices?year=2024&page=0&size=20" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
-**Respuesta exitosa (200 OK):** Lista de facturas.
+### 2.2 Filtrado por año y dischargeUserId
+
+```bash
+curl -X GET "http://localhost:8080/api/invoices?year=2024&dischargeUserId=42&page=0&size=20" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### 2.3 Con ordenamiento
+
+```bash
+curl -X GET "http://localhost:8080/api/invoices?year=2024&page=0&size=10&sort=number,asc" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Parámetros de query:**
+
+| Parámetro | Tipo | Requerido | Descripción |
+|-----------|------|-----------|-------------|
+| `year` | Integer | Sí | Año de las facturas |
+| `dischargeUserId` | Long | No | Filtra por el ID del usuario de descarga |
+| `page` | Integer | No | Número de página (default: 0) |
+| `size` | Integer | No | Tamaño de página (default: 20) |
+| `sort` | String | No | Campo y dirección de ordenamiento (ej. `number,asc`) |
+
+**Respuesta exitosa (200 OK):**
 ```json
-[
-  {
-    "id": 1,
-    "discharge": { "id": 1 },
-    "number": 1001,
-    "year": 2024,
-    "totalAmountToPay": 174120.00,
-    "isActive": true,
-    ...
-  },
-  ...
-]
+{
+  "content": [
+    {
+      "id": 1,
+      "companyName": "Empresa Ejemplo S.A.",
+      "year": 2024,
+      "number": 1001,
+      "dischargePoint": "Punto de vertimiento río Bogotá",
+      "amountToPayDbo": 110250,
+      "amountToPaySst": 63870,
+      "totalAmountToPay": 174120
+    },
+    {
+      "id": 2,
+      "companyName": "Industrias XYZ Ltda.",
+      "year": 2024,
+      "number": 1002,
+      "dischargePoint": "Descarga canal norte",
+      "amountToPayDbo": 85000,
+      "amountToPaySst": 47500,
+      "totalAmountToPay": 132500
+    }
+  ],
+  "page": 0,
+  "size": 20,
+  "totalElements": 2,
+  "totalPages": 1,
+  "first": true,
+  "last": true,
+  "hasNext": false,
+  "hasPrevious": false
+}
 ```
 
 **Errores posibles:**
@@ -197,35 +134,10 @@ curl -X GET "http://localhost:8080/api/invoices" \
 
 ---
 
-## 5. Eliminar Factura
-
-**Endpoint:** `DELETE /api/invoices/{id}`  
-**Rol requerido:** `USER` o `ADMIN`  
-**Descripción:** Elimina una factura.
-
-```bash
-curl -X DELETE "http://localhost:8080/api/invoices/1" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
-```
-
-**Parámetros de URL:**
-- `id`: ID de la factura a eliminar (Long)
-
-**Respuesta exitosa (200 OK):**
-```json
-true
-```
-
-**Errores posibles:**
-- `404 Not Found`: Factura no encontrada
-- `403 Forbidden`: Sin permisos para eliminar
-
----
-
-## 6. Generar Factura desde Descarga
+## 3. Generar Factura desde Descarga
 
 **Endpoint:** `POST /api/invoices/generate-from-discharge/{dischargeId}`  
-**Rol requerido:** `USER` 
+**Rol requerido:** `USER`  
 **Descripción:** Genera una factura calculada automáticamente a partir de los datos de una descarga. Calcula todas las variables (ambiental, socioeconómica, económica, regional, coeficientes ICA/R/B, montos DBO/SST, etc.) usando la tarifa mínima y el progreso del proyecto (si aplica).
 
 **Lógica de negocio:**
@@ -255,9 +167,9 @@ curl -X POST "http://localhost:8080/api/invoices/generate-from-discharge/1" \
   "ccSst": 120.00,
   "minimumTariffDbo": 250.50,
   "minimumTariffSst": 180.75,
-  "amountToPayDbo": 110250.00,
-  "amountToPaySst": 63870.00,
-  "totalAmountToPay": 174120.00,
+  "amountToPayDbo": 110250,
+  "amountToPaySst": 63870,
+  "totalAmountToPay": 174120,
   "numberIcaVariables": 5,
   "icaCoefficient": 1.00,
   "rCoefficient": 1.00,
@@ -269,7 +181,7 @@ curl -X POST "http://localhost:8080/api/invoices/generate-from-discharge/1" \
 ```
 
 **Errores posibles:**
-- `404 Not Found`: Descarga no encontrada
+- `404 Not Found`: Descarga no encontrada o tarifa mínima no configurada para el año
 - `400 Bad Request`: Datos insuficientes (ej. descarga sin monitoreos, sin clasificación de calidad o caudal)
 - `500 Internal Server Error`: Error interno al generar la factura
 
@@ -279,11 +191,8 @@ curl -X POST "http://localhost:8080/api/invoices/generate-from-discharge/1" \
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| POST | `/api/invoices` | Crear factura manual |
-| PUT | `/api/invoices/{id}` | Actualizar factura |
 | GET | `/api/invoices/{id}` | Obtener factura por ID |
-| GET | `/api/invoices` | Listar todas las facturas de la corporación |
-| DELETE | `/api/invoices/{id}` | Eliminar factura |
+| GET | `/api/invoices?year={year}[&dischargeUserId={id}]` | Listar facturas activas por año (paginado) |
 | POST | `/api/invoices/generate-from-discharge/{dischargeId}` | Generar factura calculada desde descarga |
 
 ---
@@ -297,15 +206,19 @@ TOKEN_RESPONSE=$(curl -s -X POST "http://localhost:8080/api/auth/login" \
   -d '{"username": "usuario@ejemplo.com", "password": "tu_password"}')
 TOKEN=$(echo $TOKEN_RESPONSE | jq -r '.token')
 
-# 2. Generar factura desde descarga (recomendado)
+# 2. Generar factura desde descarga
 curl -X POST "http://localhost:8080/api/invoices/generate-from-discharge/1" \
   -H "Authorization: Bearer $TOKEN"
 
-# 3. Obtener todas las facturas
-curl -X GET "http://localhost:8080/api/invoices" \
+# 3. Listar facturas activas del año 2024 (primera página)
+curl -X GET "http://localhost:8080/api/invoices?year=2024&page=0&size=20" \
   -H "Authorization: Bearer $TOKEN"
 
-# 4. Obtener factura por ID
+# 4. Listar facturas activas del año 2024 filtradas por dischargeUser
+curl -X GET "http://localhost:8080/api/invoices?year=2024&dischargeUserId=42&page=0&size=20" \
+  -H "Authorization: Bearer $TOKEN"
+
+# 5. Obtener factura por ID
 curl -X GET "http://localhost:8080/api/invoices/1" \
   -H "Authorization: Bearer $TOKEN"
 ```
